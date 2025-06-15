@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+*.cover
+*.log
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+simple_agent.db
+simple_agent.db-journal
+downloads/
+workspace/
+logs/
+temp/
+screenshots/
+recordings/
+exports/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Testing
+htmlcov/
+.tox/
+.coverage.*
+coverage.xml
+*.cover
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Redis
+dump.rdb
