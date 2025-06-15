@@ -1,0 +1,106 @@
+.action-block-panel {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.action-block-panel__title {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.action-block-panel__blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.action-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.action-block:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateX(2px);
+}
+
+.action-block:active {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+
+.action-block__icon {
+  display: flex;
+  align-items: center;
+  color: #495057;
+}
+
+.action-block__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+/* Type-specific colors on hover */
+.action-block--navigate:hover {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.action-block--click:hover {
+  background-color: #f3e5f5;
+  border-color: #9c27b0;
+}
+
+.action-block--type:hover {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.action-block--wait:hover {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+}
+
+.action-block--extract:hover {
+  background-color: #fce4ec;
+  border-color: #e91e63;
+}
+
+.action-block--conditional:hover {
+  background-color: #f3e5f5;
+  border-color: #673ab7;
+}
+
+.action-block--loop:hover {
+  background-color: #e0f2f1;
+  border-color: #009688;
+}
+
+.action-block-panel__help {
+  padding: 1rem 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 1rem;
+}
+
+.action-block-panel__help p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: center;
+}

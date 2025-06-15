@@ -184,6 +184,64 @@ async def test_action(request: ActionTestRequest) -> ActionTestResponse:
         await engine.close()
 
 
+@router.post("/agents/preview")
+async def preview_agent(request: dict) -> dict:
+    """Preview agent in development mode"""
+    agent = request.get("agent", {})
+    mode = request.get("mode", "preview")
+    
+    engine = BrowserAutomationEngine()
+    
+    try:
+        await engine.initialize()
+        
+        # Start browser session with target website
+        if agent.get("targetWebsite"):
+            await engine.start_session(url=agent["targetWebsite"])
+        
+        # Execute instructions sequentially
+        results = []
+        for instruction in agent.get("instructions", []):
+            # Convert instruction to BrowserAction
+            action_type = instruction["type"]
+            action_data = {
+                "type": action_type,
+                "selector": instruction.get("selector"),
+                "value": instruction.get("value"),
+            }
+            
+            # Map instruction types to browser action types
+            if action_type == "navigate":
+                action_data["type"] = "navigate"
+                action_data["url"] = instruction.get("value", agent.get("targetWebsite"))
+            elif action_type == "wait":
+                action_data["type"] = "wait"
+                action_data["duration"] = instruction.get("value", 1000)
+            
+            action = BrowserAction(**action_data)
+            result = await engine.execute_action(action)
+            results.append({
+                "instruction_id": instruction["id"],
+                "success": result.success,
+                "data": result.data,
+                "error": result.error,
+            })
+        
+        return {
+            "success": True,
+            "results": results,
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+    
+    finally:
+        await engine.close()
+
+
 @router.get("/health")
 async def health_check() -> dict:
     """Health check endpoint"""
