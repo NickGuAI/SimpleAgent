@@ -496,6 +496,10 @@
                     <div class="stat-value" id="completedComponents">0</div>
                 </div>
                 <div class="stat-box">
+                    <div class="stat-label">Tests Passed</div>
+                    <div class="stat-value" id="testsPassedDisplay">0/0</div>
+                </div>
+                <div class="stat-box">
                     <div class="stat-label">Progress</div>
                     <div class="stat-value" id="progressPercentage">0%</div>
                 </div>
@@ -759,31 +763,53 @@
         // State management
         let currentCategory = 'inputs';
         let completedComponents = new Set();
+        let componentTestResults = {}; // Format: { 'category/file.html': { passed: 5, total: 8 } }
         let searchTerm = '';
 
         // Load saved progress
         function loadProgress() {
             const saved = localStorage.getItem('mui-challenge-progress');
+            const savedTestResults = localStorage.getItem('mui-challenge-test-results');
             if (saved) {
                 completedComponents = new Set(JSON.parse(saved));
-                updateStats();
-                renderAllCategories();
             }
+            if (savedTestResults) {
+                componentTestResults = JSON.parse(savedTestResults);
+            }
+            updateStats();
+            renderAllCategories();
         }
 
         // Save progress
         function saveProgress() {
             localStorage.setItem('mui-challenge-progress', JSON.stringify([...completedComponents]));
+            localStorage.setItem('mui-challenge-test-results', JSON.stringify(componentTestResults));
         }
 
         // Update statistics
         function updateStats() {
             const total = Object.values(componentData).reduce((sum, cat) => sum + cat.length, 0);
             const completed = completedComponents.size;
-            const percentage = Math.round((completed / total) * 100);
+            
+            // Calculate total tests and tests passed
+            let totalTests = 0;
+            let testsPassed = 0;
+            
+            Object.values(componentData).forEach(category => {
+                category.forEach(component => {
+                    totalTests += component.tests;
+                });
+            });
+            
+            Object.values(componentTestResults).forEach(result => {
+                testsPassed += result.passed;
+            });
+            
+            const percentage = totalTests > 0 ? Math.round((testsPassed / totalTests) * 100) : 0;
             
             document.getElementById('totalComponents').textContent = total;
             document.getElementById('completedComponents').textContent = completed;
+            document.getElementById('testsPassedDisplay').textContent = `${testsPassed}/${totalTests}`;
             document.getElementById('progressPercentage').textContent = `${percentage}%`;
         }
 
@@ -808,15 +834,23 @@
                 card.className = `component-card ${isCompleted ? 'completed' : ''}`;
                 card.onclick = () => openChallenge(category, component);
                 
+                const testResult = componentTestResults[componentId] || { passed: 0, total: component.tests };
+                const testProgress = testResult.total > 0 ? Math.round((testResult.passed / testResult.total) * 100) : 0;
+                
                 card.innerHTML = `
                     <div class="component-name">${component.name}</div>
                     <div class="component-description">${component.description}</div>
                     <div class="component-stats">
                         <div class="test-count">
                             <span>🧪</span>
-                            <span>${component.tests} tests</span>
+                            <span>${testResult.passed}/${testResult.total} tests</span>
                         </div>
-                        ${isCompleted ? '<span style="color: var(--success-color);">✓ Completed</span>' : '<span style="color: var(--text-secondary);">Not started</span>'}
+                        ${isCompleted ? 
+                            `<span style="color: var(--success-color);">✓ ${testProgress}% Complete</span>` : 
+                            testResult.passed > 0 ? 
+                                `<span style="color: var(--primary-color);">${testProgress}% In Progress</span>` : 
+                                '<span style="color: var(--text-secondary);">Not started</span>'
+                        }
                     </div>
                 `;
                 
@@ -858,15 +892,40 @@
             
             // Listen for completion messages
             window.addEventListener('message', function handleMessage(event) {
+                const componentId = `${category}/${component.file}`;
+                
                 if (event.data.type === 'challengeComplete' && event.data.challenge === component.file.replace('.html', '')) {
-                    const componentId = `${category}/${component.file}`;
                     completedComponents.add(componentId);
+                    
+                    // Update test results if provided
+                    if (event.data.testsPassed !== undefined && event.data.totalTests !== undefined) {
+                        componentTestResults[componentId] = {
+                            passed: event.data.testsPassed,
+                            total: event.data.totalTests
+                        };
+                    } else {
+                        // If no test data provided, assume all tests passed
+                        componentTestResults[componentId] = {
+                            passed: component.tests,
+                            total: component.tests
+                        };
+                    }
+                    
                     saveProgress();
                     updateStats();
                     renderComponentCards(category);
                     
                     // Show success notification
-                    showNotification(`${component.name} challenge completed!`);
+                    showNotification(`${component.name} challenge completed! (${componentTestResults[componentId].passed}/${componentTestResults[componentId].total} tests passed)`);
+                } else if (event.data.type === 'testUpdate' && event.data.challenge === component.file.replace('.html', '')) {
+                    // Handle incremental test updates
+                    componentTestResults[componentId] = {
+                        passed: event.data.testsPassed,
+                        total: event.data.totalTests
+                    };
+                    saveProgress();
+                    updateStats();
+                    renderComponentCards(category);
                 }
             });
         }
