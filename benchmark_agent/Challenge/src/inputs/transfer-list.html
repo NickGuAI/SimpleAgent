@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Transfer List Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .transfer-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .list-container {
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .list-header {
+            padding: 8px 16px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .progress-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .search-box {
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Transfer List</h1>
+            <p>Test the functionality and behavior of the Material UI Transfer List component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            List,
+            ListItem,
+            ListItemText,
+            ListItemIcon,
+            Checkbox,
+            Button,
+            Box,
+            Typography,
+            Stack,
+            Paper,
+            TextField,
+            Divider,
+            Card,
+            CardHeader
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Custom List Component
+        const CustomList = ({ title, items, checked, onToggle, onToggleAll }) => {
+            const checkedCount = items.filter(item => checked.indexOf(item) !== -1).length;
+            const allChecked = checkedCount === items.length && items.length > 0;
+            const indeterminate = checkedCount > 0 && checkedCount < items.length;
+            
+            return (
+                <Card>
+                    <CardHeader
+                        sx={{ px: 2, py: 1 }}
+                        avatar={
+                            <Checkbox
+                                onClick={onToggleAll}
+                                checked={allChecked}
+                                indeterminate={indeterminate}
+                                disabled={items.length === 0}
+                                inputProps={{
+                                    'aria-label': 'all items selected',
+                                }}
+                            />
+                        }
+                        title={title}
+                        subheader={`${checkedCount}/${items.length} selected`}
+                    />
+                    <Divider />
+                    <List dense component="div" sx={{ bgcolor: 'background.paper', height: 200, overflow: 'auto' }}>
+                        {items.map((value) => {
+                            const labelId = `transfer-list-item-${value}-label`;
+                            
+                            return (
+                                <ListItem
+                                    key={value}
+                                    button
+                                    onClick={() => onToggle(value)}
+                                >
+                                    <ListItemIcon>
+                                        <Checkbox
+                                            checked={checked.indexOf(value) !== -1}
+                                            tabIndex={-1}
+                                            disableRipple
+                                            inputProps={{
+                                                'aria-labelledby': labelId,
+                                            }}
+                                        />
+                                    </ListItemIcon>
+                                    <ListItemText id={labelId} primary={value} />
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </Card>
+            );
+        };
+        
+        // Test 1: Basic Transfer
+        const BasicTransferTest = ({ completeTest }) => {
+            const [left, setLeft] = React.useState(['Item 1', 'Item 2', 'Item 3', 'Item 4']);
+            const [right, setRight] = React.useState([]);
+            const [checked, setChecked] = React.useState([]);
+            
+            const targetItems = ['Item 2', 'Item 4'];
+            
+            const handleToggle = (value) => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+            };
+            
+            const handleAllRight = () => {
+                setRight(right.concat(left));
+                setLeft([]);
+                setChecked([]);
+            };
+            
+            const handleCheckedRight = () => {
+                const leftChecked = checked.filter((value) => left.indexOf(value) !== -1);
+                setRight(right.concat(leftChecked));
+                setLeft(left.filter((value) => leftChecked.indexOf(value) === -1));
+                setChecked(checked.filter((value) => leftChecked.indexOf(value) === -1));
+                
+                // Check if target items are now in the right list
+                const newRight = right.concat(leftChecked);
+                if (targetItems.every(item => newRight.includes(item)) && newRight.length === targetItems.length) {
+                    completeTest(true, 'Correct items transferred!');
+                }
+            };
+            
+            const handleCheckedLeft = () => {
+                const rightChecked = checked.filter((value) => right.indexOf(value) !== -1);
+                setLeft(left.concat(rightChecked));
+                setRight(right.filter((value) => rightChecked.indexOf(value) === -1));
+                setChecked(checked.filter((value) => rightChecked.indexOf(value) === -1));
+            };
+            
+            const handleAllLeft = () => {
+                setLeft(left.concat(right));
+                setRight([]);
+                setChecked([]);
+            };
+            
+            const leftChecked = checked.filter((value) => left.indexOf(value) !== -1);
+            const rightChecked = checked.filter((value) => right.indexOf(value) !== -1);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Transfer only "Item 2" and "Item 4" to the right list:
+                    </Typography>
+                    <div className="transfer-container">
+                        <CustomList
+                            title="Available Items"
+                            items={left}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {
+                                if (leftChecked.length === left.length) {
+                                    setChecked(checked.filter((value) => right.indexOf(value) !== -1));
+                                } else {
+                                    setChecked(checked.concat(left.filter((value) => checked.indexOf(value) === -1)));
+                                }
+                            }}
+                        />
+                        
+                        <div className="button-container">
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={handleAllRight}
+                                disabled={left.length === 0}
+                            >
+                                ≫
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={handleCheckedRight}
+                                disabled={leftChecked.length === 0}
+                            >
+                                &gt;
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={handleCheckedLeft}
+                                disabled={rightChecked.length === 0}
+                            >
+                                &lt;
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={handleAllLeft}
+                                disabled={right.length === 0}
+                            >
+                                ≪
+                            </Button>
+                        </div>
+                        
+                        <CustomList
+                            title="Selected Items"
+                            items={right}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {
+                                if (rightChecked.length === right.length) {
+                                    setChecked(checked.filter((value) => left.indexOf(value) !== -1));
+                                } else {
+                                    setChecked(checked.concat(right.filter((value) => checked.indexOf(value) === -1)));
+                                }
+                            }}
+                        />
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Transfer All
+        const TransferAllTest = ({ completeTest }) => {
+            const [left, setLeft] = React.useState(['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry']);
+            const [right, setRight] = React.useState([]);
+            const [transferCount, setTransferCount] = React.useState(0);
+            
+            const handleTransferAll = () => {
+                if (left.length > 0) {
+                    setRight(right.concat(left));
+                    setLeft([]);
+                    setTransferCount(transferCount + 1);
+                    
+                    if (transferCount === 0) {
+                        completeTest(true, 'All items transferred successfully!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the "Transfer All" button (≫) to move all items to the right:
+                    </Typography>
+                    <div className="transfer-container">
+                        <Paper sx={{ p: 2, minHeight: 200 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Source List ({left.length} items)
+                            </Typography>
+                            <List>
+                                {left.map((item) => (
+                                    <ListItem key={item}>
+                                        <ListItemText primary={item} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Paper>
+                        
+                        <Stack spacing={1}>
+                            <Button
+                                variant="contained"
+                                onClick={handleTransferAll}
+                                disabled={left.length === 0}
+                            >
+                                ≫
+                            </Button>
+                        </Stack>
+                        
+                        <Paper sx={{ p: 2, minHeight: 200 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Target List ({right.length} items)
+                            </Typography>
+                            <List>
+                                {right.map((item) => (
+                                    <ListItem key={item}>
+                                        <ListItemText primary={item} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Bidirectional Transfer
+        const BidirectionalTransferTest = ({ completeTest }) => {
+            const [left, setLeft] = React.useState(['Red', 'Green', 'Blue']);
+            const [right, setRight] = React.useState(['Yellow', 'Purple', 'Orange']);
+            const [checked, setChecked] = React.useState([]);
+            const [moveCount, setMoveCount] = React.useState({ toRight: 0, toLeft: 0 });
+            
+            const targetLeft = ['Red', 'Yellow', 'Purple'];
+            const targetRight = ['Green', 'Blue', 'Orange'];
+            
+            const handleToggle = (value) => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+            };
+            
+            const moveCheckedRight = () => {
+                const leftChecked = checked.filter((value) => left.indexOf(value) !== -1);
+                setRight(right.concat(leftChecked));
+                setLeft(left.filter((value) => leftChecked.indexOf(value) === -1));
+                setChecked(checked.filter((value) => leftChecked.indexOf(value) === -1));
+                setMoveCount({ ...moveCount, toRight: moveCount.toRight + 1 });
+                
+                checkCompletion();
+            };
+            
+            const moveCheckedLeft = () => {
+                const rightChecked = checked.filter((value) => right.indexOf(value) !== -1);
+                setLeft(left.concat(rightChecked));
+                setRight(right.filter((value) => rightChecked.indexOf(value) === -1));
+                setChecked(checked.filter((value) => rightChecked.indexOf(value) === -1));
+                setMoveCount({ ...moveCount, toLeft: moveCount.toLeft + 1 });
+                
+                checkCompletion();
+            };
+            
+            const checkCompletion = () => {
+                setTimeout(() => {
+                    const currentLeft = [...left];
+                    const currentRight = [...right];
+                    
+                    if (
+                        targetLeft.every(item => currentLeft.includes(item)) &&
+                        targetRight.every(item => currentRight.includes(item)) &&
+                        currentLeft.length === targetLeft.length &&
+                        currentRight.length === targetRight.length
+                    ) {
+                        completeTest(true, 'Items arranged correctly!');
+                    }
+                }, 100);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Arrange items so Left has: Red, Yellow, Purple | Right has: Green, Blue, Orange
+                    </Typography>
+                    <div className="transfer-container">
+                        <CustomList
+                            title="Left List"
+                            items={left}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {}}
+                        />
+                        
+                        <Stack spacing={1}>
+                            <Button
+                                variant="outlined"
+                                onClick={moveCheckedRight}
+                                disabled={checked.filter(v => left.includes(v)).length === 0}
+                            >
+                                →
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                onClick={moveCheckedLeft}
+                                disabled={checked.filter(v => right.includes(v)).length === 0}
+                            >
+                                ←
+                            </Button>
+                        </Stack>
+                        
+                        <CustomList
+                            title="Right List"
+                            items={right}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {}}
+                        />
+                    </div>
+                    <div className="progress-info">
+                        <Typography variant="caption">
+                            Moves to right: {moveCount.toRight} | Moves to left: {moveCount.toLeft}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Select All Feature
+        const SelectAllTest = ({ completeTest }) => {
+            const [left, setLeft] = React.useState(['Option A', 'Option B', 'Option C', 'Option D']);
+            const [right, setRight] = React.useState([]);
+            const [checked, setChecked] = React.useState([]);
+            const [selectAllUsed, setSelectAllUsed] = React.useState(false);
+            
+            const handleToggle = (value) => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+            };
+            
+            const handleToggleAll = (items) => {
+                const itemsChecked = items.filter(item => checked.includes(item));
+                
+                if (itemsChecked.length === items.length) {
+                    // Uncheck all
+                    setChecked(checked.filter(item => !items.includes(item)));
+                } else {
+                    // Check all
+                    const newChecked = [...new Set([...checked, ...items])];
+                    setChecked(newChecked);
+                    setSelectAllUsed(true);
+                }
+            };
+            
+            const handleTransfer = () => {
+                const leftChecked = checked.filter((value) => left.indexOf(value) !== -1);
+                
+                if (leftChecked.length === 4 && selectAllUsed) {
+                    setRight(right.concat(leftChecked));
+                    setLeft(left.filter((value) => leftChecked.indexOf(value) === -1));
+                    setChecked([]);
+                    completeTest(true, 'All items selected and transferred using select all!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Use the "Select All" checkbox in the left list, then transfer all items:
+                    </Typography>
+                    <div className="transfer-container">
+                        <CustomList
+                            title="Source"
+                            items={left}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => handleToggleAll(left)}
+                        />
+                        
+                        <Button
+                            variant="contained"
+                            onClick={handleTransfer}
+                            disabled={checked.filter(v => left.includes(v)).length === 0}
+                        >
+                            Transfer →
+                        </Button>
+                        
+                        <CustomList
+                            title="Destination"
+                            items={right}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => handleToggleAll(right)}
+                        />
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Filtered Transfer
+        const FilteredTransferTest = ({ completeTest }) => {
+            const allItems = [
+                'JavaScript', 'TypeScript', 'Python', 'Java',
+                'C++', 'Go', 'Rust', 'Swift', 'Kotlin', 'Ruby'
+            ];
+            
+            const [left, setLeft] = React.useState(allItems);
+            const [right, setRight] = React.useState([]);
+            const [checked, setChecked] = React.useState([]);
+            const [searchLeft, setSearchLeft] = React.useState('');
+            
+            const targetItems = ['TypeScript', 'JavaScript', 'Swift'];
+            
+            const filteredLeft = left.filter(item => 
+                item.toLowerCase().includes(searchLeft.toLowerCase())
+            );
+            
+            const handleToggle = (value) => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+            };
+            
+            const handleTransfer = () => {
+                const leftChecked = checked.filter((value) => left.indexOf(value) !== -1);
+                const newRight = right.concat(leftChecked);
+                setRight(newRight);
+                setLeft(left.filter((value) => leftChecked.indexOf(value) === -1));
+                setChecked([]);
+                
+                // Check if exactly the target items are in the right list
+                if (
+                    targetItems.every(item => newRight.includes(item)) &&
+                    newRight.length === targetItems.length
+                ) {
+                    completeTest(true, 'Correct languages transferred!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Transfer only: TypeScript, JavaScript, and Swift (use search to filter)
+                    </Typography>
+                    <div className="transfer-container">
+                        <Box>
+                            <Paper>
+                                <Box p={2}>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        placeholder="Search languages..."
+                                        value={searchLeft}
+                                        onChange={(e) => setSearchLeft(e.target.value)}
+                                    />
+                                </Box>
+                                <Divider />
+                                <List sx={{ height: 200, overflow: 'auto' }}>
+                                    {filteredLeft.map((item) => (
+                                        <ListItem
+                                            key={item}
+                                            button
+                                            onClick={() => handleToggle(item)}
+                                        >
+                                            <ListItemIcon>
+                                                <Checkbox
+                                                    checked={checked.indexOf(item) !== -1}
+                                                    tabIndex={-1}
+                                                    disableRipple
+                                                />
+                                            </ListItemIcon>
+                                            <ListItemText primary={item} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Paper>
+                        </Box>
+                        
+                        <Button
+                            variant="contained"
+                            onClick={handleTransfer}
+                            disabled={checked.length === 0}
+                        >
+                            →
+                        </Button>
+                        
+                        <Paper>
+                            <Box p={2}>
+                                <Typography variant="subtitle2">
+                                    Selected ({right.length})
+                                </Typography>
+                            </Box>
+                            <Divider />
+                            <List sx={{ height: 200, overflow: 'auto' }}>
+                                {right.map((item) => (
+                                    <ListItem key={item}>
+                                        <ListItemText primary={item} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Complex Sorting
+        const ComplexSortingTest = ({ completeTest }) => {
+            const [developers, setDevelopers] = React.useState([
+                'Alice (Frontend)',
+                'Bob (Backend)',
+                'Charlie (Frontend)',
+                'David (FullStack)',
+                'Eve (Backend)'
+            ]);
+            const [team, setTeam] = React.useState([]);
+            const [checked, setChecked] = React.useState([]);
+            
+            // Need 2 Frontend and 1 Backend
+            const requiredTeam = ['Alice (Frontend)', 'Charlie (Frontend)', 'Bob (Backend)'];
+            
+            const handleToggle = (value) => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+            };
+            
+            const handleAddToTeam = () => {
+                const developersChecked = checked.filter((value) => developers.indexOf(value) !== -1);
+                const newTeam = team.concat(developersChecked);
+                setTeam(newTeam);
+                setDevelopers(developers.filter((value) => developersChecked.indexOf(value) === -1));
+                setChecked([]);
+                
+                // Check team composition
+                const frontendCount = newTeam.filter(member => member.includes('Frontend')).length;
+                const backendCount = newTeam.filter(member => member.includes('Backend')).length;
+                
+                if (frontendCount === 2 && backendCount === 1 && newTeam.length === 3) {
+                    completeTest(true, 'Perfect team composition: 2 Frontend + 1 Backend!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Build a team with exactly 2 Frontend developers and 1 Backend developer:
+                    </Typography>
+                    <div className="transfer-container">
+                        <CustomList
+                            title="Available Developers"
+                            items={developers}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {}}
+                        />
+                        
+                        <Button
+                            variant="contained"
+                            onClick={handleAddToTeam}
+                            disabled={checked.filter(v => developers.includes(v)).length === 0}
+                        >
+                            Add to Team →
+                        </Button>
+                        
+                        <CustomList
+                            title="Your Team"
+                            items={team}
+                            checked={checked}
+                            onToggle={handleToggle}
+                            onToggleAll={() => {}}
+                        />
+                    </div>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                        Current team: {team.length} members
+                        {team.length > 0 && ` (${team.filter(m => m.includes('Frontend')).length} Frontend, ${team.filter(m => m.includes('Backend')).length} Backend, ${team.filter(m => m.includes('FullStack')).length} FullStack)`}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'transfer-list',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-transfer"
+                        testName="Test 1: Basic Transfer"
+                        description="Select and transfer specific items between lists"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicTransferTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="transfer-all"
+                        testName="Test 2: Transfer All"
+                        description="Use the transfer all button to move all items"
+                        onComplete={handleTestComplete}
+                    >
+                        <TransferAllTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="bidirectional"
+                        testName="Test 3: Bidirectional Transfer"
+                        description="Move items in both directions to achieve the target arrangement"
+                        onComplete={handleTestComplete}
+                    >
+                        <BidirectionalTransferTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="select-all"
+                        testName="Test 4: Select All Feature"
+                        description="Use the select all checkbox to select all items at once"
+                        onComplete={handleTestComplete}
+                    >
+                        <SelectAllTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="filtered-transfer"
+                        testName="Test 5: Filtered Transfer"
+                        description="Use search to filter and transfer specific items"
+                        onComplete={handleTestComplete}
+                    >
+                        <FilteredTransferTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="complex-sorting"
+                        testName="Test 6: Team Building"
+                        description="Build a team with specific role requirements"
+                        onComplete={handleTestComplete}
+                    >
+                        <ComplexSortingTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

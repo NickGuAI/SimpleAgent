@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Stack Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        /* Stack demo styles */
+        .stack-item {
+            background-color: rgba(25, 118, 210, 0.12);
+            border: 1px solid rgba(25, 118, 210, 0.5);
+            padding: 16px;
+            text-align: center;
+            border-radius: 4px;
+            min-width: 80px;
+        }
+        
+        .stack-container {
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 16px;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Stack</h1>
+            <p>Test the functionality and behavior of the Material UI Stack component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Stack,
+            Box,
+            Button,
+            Typography,
+            Select,
+            MenuItem,
+            FormControl,
+            InputLabel,
+            Slider,
+            Divider,
+            Switch,
+            FormControlLabel
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Stack Direction
+        const StackDirectionTest = ({ completeTest }) => {
+            const [direction, setDirection] = React.useState('row');
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleDirectionChange = (event) => {
+                setDirection(event.target.value);
+                if (event.target.value === 'column') {
+                    setCompleted(true);
+                    completeTest(true, 'Stack direction changed successfully! Items now arranged vertically.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the Stack direction to "column" to arrange items vertically:
+                    </Typography>
+                    <FormControl size="small" sx={{ mb: 2, minWidth: 120 }}>
+                        <InputLabel>Direction</InputLabel>
+                        <Select
+                            value={direction}
+                            onChange={handleDirectionChange}
+                            label="Direction"
+                        >
+                            <MenuItem value="row">row</MenuItem>
+                            <MenuItem value="row-reverse">row-reverse</MenuItem>
+                            <MenuItem value="column">column</MenuItem>
+                            <MenuItem value="column-reverse">column-reverse</MenuItem>
+                        </Select>
+                    </FormControl>
+                    
+                    <Box className="stack-container">
+                        <Stack direction={direction} spacing={2}>
+                            <div className="stack-item">
+                                <Typography variant="body2">Item 1</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">Item 2</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">Item 3</Typography>
+                            </div>
+                        </Stack>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Stack Spacing
+        const StackSpacingTest = ({ completeTest }) => {
+            const [spacing, setSpacing] = React.useState(1);
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleSpacingChange = (event, newValue) => {
+                setSpacing(newValue);
+                if (newValue === 3) {
+                    setCompleted(true);
+                    completeTest(true, 'Stack spacing adjusted perfectly! Spacing set to 3.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the Stack spacing to 3 to complete this test:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography gutterBottom>Spacing: {spacing}</Typography>
+                        <Slider
+                            value={spacing}
+                            onChange={handleSpacingChange}
+                            step={0.5}
+                            marks
+                            min={0}
+                            max={5}
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                    
+                    <Box className="stack-container">
+                        <Stack direction="row" spacing={spacing}>
+                            <div className="stack-item">
+                                <Typography variant="body2">A</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">B</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">C</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">D</Typography>
+                            </div>
+                        </Stack>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        Spacing value represents theme spacing units (1 unit = 8px by default)
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 3: Stack with Dividers
+        const StackDividerTest = ({ completeTest }) => {
+            const [useDivider, setUseDivider] = React.useState(false);
+            const [orientation, setOrientation] = React.useState('vertical');
+            
+            React.useEffect(() => {
+                if (useDivider && orientation === 'horizontal') {
+                    completeTest(true, 'Stack dividers configured correctly! Horizontal dividers between items.');
+                }
+            }, [useDivider, orientation]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enable dividers and set orientation to "horizontal":
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={useDivider}
+                                    onChange={(e) => setUseDivider(e.target.checked)}
+                                />
+                            }
+                            label="Use Divider"
+                        />
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Orientation</InputLabel>
+                            <Select
+                                value={orientation}
+                                onChange={(e) => setOrientation(e.target.value)}
+                                label="Orientation"
+                                disabled={!useDivider}
+                            >
+                                <MenuItem value="vertical">vertical</MenuItem>
+                                <MenuItem value="horizontal">horizontal</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    
+                    <Box className="stack-container">
+                        <Stack 
+                            direction="row" 
+                            spacing={2}
+                            divider={useDivider ? <Divider orientation={orientation} flexItem /> : null}
+                        >
+                            <div className="stack-item">
+                                <Typography variant="body2">First</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">Second</Typography>
+                            </div>
+                            <div className="stack-item">
+                                <Typography variant="body2">Third</Typography>
+                            </div>
+                        </Stack>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Stack Alignment
+        const StackAlignmentTest = ({ completeTest }) => {
+            const [alignItems, setAlignItems] = React.useState('stretch');
+            const [justifyContent, setJustifyContent] = React.useState('flex-start');
+            const [completed, setCompleted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (alignItems === 'center' && justifyContent === 'space-between') {
+                    setCompleted(true);
+                    completeTest(true, 'Stack alignment perfect! Items centered with space-between distribution.');
+                }
+            }, [alignItems, justifyContent]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set alignItems to "center" and justifyContent to "space-between":
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <FormControl size="small" sx={{ minWidth: 140 }}>
+                            <InputLabel>Align Items</InputLabel>
+                            <Select
+                                value={alignItems}
+                                onChange={(e) => setAlignItems(e.target.value)}
+                                label="Align Items"
+                            >
+                                <MenuItem value="stretch">stretch</MenuItem>
+                                <MenuItem value="center">center</MenuItem>
+                                <MenuItem value="flex-start">flex-start</MenuItem>
+                                <MenuItem value="flex-end">flex-end</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl size="small" sx={{ minWidth: 140 }}>
+                            <InputLabel>Justify Content</InputLabel>
+                            <Select
+                                value={justifyContent}
+                                onChange={(e) => setJustifyContent(e.target.value)}
+                                label="Justify Content"
+                            >
+                                <MenuItem value="flex-start">flex-start</MenuItem>
+                                <MenuItem value="center">center</MenuItem>
+                                <MenuItem value="flex-end">flex-end</MenuItem>
+                                <MenuItem value="space-between">space-between</MenuItem>
+                                <MenuItem value="space-around">space-around</MenuItem>
+                                <MenuItem value="space-evenly">space-evenly</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    
+                    <Box className="stack-container" sx={{ height: 200 }}>
+                        <Stack 
+                            direction="row" 
+                            spacing={2}
+                            alignItems={alignItems}
+                            justifyContent={justifyContent}
+                            sx={{ height: '100%' }}
+                        >
+                            <div className="stack-item" style={{ height: 60 }}>
+                                <Typography variant="body2">Small</Typography>
+                            </div>
+                            <div className="stack-item" style={{ height: 100 }}>
+                                <Typography variant="body2">Medium</Typography>
+                            </div>
+                            <div className="stack-item" style={{ height: 80 }}>
+                                <Typography variant="body2">Large</Typography>
+                            </div>
+                        </Stack>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'stack',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="stack-direction"
+                        testName="Test 1: Stack Direction"
+                        description="Test the Stack's direction prop for arranging children"
+                        onComplete={handleTestComplete}
+                    >
+                        <StackDirectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="stack-spacing"
+                        testName="Test 2: Stack Spacing"
+                        description="Test the Stack's spacing prop for gaps between items"
+                        onComplete={handleTestComplete}
+                    >
+                        <StackSpacingTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="stack-divider"
+                        testName="Test 3: Stack with Dividers"
+                        description="Test the Stack's divider prop for separating items"
+                        onComplete={handleTestComplete}
+                    >
+                        <StackDividerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="stack-alignment"
+                        testName="Test 4: Stack Alignment"
+                        description="Test Stack's alignItems and justifyContent props"
+                        onComplete={handleTestComplete}
+                    >
+                        <StackAlignmentTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

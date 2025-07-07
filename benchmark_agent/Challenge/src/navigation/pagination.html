@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Pagination Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .page-display {
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .page-number {
+            font-size: 48px;
+            font-weight: 300;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .page-info {
+            font-size: 16px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .navigation-log {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .content-area {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Pagination</h1>
+            <p>Test the functionality and behavior of the Material UI Pagination component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Pagination,
+            TablePagination,
+            Box,
+            Typography,
+            Stack,
+            Paper,
+            Table,
+            TableBody,
+            TableCell,
+            TableContainer,
+            TableHead,
+            TableRow
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Pagination
+        const BasicPaginationTest = ({ completeTest }) => {
+            const [page, setPage] = React.useState(1);
+            const [visitedPages, setVisitedPages] = React.useState(new Set([1]));
+            
+            const handleChange = (event, value) => {
+                setPage(value);
+                const newVisited = new Set(visitedPages);
+                newVisited.add(value);
+                setVisitedPages(newVisited);
+                
+                if (newVisited.size >= 5) {
+                    completeTest(true, 'Basic pagination navigation working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate to at least 5 different pages:
+                    </Typography>
+                    <div className="page-display">
+                        <div className="page-number">{page}</div>
+                        <div className="page-info">Current Page</div>
+                    </div>
+                    <Pagination
+                        id="basic-pagination"
+                        count={10}
+                        page={page}
+                        onChange={handleChange}
+                        color="primary"
+                    />
+                    <div className="navigation-log">
+                        Visited Pages: {Array.from(visitedPages).sort((a, b) => a - b).join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Controlled Pagination with Boundaries
+        const BoundaryPaginationTest = ({ completeTest }) => {
+            const [page, setPage] = React.useState(1);
+            const [interactions, setInteractions] = React.useState([]);
+            
+            const handleChange = (event, value) => {
+                setPage(value);
+                const newInteractions = [...interactions, value];
+                setInteractions(newInteractions);
+                
+                // Check if user has visited first, last, and some middle pages
+                const hasFirst = newInteractions.includes(1);
+                const hasLast = newInteractions.includes(20);
+                const hasMiddle = newInteractions.some(p => p > 5 && p < 16);
+                
+                if (hasFirst && hasLast && hasMiddle && newInteractions.length >= 6) {
+                    completeTest(true, 'Boundary navigation working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate to first page, last page, and some middle pages:
+                    </Typography>
+                    <div className="page-display">
+                        <div className="page-number">{page}</div>
+                        <div className="page-info">Page {page} of 20</div>
+                    </div>
+                    <Pagination
+                        id="boundary-pagination"
+                        count={20}
+                        page={page}
+                        onChange={handleChange}
+                        showFirstButton
+                        showLastButton
+                        color="secondary"
+                    />
+                    <div className="navigation-log">
+                        Navigation: {interactions.slice(-10).join(' → ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Pagination Variants
+        const VariantPaginationTest = ({ completeTest }) => {
+            const [pages, setPages] = React.useState({ outlined: 1, text: 1 });
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            
+            const handleChange = (variant) => (event, value) => {
+                setPages({ ...pages, [variant]: value });
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                // Check if both variants have been used and pages have been changed
+                if (newClicked.size === 2 && (pages.outlined > 1 || pages.text > 1)) {
+                    completeTest(true, 'Different pagination variants working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <Typography variant="body2" gutterBottom>
+                        Use both pagination variants:
+                    </Typography>
+                    
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                            Outlined Variant (Page: {pages.outlined})
+                        </Typography>
+                        <Pagination
+                            id="outlined-pagination"
+                            count={10}
+                            page={pages.outlined}
+                            onChange={handleChange('outlined')}
+                            variant="outlined"
+                            color="primary"
+                        />
+                    </Box>
+                    
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                            Text Variant (Page: {pages.text})
+                        </Typography>
+                        <Pagination
+                            id="text-pagination"
+                            count={10}
+                            page={pages.text}
+                            onChange={handleChange('text')}
+                            variant="text"
+                            color="secondary"
+                        />
+                    </Box>
+                    
+                    <div className="navigation-log">
+                        Variants Used: {Array.from(clickedVariants).join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Pagination Sizes
+        const SizePaginationTest = ({ completeTest }) => {
+            const [pages, setPages] = React.useState({ small: 1, medium: 1, large: 1 });
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            
+            const handleChange = (size) => (event, value) => {
+                setPages({ ...pages, [size]: value });
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === 3) {
+                    completeTest(true, 'All pagination sizes tested successfully!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                        Click on pages in all three size variants:
+                    </Typography>
+                    
+                    <Stack spacing={3} alignItems="center">
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption">Small (Page: {pages.small})</Typography>
+                            <Pagination
+                                id="small-pagination"
+                                count={5}
+                                page={pages.small}
+                                onChange={handleChange('small')}
+                                size="small"
+                            />
+                        </Box>
+                        
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption">Medium (Page: {pages.medium})</Typography>
+                            <Pagination
+                                id="medium-pagination"
+                                count={5}
+                                page={pages.medium}
+                                onChange={handleChange('medium')}
+                                size="medium"
+                            />
+                        </Box>
+                        
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption">Large (Page: {pages.large})</Typography>
+                            <Pagination
+                                id="large-pagination"
+                                count={5}
+                                page={pages.large}
+                                onChange={handleChange('large')}
+                                size="large"
+                            />
+                        </Box>
+                    </Stack>
+                    
+                    <div className="navigation-log">
+                        Sizes Used: {Array.from(clickedSizes).join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Table Pagination
+        const TablePaginationTest = ({ completeTest }) => {
+            const [page, setPage] = React.useState(0);
+            const [rowsPerPage, setRowsPerPage] = React.useState(5);
+            const [interactions, setInteractions] = React.useState([]);
+            
+            // Sample data
+            const rows = Array.from({ length: 25 }, (_, index) => ({
+                id: index + 1,
+                name: `Item ${index + 1}`,
+                value: Math.floor(Math.random() * 100)
+            }));
+            
+            const handleChangePage = (event, newPage) => {
+                setPage(newPage);
+                const newInteractions = [...interactions, `page-${newPage}`];
+                setInteractions(newInteractions);
+                checkCompletion(newInteractions);
+            };
+            
+            const handleChangeRowsPerPage = (event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+                const newInteractions = [...interactions, `rows-${event.target.value}`];
+                setInteractions(newInteractions);
+                checkCompletion(newInteractions);
+            };
+            
+            const checkCompletion = (actions) => {
+                const pageChanges = actions.filter(a => a.startsWith('page-')).length;
+                const rowChanges = actions.filter(a => a.startsWith('rows-')).length;
+                
+                if (pageChanges >= 3 && rowChanges >= 1) {
+                    completeTest(true, 'Table pagination working correctly!');
+                }
+            };
+            
+            const visibleRows = rows.slice(
+                page * rowsPerPage,
+                page * rowsPerPage + rowsPerPage,
+            );
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Change pages at least 3 times and change rows per page at least once:
+                    </Typography>
+                    <TableContainer component={Paper}>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell align="right">Value</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {visibleRows.map((row) => (
+                                    <TableRow key={row.id}>
+                                        <TableCell>{row.id}</TableCell>
+                                        <TableCell>{row.name}</TableCell>
+                                        <TableCell align="right">{row.value}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        <TablePagination
+                            id="table-pagination"
+                            rowsPerPageOptions={[5, 10, 25]}
+                            component="div"
+                            count={rows.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </TableContainer>
+                    <div className="navigation-log">
+                        Actions: {interactions.slice(-5).join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'pagination',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-pagination"
+                        testName="Test 1: Basic Pagination"
+                        description="Test basic pagination navigation"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicPaginationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="boundary-pagination"
+                        testName="Test 2: Boundary Navigation"
+                        description="Test pagination with first/last buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <BoundaryPaginationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variant-pagination"
+                        testName="Test 3: Pagination Variants"
+                        description="Test different pagination variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantPaginationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size-pagination"
+                        testName="Test 4: Pagination Sizes"
+                        description="Test different pagination sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizePaginationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="table-pagination"
+                        testName="Test 5: Table Pagination"
+                        description="Test pagination integrated with tables"
+                        onComplete={handleTestComplete}
+                    >
+                        <TablePaginationTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

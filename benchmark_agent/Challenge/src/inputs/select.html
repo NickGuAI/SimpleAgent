@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Select Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .selection-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .select-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Select</h1>
+            <p>Test the functionality and behavior of the Material UI Select component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Select,
+            MenuItem,
+            FormControl,
+            InputLabel,
+            Box,
+            Typography,
+            Stack,
+            Chip,
+            OutlinedInput,
+            FormHelperText
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Selection
+        const BasicSelectionTest = ({ completeTest }) => {
+            const [age, setAge] = React.useState('');
+            const targetValue = 30;
+            
+            const handleChange = (event) => {
+                const value = event.target.value;
+                setAge(value);
+                if (value === targetValue) {
+                    completeTest(true, `Successfully selected age ${targetValue}!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select age "30" from the dropdown:
+                    </Typography>
+                    <FormControl fullWidth>
+                        <InputLabel id="basic-select-label">Age</InputLabel>
+                        <Select
+                            labelId="basic-select-label"
+                            id="basic-select"
+                            value={age}
+                            label="Age"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value={10}>Ten</MenuItem>
+                            <MenuItem value={20}>Twenty</MenuItem>
+                            <MenuItem value={30}>Thirty</MenuItem>
+                            <MenuItem value={40}>Forty</MenuItem>
+                        </Select>
+                    </FormControl>
+                    {age && (
+                        <div className="selection-info">
+                            Selected value: {age}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: Multiple Selection
+        const MultipleSelectionTest = ({ completeTest }) => {
+            const [selectedNames, setSelectedNames] = React.useState([]);
+            const names = ['Oliver', 'Harry', 'Jack', 'George', 'Noah'];
+            const requiredNames = ['Oliver', 'Jack', 'Noah'];
+            
+            const handleChange = (event) => {
+                const value = event.target.value;
+                setSelectedNames(value);
+                
+                const hasAllRequired = requiredNames.every(name => value.includes(name));
+                if (hasAllRequired && value.length === requiredNames.length) {
+                    completeTest(true, 'Successfully selected all required names!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select exactly these names: {requiredNames.join(', ')}
+                    </Typography>
+                    <FormControl fullWidth>
+                        <InputLabel id="multiple-select-label">Names</InputLabel>
+                        <Select
+                            labelId="multiple-select-label"
+                            id="multiple-select"
+                            multiple
+                            value={selectedNames}
+                            onChange={handleChange}
+                            input={<OutlinedInput label="Names" />}
+                            renderValue={(selected) => (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {selected.map((value) => (
+                                        <Chip 
+                                            key={value} 
+                                            label={value} 
+                                            size="small"
+                                            color={requiredNames.includes(value) ? "primary" : "default"}
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+                        >
+                            {names.map((name) => (
+                                <MenuItem key={name} value={name}>
+                                    {name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 3: Select Variants
+        const VariantTest = ({ completeTest }) => {
+            const [values, setValues] = React.useState({ standard: '', filled: '', outlined: '' });
+            const variants = ['standard', 'filled', 'outlined'];
+            
+            const handleChange = (variant) => (event) => {
+                const newValues = { ...values, [variant]: event.target.value };
+                setValues(newValues);
+                
+                const allFilled = variants.every(v => newValues[v] !== '');
+                if (allFilled) {
+                    completeTest(true, 'All select variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Make a selection in each variant:
+                    </Typography>
+                    <Stack spacing={2}>
+                        <FormControl variant="standard" fullWidth>
+                            <InputLabel id="standard-select-label">Standard</InputLabel>
+                            <Select
+                                labelId="standard-select-label"
+                                id="standard-select"
+                                value={values.standard}
+                                onChange={handleChange('standard')}
+                                label="Standard"
+                            >
+                                <MenuItem value="option1">Option 1</MenuItem>
+                                <MenuItem value="option2">Option 2</MenuItem>
+                            </Select>
+                        </FormControl>
+                        
+                        <FormControl variant="filled" fullWidth>
+                            <InputLabel id="filled-select-label">Filled</InputLabel>
+                            <Select
+                                labelId="filled-select-label"
+                                id="filled-select"
+                                value={values.filled}
+                                onChange={handleChange('filled')}
+                            >
+                                <MenuItem value="option1">Option 1</MenuItem>
+                                <MenuItem value="option2">Option 2</MenuItem>
+                            </Select>
+                        </FormControl>
+                        
+                        <FormControl variant="outlined" fullWidth>
+                            <InputLabel id="outlined-select-label">Outlined</InputLabel>
+                            <Select
+                                labelId="outlined-select-label"
+                                id="outlined-select"
+                                value={values.outlined}
+                                onChange={handleChange('outlined')}
+                                label="Outlined"
+                            >
+                                <MenuItem value="option1">Option 1</MenuItem>
+                                <MenuItem value="option2">Option 2</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Disabled State
+        const DisabledStateTest = ({ completeTest }) => {
+            const [enabledValue, setEnabledValue] = React.useState('');
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledValue && attempted) {
+                    completeTest(true, 'Disabled select correctly prevented interaction!');
+                }
+            }, [enabledValue, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select from the enabled dropdown (the disabled one should not open):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <FormControl fullWidth>
+                            <InputLabel id="enabled-select-label">Enabled Select</InputLabel>
+                            <Select
+                                labelId="enabled-select-label"
+                                id="enabled-select"
+                                value={enabledValue}
+                                label="Enabled Select"
+                                onChange={(e) => setEnabledValue(e.target.value)}
+                            >
+                                <MenuItem value="success">Success Option</MenuItem>
+                            </Select>
+                        </FormControl>
+                        
+                        <FormControl fullWidth disabled>
+                            <InputLabel id="disabled-select-label">Disabled Select</InputLabel>
+                            <Select
+                                labelId="disabled-select-label"
+                                id="disabled-select"
+                                value=""
+                                label="Disabled Select"
+                                onClick={() => setAttempted(true)}
+                            >
+                                <MenuItem value="fail">Should not be selectable</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Native Select
+        const NativeSelectTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const targetValue = 'cat';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setValue(newValue);
+                if (newValue === targetValue) {
+                    completeTest(true, 'Native select working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "Cat" from the native select dropdown:
+                    </Typography>
+                    <FormControl fullWidth>
+                        <InputLabel id="native-select-label">Pet</InputLabel>
+                        <Select
+                            native
+                            labelId="native-select-label"
+                            id="native-select"
+                            value={value}
+                            onChange={handleChange}
+                            label="Pet"
+                        >
+                            <option value="" />
+                            <option value="dog">Dog</option>
+                            <option value="cat">Cat</option>
+                            <option value="hamster">Hamster</option>
+                        </Select>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 6: Error State
+        const ErrorStateTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const [error, setError] = React.useState(true);
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setValue(newValue);
+                
+                if (newValue === 'valid') {
+                    setError(false);
+                    completeTest(true, 'Error state cleared successfully!');
+                } else {
+                    setError(true);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "Valid Option" to clear the error:
+                    </Typography>
+                    <FormControl fullWidth error={error}>
+                        <InputLabel id="error-select-label">Selection</InputLabel>
+                        <Select
+                            labelId="error-select-label"
+                            id="error-select"
+                            value={value}
+                            label="Selection"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value="invalid1">Invalid Option 1</MenuItem>
+                            <MenuItem value="invalid2">Invalid Option 2</MenuItem>
+                            <MenuItem value="valid">Valid Option</MenuItem>
+                        </Select>
+                        <FormHelperText>
+                            {error ? 'Please select the valid option' : 'Valid selection!'}
+                        </FormHelperText>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 7: Controlled Open State
+        const ControlledOpenTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const [open, setOpen] = React.useState(false);
+            const [openCount, setOpenCount] = React.useState(0);
+            
+            const handleOpen = () => {
+                setOpen(true);
+                const newCount = openCount + 1;
+                setOpenCount(newCount);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const handleChange = (event) => {
+                setValue(event.target.value);
+                if (openCount >= 2 && event.target.value) {
+                    completeTest(true, 'Controlled open state working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the dropdown twice and make a selection:
+                    </Typography>
+                    <FormControl fullWidth>
+                        <InputLabel id="controlled-open-label">Controlled</InputLabel>
+                        <Select
+                            labelId="controlled-open-label"
+                            id="controlled-open-select"
+                            open={open}
+                            onClose={handleClose}
+                            onOpen={handleOpen}
+                            value={value}
+                            label="Controlled"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value="option1">Option 1</MenuItem>
+                            <MenuItem value="option2">Option 2</MenuItem>
+                        </Select>
+                        <FormHelperText>
+                            Open count: {openCount}/2
+                        </FormHelperText>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'select',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-selection"
+                        testName="Test 1: Basic Selection"
+                        description="Make a simple selection from the dropdown"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-selection"
+                        testName="Test 2: Multiple Selection"
+                        description="Select multiple specific items"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 3: Select Variants"
+                        description="Test all three select variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-state"
+                        testName="Test 4: Disabled State"
+                        description="Verify disabled select cannot be interacted with"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="native-select"
+                        testName="Test 5: Native Select"
+                        description="Test native HTML select element"
+                        onComplete={handleTestComplete}
+                    >
+                        <NativeSelectTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="error-state"
+                        testName="Test 6: Error State"
+                        description="Test select with error validation"
+                        onComplete={handleTestComplete}
+                    >
+                        <ErrorStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="controlled-open"
+                        testName="Test 7: Controlled Open State"
+                        description="Test programmatic control of dropdown open state"
+                        onComplete={handleTestComplete}
+                    >
+                        <ControlledOpenTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

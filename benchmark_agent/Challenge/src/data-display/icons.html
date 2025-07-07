@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Icons Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .icon-item:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+        
+        .icon-item.clicked {
+            background-color: #e8f5e9;
+        }
+        
+        .icon-label {
+            font-size: 10px;
+            text-align: center;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .icon-button-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Icons</h1>
+            <p>Test the functionality and behavior of Material UI Icons</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Icon,
+            IconButton,
+            Box,
+            Typography,
+            Stack,
+            Tooltip,
+            Badge
+        } = window['MaterialUI'];
+        
+        // Create material icons as React components
+        const HomeIcon = () => <Icon>home</Icon>;
+        const FavoriteIcon = () => <Icon>favorite</Icon>;
+        const SettingsIcon = () => <Icon>settings</Icon>;
+        const DeleteIcon = () => <Icon>delete</Icon>;
+        const AddIcon = () => <Icon>add</Icon>;
+        const SearchIcon = () => <Icon>search</Icon>;
+        const MenuIcon = () => <Icon>menu</Icon>;
+        const CloseIcon = () => <Icon>close</Icon>;
+        const StarIcon = () => <Icon>star</Icon>;
+        const ShareIcon = () => <Icon>share</Icon>;
+        const EditIcon = () => <Icon>edit</Icon>;
+        const SaveIcon = () => <Icon>save</Icon>;
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Icon Click
+        const BasicIconTest = ({ completeTest }) => {
+            const [clickedIcons, setClickedIcons] = React.useState(new Set());
+            const icons = [
+                { name: 'home', icon: HomeIcon },
+                { name: 'favorite', icon: FavoriteIcon },
+                { name: 'settings', icon: SettingsIcon },
+                { name: 'star', icon: StarIcon }
+            ];
+            
+            const handleIconClick = (iconName) => {
+                const newClicked = new Set(clickedIcons);
+                newClicked.add(iconName);
+                setClickedIcons(newClicked);
+                
+                if (newClicked.size === icons.length) {
+                    completeTest(true, 'All basic icons clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all icons to complete the test:
+                    </Typography>
+                    <div className="icon-grid">
+                        {icons.map(({ name, icon: IconComponent }) => (
+                            <div
+                                key={name}
+                                id={`${name}-icon`}
+                                className={`icon-item ${clickedIcons.has(name) ? 'clicked' : ''}`}
+                                onClick={() => handleIconClick(name)}
+                            >
+                                <IconComponent />
+                                <span className="icon-label">{name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Icon Sizes
+        const IconSizeTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = ['small', 'inherit', 'medium', 'large'];
+            
+            const handleSizeClick = (size) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All icon sizes tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click icons of different sizes:
+                    </Typography>
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        {sizes.map((size) => (
+                            <Box
+                                key={size}
+                                id={`${size}-size-icon`}
+                                onClick={() => handleSizeClick(size)}
+                                sx={{ 
+                                    cursor: 'pointer',
+                                    textAlign: 'center',
+                                    p: 1,
+                                    borderRadius: 1,
+                                    bgcolor: clickedSizes.has(size) ? 'success.light' : 'transparent',
+                                    '&:hover': { bgcolor: 'action.hover' }
+                                }}
+                            >
+                                <Icon fontSize={size}>favorite</Icon>
+                                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                    {size}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Icon Colors
+        const IconColorTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'action', 'error', 'warning', 'success'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size === colors.length) {
+                    completeTest(true, 'All icon colors tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click icons with different colors:
+                    </Typography>
+                    <Stack direction="row" spacing={2} flexWrap="wrap">
+                        {colors.map((color) => (
+                            <Box
+                                key={color}
+                                id={`${color}-color-icon`}
+                                onClick={() => handleColorClick(color)}
+                                sx={{ 
+                                    cursor: 'pointer',
+                                    p: 1,
+                                    borderRadius: 1,
+                                    border: clickedColors.has(color) ? '2px solid' : 'none',
+                                    borderColor: 'success.main'
+                                }}
+                            >
+                                <Icon color={color}>palette</Icon>
+                                <Typography variant="caption" display="block" textAlign="center">
+                                    {color}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Icon Buttons
+        const IconButtonTest = ({ completeTest }) => {
+            const [actions, setActions] = React.useState({
+                add: 0,
+                delete: 0,
+                edit: 0,
+                save: 0
+            });
+            
+            React.useEffect(() => {
+                const allClicked = Object.values(actions).every(count => count > 0);
+                if (allClicked) {
+                    completeTest(true, 'All icon buttons interacted successfully!');
+                }
+            }, [actions]);
+            
+            const handleAction = (action) => {
+                setActions(prev => ({
+                    ...prev,
+                    [action]: prev[action] + 1
+                }));
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each icon button at least once:
+                    </Typography>
+                    <div className="icon-button-row">
+                        <Tooltip title="Add Item">
+                            <IconButton 
+                                id="add-icon-button"
+                                color="primary"
+                                onClick={() => handleAction('add')}
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Item">
+                            <IconButton 
+                                id="delete-icon-button"
+                                color="error"
+                                onClick={() => handleAction('delete')}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Edit Item">
+                            <IconButton 
+                                id="edit-icon-button"
+                                color="secondary"
+                                onClick={() => handleAction('edit')}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Save Item">
+                            <IconButton 
+                                id="save-icon-button"
+                                color="success"
+                                onClick={() => handleAction('save')}
+                            >
+                                <SaveIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        Actions: Add ({actions.add}), Delete ({actions.delete}), Edit ({actions.edit}), Save ({actions.save})
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 5: Icon with Badge
+        const IconBadgeTest = ({ completeTest }) => {
+            const [notifications, setNotifications] = React.useState(3);
+            const [messages, setMessages] = React.useState(1);
+            const [cleared, setCleared] = React.useState({ notifications: false, messages: false });
+            
+            React.useEffect(() => {
+                if (notifications === 0 && messages === 0) {
+                    completeTest(true, 'All badge notifications cleared successfully!');
+                }
+            }, [notifications, messages]);
+            
+            const handleNotificationClick = () => {
+                if (notifications > 0) {
+                    setNotifications(0);
+                    setCleared(prev => ({ ...prev, notifications: true }));
+                }
+            };
+            
+            const handleMessageClick = () => {
+                if (messages > 0) {
+                    setMessages(0);
+                    setCleared(prev => ({ ...prev, messages: true }));
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click icons to clear their badge counts:
+                    </Typography>
+                    <Stack direction="row" spacing={4}>
+                        <IconButton
+                            id="notification-badge-icon"
+                            onClick={handleNotificationClick}
+                            color={cleared.notifications ? "success" : "default"}
+                        >
+                            <Badge badgeContent={notifications} color="error">
+                                <Icon>notifications</Icon>
+                            </Badge>
+                        </IconButton>
+                        <IconButton
+                            id="message-badge-icon"
+                            onClick={handleMessageClick}
+                            color={cleared.messages ? "success" : "default"}
+                        >
+                            <Badge badgeContent={messages} color="primary">
+                                <Icon>mail</Icon>
+                            </Badge>
+                        </IconButton>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Icon States
+        const IconStateTest = ({ completeTest }) => {
+            const [menuOpen, setMenuOpen] = React.useState(false);
+            const [favorited, setFavorited] = React.useState(false);
+            const [searching, setSearching] = React.useState(false);
+            const [stateChanges, setStateChanges] = React.useState(0);
+            
+            const toggleMenu = () => {
+                setMenuOpen(!menuOpen);
+                setStateChanges(prev => prev + 1);
+            };
+            
+            const toggleFavorite = () => {
+                setFavorited(!favorited);
+                setStateChanges(prev => prev + 1);
+            };
+            
+            const toggleSearch = () => {
+                setSearching(!searching);
+                setStateChanges(prev => prev + 1);
+            };
+            
+            React.useEffect(() => {
+                if (stateChanges >= 6) { // Each icon toggled at least twice
+                    completeTest(true, 'Icon state transitions tested successfully!');
+                }
+            }, [stateChanges]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle each icon state multiple times:
+                    </Typography>
+                    <Stack direction="row" spacing={3}>
+                        <Tooltip title={menuOpen ? "Close Menu" : "Open Menu"}>
+                            <IconButton
+                                id="menu-toggle-icon"
+                                onClick={toggleMenu}
+                            >
+                                {menuOpen ? <CloseIcon /> : <MenuIcon />}
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title={favorited ? "Remove from Favorites" : "Add to Favorites"}>
+                            <IconButton
+                                id="favorite-toggle-icon"
+                                onClick={toggleFavorite}
+                                color={favorited ? "error" : "default"}
+                            >
+                                <Icon>{favorited ? 'favorite' : 'favorite_border'}</Icon>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title={searching ? "Close Search" : "Open Search"}>
+                            <IconButton
+                                id="search-toggle-icon"
+                                onClick={toggleSearch}
+                                color={searching ? "primary" : "default"}
+                            >
+                                <SearchIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        State changes: {stateChanges}/6
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'icons',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-icons"
+                        testName="Test 1: Basic Icon Clicks"
+                        description="Click different types of icons"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicIconTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-sizes"
+                        testName="Test 2: Icon Sizes"
+                        description="Test icons with different size properties"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconSizeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-colors"
+                        testName="Test 3: Icon Colors"
+                        description="Test icons with different color themes"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconColorTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-buttons"
+                        testName="Test 4: Icon Buttons"
+                        description="Test clickable icon buttons with tooltips"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconButtonTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-badges"
+                        testName="Test 5: Icons with Badges"
+                        description="Test icons with badge notifications"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconBadgeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-states"
+                        testName="Test 6: Icon State Transitions"
+                        description="Test icons that change based on state"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconStateTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

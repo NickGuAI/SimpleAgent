@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Switch Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .switch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .state-display {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .state-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+        
+        .settings-panel {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Switch</h1>
+            <p>Test the functionality and behavior of the Material UI Switch component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Switch,
+            FormControlLabel,
+            FormGroup,
+            FormControl,
+            FormLabel,
+            Box,
+            Typography,
+            Stack,
+            Divider
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Toggle
+        const BasicToggleTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState(false);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleChange = (event) => {
+                setChecked(event.target.checked);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Switch toggled successfully multiple times!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the switch at least 3 times:
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                id="basic-switch"
+                                checked={checked}
+                                onChange={handleChange}
+                            />
+                        }
+                        label={checked ? 'ON' : 'OFF'}
+                    />
+                    <div className="state-display">
+                        <Typography variant="body2">Toggle Count:</Typography>
+                        <div className="state-value">{toggleCount}/3</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Multiple Settings
+        const MultipleSettingsTest = ({ completeTest }) => {
+            const [settings, setSettings] = React.useState({
+                wifi: false,
+                bluetooth: false,
+                airplane: false,
+                location: false
+            });
+            
+            const requiredOn = ['wifi', 'location'];
+            const requiredOff = ['bluetooth', 'airplane'];
+            
+            const handleChange = (setting) => (event) => {
+                const newSettings = { ...settings, [setting]: event.target.checked };
+                setSettings(newSettings);
+                
+                const correctState = 
+                    requiredOn.every(s => newSettings[s] === true) &&
+                    requiredOff.every(s => newSettings[s] === false);
+                
+                if (correctState) {
+                    completeTest(true, 'Settings configured correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Turn ON: WiFi and Location. Keep OFF: Bluetooth and Airplane Mode
+                    </Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="wifi-switch"
+                                    checked={settings.wifi}
+                                    onChange={handleChange('wifi')}
+                                    color={requiredOn.includes('wifi') ? 'primary' : 'default'}
+                                />
+                            }
+                            label="WiFi"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="bluetooth-switch"
+                                    checked={settings.bluetooth}
+                                    onChange={handleChange('bluetooth')}
+                                    color="default"
+                                />
+                            }
+                            label="Bluetooth"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="airplane-switch"
+                                    checked={settings.airplane}
+                                    onChange={handleChange('airplane')}
+                                    color="default"
+                                />
+                            }
+                            label="Airplane Mode"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="location-switch"
+                                    checked={settings.location}
+                                    onChange={handleChange('location')}
+                                    color={requiredOn.includes('location') ? 'primary' : 'default'}
+                                />
+                            }
+                            label="Location Services"
+                        />
+                    </FormGroup>
+                </Box>
+            );
+        };
+        
+        // Test 3: Color Variants
+        const ColorVariantsTest = ({ completeTest }) => {
+            const [switchedColors, setSwitchedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'warning', 'error', 'info', 'success'];
+            
+            const handleColorChange = (color) => (event) => {
+                if (event.target.checked) {
+                    const newSwitched = new Set(switchedColors);
+                    newSwitched.add(color);
+                    setSwitchedColors(newSwitched);
+                    
+                    if (newSwitched.size === colors.length) {
+                        completeTest(true, 'All color variants tested!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Turn on all switches to test each color:
+                    </Typography>
+                    <div className="switch-grid">
+                        {colors.map((color) => (
+                            <FormControlLabel
+                                key={color}
+                                control={
+                                    <Switch
+                                        id={`${color}-switch`}
+                                        color={color}
+                                        onChange={handleColorChange(color)}
+                                    />
+                                }
+                                label={color.charAt(0).toUpperCase() + color.slice(1)}
+                            />
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Disabled State
+        const DisabledStateTest = ({ completeTest }) => {
+            const [enabledChecked, setEnabledChecked] = React.useState(false);
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledChecked && attempted) {
+                    completeTest(true, 'Disabled switches correctly prevented interaction!');
+                }
+            }, [enabledChecked, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the enabled switch (disabled switches should not respond):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="enabled-switch"
+                                    checked={enabledChecked}
+                                    onChange={(e) => setEnabledChecked(e.target.checked)}
+                                />
+                            }
+                            label="Enabled Switch"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="disabled-off-switch"
+                                    disabled
+                                    onClick={() => setAttempted(true)}
+                                />
+                            }
+                            label="Disabled (OFF)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="disabled-on-switch"
+                                    disabled
+                                    checked
+                                    onClick={() => setAttempted(true)}
+                                />
+                            }
+                            label="Disabled (ON)"
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Size Variants
+        const SizeVariantsTest = ({ completeTest }) => {
+            const [switchedSizes, setSwitchedSizes] = React.useState(new Set());
+            const sizes = ['small', 'medium'];
+            
+            const handleSizeChange = (size) => (event) => {
+                if (event.target.checked) {
+                    const newSwitched = new Set(switchedSizes);
+                    newSwitched.add(size);
+                    setSwitchedSizes(newSwitched);
+                    
+                    if (newSwitched.size === sizes.length) {
+                        completeTest(true, 'All size variants tested!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Turn on both size variants:
+                    </Typography>
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="small-switch"
+                                    size="small"
+                                    onChange={handleSizeChange('small')}
+                                />
+                            }
+                            label="Small"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    id="medium-switch"
+                                    onChange={handleSizeChange('medium')}
+                                />
+                            }
+                            label="Medium (default)"
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Theme Switcher
+        const ThemeSwitcherTest = ({ completeTest }) => {
+            const [darkMode, setDarkMode] = React.useState(false);
+            const [highContrast, setHighContrast] = React.useState(false);
+            const [animations, setAnimations] = React.useState(true);
+            
+            React.useEffect(() => {
+                if (darkMode && highContrast && !animations) {
+                    completeTest(true, 'Theme preferences configured correctly!');
+                }
+            }, [darkMode, highContrast, animations]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Configure theme: Enable Dark Mode and High Contrast, Disable Animations
+                    </Typography>
+                    <div className="settings-panel">
+                        <Typography variant="subtitle2" gutterBottom>
+                            Display Settings
+                        </Typography>
+                        <FormGroup>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        id="dark-mode-switch"
+                                        checked={darkMode}
+                                        onChange={(e) => setDarkMode(e.target.checked)}
+                                    />
+                                }
+                                label="Dark Mode"
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        id="high-contrast-switch"
+                                        checked={highContrast}
+                                        onChange={(e) => setHighContrast(e.target.checked)}
+                                    />
+                                }
+                                label="High Contrast"
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        id="animations-switch"
+                                        checked={animations}
+                                        onChange={(e) => setAnimations(e.target.checked)}
+                                    />
+                                }
+                                label="Enable Animations"
+                            />
+                        </FormGroup>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="caption" color="text.secondary">
+                            Current: {darkMode ? 'Dark' : 'Light'} mode, 
+                            {highContrast ? ' High' : ' Normal'} contrast, 
+                            Animations {animations ? 'ON' : 'OFF'}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 7: Toggle Pattern
+        const TogglePatternTest = ({ completeTest }) => {
+            const [switches, setSwitches] = React.useState([false, false, false, false, false]);
+            const pattern = [true, false, true, true, false]; // Required pattern
+            
+            const handleToggle = (index) => (event) => {
+                const newSwitches = [...switches];
+                newSwitches[index] = event.target.checked;
+                setSwitches(newSwitches);
+                
+                const matchesPattern = newSwitches.every((val, idx) => val === pattern[idx]);
+                if (matchesPattern) {
+                    completeTest(true, 'Pattern matched successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Match this pattern: ON-OFF-ON-ON-OFF
+                    </Typography>
+                    <Stack direction="row" spacing={1}>
+                        {switches.map((checked, index) => (
+                            <Switch
+                                key={index}
+                                id={`pattern-switch-${index + 1}`}
+                                checked={checked}
+                                onChange={handleToggle(index)}
+                                color={checked === pattern[index] ? 'success' : 'default'}
+                            />
+                        ))}
+                    </Stack>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        Current: {switches.map(s => s ? 'ON' : 'OFF').join('-')}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'switch',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-toggle"
+                        testName="Test 1: Basic Toggle"
+                        description="Toggle switch on and off multiple times"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicToggleTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-settings"
+                        testName="Test 2: Multiple Settings"
+                        description="Configure multiple switches to specific states"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleSettingsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-variants"
+                        testName="Test 3: Color Variants"
+                        description="Test all switch color options"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-state"
+                        testName="Test 4: Disabled State"
+                        description="Verify disabled switches cannot be toggled"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size-variants"
+                        testName="Test 5: Size Variants"
+                        description="Test different switch sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="theme-switcher"
+                        testName="Test 6: Theme Switcher"
+                        description="Configure theme preferences using switches"
+                        onComplete={handleTestComplete}
+                    >
+                        <ThemeSwitcherTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="toggle-pattern"
+                        testName="Test 7: Toggle Pattern"
+                        description="Match a specific on/off pattern"
+                        onComplete={handleTestComplete}
+                    >
+                        <TogglePatternTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

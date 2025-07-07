@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Card Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .interaction-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Card</h1>
+            <p>Test the functionality and behavior of the Material UI Card component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Card,
+            CardContent,
+            CardActions,
+            CardMedia,
+            CardHeader,
+            CardActionArea,
+            Typography,
+            Button,
+            IconButton,
+            Box,
+            Avatar,
+            Collapse,
+            Chip
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Card Click
+        const BasicCardTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Card clicked successfully!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click anywhere on the card below:
+                    </Typography>
+                    <Card 
+                        id="basic-card"
+                        sx={{ maxWidth: 345, cursor: 'pointer' }}
+                        onClick={handleClick}
+                    >
+                        <CardContent>
+                            <Typography variant="h5" component="div">
+                                Basic Card
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                This is a simple card. Click anywhere on this card to complete the test.
+                                {clicked && ' ✓ Clicked!'}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Box>
+            );
+        };
+        
+        // Test 2: Card with Actions
+        const CardActionsTest = ({ completeTest }) => {
+            const [actions, setActions] = React.useState({
+                share: false,
+                learn: false
+            });
+            
+            const handleAction = (action) => {
+                const newActions = { ...actions, [action]: true };
+                setActions(newActions);
+                
+                if (Object.values(newActions).every(v => v === true)) {
+                    completeTest(true, 'All card actions triggered!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both action buttons in the card:
+                    </Typography>
+                    <Card id="actions-card" sx={{ maxWidth: 345 }}>
+                        <CardContent>
+                            <Typography variant="h5" component="div">
+                                Card with Actions
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                This card has action buttons. Click both buttons to complete the test.
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button 
+                                id="share-button"
+                                size="small"
+                                onClick={() => handleAction('share')}
+                                color={actions.share ? "success" : "primary"}
+                            >
+                                Share {actions.share && '✓'}
+                            </Button>
+                            <Button 
+                                id="learn-button"
+                                size="small"
+                                onClick={() => handleAction('learn')}
+                                color={actions.learn ? "success" : "primary"}
+                            >
+                                Learn More {actions.learn && '✓'}
+                            </Button>
+                        </CardActions>
+                    </Card>
+                </Box>
+            );
+        };
+        
+        // Test 3: Card with Media
+        const CardMediaTest = ({ completeTest }) => {
+            const [imageClicked, setImageClicked] = React.useState(false);
+            const [buttonClicked, setButtonClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (imageClicked && buttonClicked) {
+                    completeTest(true, 'Both media and button clicked!');
+                }
+            }, [imageClicked, buttonClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both the image and the button:
+                    </Typography>
+                    <Card id="media-card" sx={{ maxWidth: 345 }}>
+                        <CardActionArea onClick={() => setImageClicked(true)}>
+                            <CardMedia
+                                id="card-media"
+                                component="div"
+                                sx={{
+                                    height: 140,
+                                    backgroundColor: imageClicked ? 'success.light' : 'primary.light',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Typography variant="h6" color="white">
+                                    {imageClicked ? 'Image Clicked ✓' : 'Click Image'}
+                                </Typography>
+                            </CardMedia>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Media Card
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    This card has a clickable media area and action button.
+                                </Typography>
+                            </CardContent>
+                        </CardActionArea>
+                        <CardActions>
+                            <Button 
+                                id="media-card-button"
+                                size="small" 
+                                color={buttonClicked ? "success" : "primary"}
+                                onClick={() => setButtonClicked(true)}
+                            >
+                                Action {buttonClicked && '✓'}
+                            </Button>
+                        </CardActions>
+                    </Card>
+                </Box>
+            );
+        };
+        
+        // Test 4: Card with Header
+        const CardHeaderTest = ({ completeTest }) => {
+            const [avatarClicked, setAvatarClicked] = React.useState(false);
+            const [menuClicked, setMenuClicked] = React.useState(false);
+            const [favoriteClicked, setFavoriteClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (avatarClicked && menuClicked && favoriteClicked) {
+                    completeTest(true, 'All header elements interacted with!');
+                }
+            }, [avatarClicked, menuClicked, favoriteClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the avatar, menu icon, and favorite icon:
+                    </Typography>
+                    <Card id="header-card" sx={{ maxWidth: 345 }}>
+                        <CardHeader
+                            avatar={
+                                <Avatar 
+                                    id="card-avatar"
+                                    sx={{ 
+                                        bgcolor: avatarClicked ? 'success.main' : 'primary.main',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => setAvatarClicked(true)}
+                                >
+                                    R
+                                </Avatar>
+                            }
+                            action={
+                                <IconButton 
+                                    id="card-menu"
+                                    onClick={() => setMenuClicked(true)}
+                                >
+                                    <span className="material-icons">
+                                        {menuClicked ? 'done' : 'more_vert'}
+                                    </span>
+                                </IconButton>
+                            }
+                            title="Card with Header"
+                            subheader="September 14, 2024"
+                        />
+                        <CardContent>
+                            <Typography variant="body2" color="text.secondary">
+                                This card has an interactive header with avatar and action buttons.
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <IconButton 
+                                id="favorite-button"
+                                onClick={() => setFavoriteClicked(true)}
+                            >
+                                <span className="material-icons" style={{ color: favoriteClicked ? '#f44336' : 'inherit' }}>
+                                    {favoriteClicked ? 'favorite' : 'favorite_border'}
+                                </span>
+                            </IconButton>
+                        </CardActions>
+                    </Card>
+                    <div className="interaction-info">
+                        <div>Avatar clicked: {avatarClicked ? '✓' : '✗'}</div>
+                        <div>Menu clicked: {menuClicked ? '✓' : '✗'}</div>
+                        <div>Favorite clicked: {favoriteClicked ? '✓' : '✗'}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Multiple Cards
+        const MultipleCardsTest = ({ completeTest }) => {
+            const [clickedCards, setClickedCards] = React.useState(new Set());
+            const cards = ['card1', 'card2', 'card3'];
+            
+            const handleCardClick = (cardId) => {
+                const newClicked = new Set(clickedCards);
+                newClicked.add(cardId);
+                setClickedCards(newClicked);
+                
+                if (newClicked.size === cards.length) {
+                    completeTest(true, 'All cards clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three cards to complete the test:
+                    </Typography>
+                    <div className="card-grid">
+                        {cards.map((cardId, index) => (
+                            <Card 
+                                key={cardId}
+                                id={cardId}
+                                sx={{ 
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedCards.has(cardId) ? 'success.light' : 'background.paper'
+                                }}
+                                onClick={() => handleCardClick(cardId)}
+                            >
+                                <CardContent>
+                                    <Typography variant="h6">
+                                        Card {index + 1} {clickedCards.has(cardId) && '✓'}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Click this card
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                    <div className="interaction-info">
+                        <div>Cards clicked: {clickedCards.size} / {cards.length}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Expandable Card
+        const ExpandableCardTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState(false);
+            const [buttonClicked, setButtonClicked] = React.useState(false);
+            
+            const handleExpandClick = () => {
+                setExpanded(!expanded);
+                if (!expanded && buttonClicked) {
+                    completeTest(true, 'Card expanded and button clicked!');
+                }
+            };
+            
+            const handleButtonClick = () => {
+                setButtonClicked(true);
+                if (expanded) {
+                    completeTest(true, 'Card expanded and button clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand the card and click the button inside:
+                    </Typography>
+                    <Card id="expandable-card" sx={{ maxWidth: 345 }}>
+                        <CardHeader
+                            title="Expandable Card"
+                            subheader="Click expand to see more"
+                        />
+                        <CardContent>
+                            <Typography variant="body2" color="text.secondary">
+                                This card has expandable content. Click the expand icon below.
+                            </Typography>
+                        </CardContent>
+                        <CardActions disableSpacing>
+                            <IconButton
+                                id="expand-button"
+                                onClick={handleExpandClick}
+                                sx={{
+                                    transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    marginLeft: 'auto',
+                                    transition: 'transform 0.3s'
+                                }}
+                            >
+                                <span className="material-icons">expand_more</span>
+                            </IconButton>
+                        </CardActions>
+                        <Collapse in={expanded} timeout="auto" unmountOnExit>
+                            <CardContent>
+                                <Typography paragraph>Expanded Content:</Typography>
+                                <Typography paragraph>
+                                    Great! You've expanded the card. Now click the button below to complete the test.
+                                </Typography>
+                                <Button
+                                    id="expanded-button"
+                                    variant="contained"
+                                    color={buttonClicked ? "success" : "primary"}
+                                    onClick={handleButtonClick}
+                                >
+                                    {buttonClicked ? 'Clicked ✓' : 'Click Me'}
+                                </Button>
+                            </CardContent>
+                        </Collapse>
+                    </Card>
+                    <div className="interaction-info">
+                        <div>Card expanded: {expanded ? '✓' : '✗'}</div>
+                        <div>Button clicked: {buttonClicked ? '✓' : '✗'}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'card',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-card"
+                        testName="Test 1: Basic Card Click"
+                        description="Test basic card click functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicCardTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="card-actions"
+                        testName="Test 2: Card Actions"
+                        description="Test card action buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <CardActionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="card-media"
+                        testName="Test 3: Card with Media"
+                        description="Test card with media and action areas"
+                        onComplete={handleTestComplete}
+                    >
+                        <CardMediaTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="card-header"
+                        testName="Test 4: Card Header"
+                        description="Test card header with avatar and actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <CardHeaderTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-cards"
+                        testName="Test 5: Multiple Cards"
+                        description="Test interaction with multiple cards"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleCardsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="expandable-card"
+                        testName="Test 6: Expandable Card"
+                        description="Test expandable card functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <ExpandableCardTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

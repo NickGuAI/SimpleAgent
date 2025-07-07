@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Image List Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        /* Image list demo styles */
+        .image-list-container {
+            max-height: 450px;
+            overflow-y: auto;
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 8px;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .demo-image {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .demo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .image-clicked {
+            border: 3px solid #4caf50;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Image List</h1>
+            <p>Test the functionality and behavior of the Material UI ImageList component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            ImageList,
+            ImageListItem,
+            ImageListItemBar,
+            Box,
+            Button,
+            Typography,
+            Select,
+            MenuItem,
+            FormControl,
+            InputLabel,
+            Slider,
+            IconButton
+        } = window['MaterialUI'];
+        
+        // Generate demo image data
+        const generateImageData = () => {
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548'];
+            return Array.from({ length: 12 }, (_, index) => ({
+                id: index + 1,
+                color: colors[index % colors.length],
+                title: `Image ${index + 1}`,
+                cols: index % 3 === 0 ? 2 : 1,
+                rows: index % 4 === 0 ? 2 : 1
+            }));
+        };
+        
+        const imageData = generateImageData();
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Image List with Columns
+        const BasicImageListTest = ({ completeTest }) => {
+            const [cols, setCols] = React.useState(2);
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleColsChange = (event, newValue) => {
+                setCols(newValue);
+                if (newValue === 4) {
+                    setCompleted(true);
+                    completeTest(true, 'ImageList columns adjusted successfully! Now showing 4 columns.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Adjust the ImageList to show 4 columns:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography gutterBottom>Columns: {cols}</Typography>
+                        <Slider
+                            value={cols}
+                            onChange={handleColsChange}
+                            step={1}
+                            marks
+                            min={1}
+                            max={5}
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                    
+                    <Box className="image-list-container">
+                        <ImageList cols={cols} rowHeight={164}>
+                            {imageData.slice(0, 8).map((item) => (
+                                <ImageListItem key={item.id}>
+                                    <Box
+                                        sx={{
+                                            backgroundColor: item.color,
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '1.5rem',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {item.id}
+                                    </Box>
+                                </ImageListItem>
+                            ))}
+                        </ImageList>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Image List Variants
+        const ImageListVariantTest = ({ completeTest }) => {
+            const [variant, setVariant] = React.useState('standard');
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleVariantChange = (event) => {
+                setVariant(event.target.value);
+                if (event.target.value === 'quilted') {
+                    setCompleted(true);
+                    completeTest(true, 'ImageList variant changed to quilted! Items now have variable sizes.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the ImageList variant to "quilted":
+                    </Typography>
+                    <FormControl size="small" sx={{ mb: 2, minWidth: 120 }}>
+                        <InputLabel>Variant</InputLabel>
+                        <Select
+                            value={variant}
+                            onChange={handleVariantChange}
+                            label="Variant"
+                        >
+                            <MenuItem value="standard">standard</MenuItem>
+                            <MenuItem value="quilted">quilted</MenuItem>
+                            <MenuItem value="woven">woven</MenuItem>
+                            <MenuItem value="masonry">masonry</MenuItem>
+                        </Select>
+                    </FormControl>
+                    
+                    <Box className="image-list-container">
+                        <ImageList variant={variant} cols={3} rowHeight={121}>
+                            {imageData.map((item) => (
+                                <ImageListItem 
+                                    key={item.id} 
+                                    cols={variant === 'quilted' ? item.cols : 1}
+                                    rows={variant === 'quilted' ? item.rows : 1}
+                                >
+                                    <Box
+                                        sx={{
+                                            backgroundColor: item.color,
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '1.2rem',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {item.title}
+                                    </Box>
+                                </ImageListItem>
+                            ))}
+                        </ImageList>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Image List with Item Bar
+        const ImageListItemBarTest = ({ completeTest }) => {
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            
+            const handleItemClick = (id) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(id);
+                setClickedItems(newClicked);
+                
+                if (newClicked.size >= 3) {
+                    completeTest(true, 'ImageListItemBar interaction works! You clicked 3 or more items with title bars.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on 3 different images to test ImageListItemBar interaction:
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                        Clicked: {clickedItems.size}/3
+                    </Typography>
+                    
+                    <Box className="image-list-container" sx={{ mt: 2 }}>
+                        <ImageList cols={3} rowHeight={180}>
+                            {imageData.slice(0, 9).map((item) => (
+                                <ImageListItem 
+                                    key={item.id}
+                                    onClick={() => handleItemClick(item.id)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <Box
+                                        className={clickedItems.has(item.id) ? 'image-clicked' : ''}
+                                        sx={{
+                                            backgroundColor: item.color,
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '1.5rem',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {clickedItems.has(item.id) ? '✓' : item.id}
+                                    </Box>
+                                    <ImageListItemBar
+                                        title={item.title}
+                                        subtitle={`Item ${item.id}`}
+                                        actionIcon={
+                                            <IconButton
+                                                sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleItemClick(item.id);
+                                                }}
+                                            >
+                                                <span className="material-icons">info</span>
+                                            </IconButton>
+                                        }
+                                    />
+                                </ImageListItem>
+                            ))}
+                        </ImageList>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Image List Gap
+        const ImageListGapTest = ({ completeTest }) => {
+            const [gap, setGap] = React.useState(8);
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleGapChange = (event, newValue) => {
+                setGap(newValue);
+                if (newValue === 16) {
+                    setCompleted(true);
+                    completeTest(true, 'ImageList gap adjusted perfectly! Gap set to 16 pixels.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the gap between images to 16 pixels:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography gutterBottom>Gap: {gap}px</Typography>
+                        <Slider
+                            value={gap}
+                            onChange={handleGapChange}
+                            step={2}
+                            marks
+                            min={0}
+                            max={20}
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                    
+                    <Box className="image-list-container">
+                        <ImageList cols={3} rowHeight={120} gap={gap}>
+                            {imageData.slice(0, 6).map((item) => (
+                                <ImageListItem key={item.id}>
+                                    <Box
+                                        sx={{
+                                            backgroundColor: item.color,
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '1.2rem',
+                                            fontWeight: 'bold',
+                                            borderRadius: 1
+                                        }}
+                                    >
+                                        {item.id}
+                                    </Box>
+                                </ImageListItem>
+                            ))}
+                        </ImageList>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'image-list',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-columns"
+                        testName="Test 1: Basic Image List"
+                        description="Test the ImageList's cols prop for controlling column layout"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicImageListTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="list-variants"
+                        testName="Test 2: Image List Variants"
+                        description="Test different ImageList variants (standard, quilted, woven, masonry)"
+                        onComplete={handleTestComplete}
+                    >
+                        <ImageListVariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="item-bar"
+                        testName="Test 3: Image List Item Bar"
+                        description="Test ImageListItemBar for adding titles and actions to images"
+                        onComplete={handleTestComplete}
+                    >
+                        <ImageListItemBarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="list-gap"
+                        testName="Test 4: Image List Gap"
+                        description="Test the ImageList's gap prop for spacing between images"
+                        onComplete={handleTestComplete}
+                    >
+                        <ImageListGapTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

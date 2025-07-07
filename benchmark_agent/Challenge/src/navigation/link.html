@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Link Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .link-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .click-display {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .interaction-log {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Link</h1>
+            <p>Test the functionality and behavior of the Material UI Link component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Link,
+            Typography,
+            Box,
+            Stack,
+            Button
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Link Click
+        const BasicLinkTest = ({ completeTest }) => {
+            const [clickCount, setClickCount] = React.useState(0);
+            const [lastClicked, setLastClicked] = React.useState('');
+            
+            const handleClick = (event, linkName) => {
+                event.preventDefault();
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                setLastClicked(linkName);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Link click events working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click any link 3 times to complete the test:
+                    </Typography>
+                    <div className="link-container">
+                        <Link
+                            id="basic-link-1"
+                            href="#"
+                            onClick={(e) => handleClick(e, 'Link 1')}
+                        >
+                            Link 1
+                        </Link>
+                        <Link
+                            id="basic-link-2"
+                            href="#"
+                            onClick={(e) => handleClick(e, 'Link 2')}
+                        >
+                            Link 2
+                        </Link>
+                        <Link
+                            id="basic-link-3"
+                            href="#"
+                            onClick={(e) => handleClick(e, 'Link 3')}
+                        >
+                            Link 3
+                        </Link>
+                    </div>
+                    <div className="click-display">
+                        Click Count: {clickCount} | Last Clicked: {lastClicked || 'None'}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Link Underline Variants
+        const UnderlineVariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['none', 'hover', 'always'];
+            
+            const handleClick = (event, variant) => {
+                event.preventDefault();
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All underline variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three underline variants:
+                    </Typography>
+                    <Stack spacing={2}>
+                        <div className="link-container">
+                            <Link
+                                id="link-underline-none"
+                                href="#"
+                                underline="none"
+                                onClick={(e) => handleClick(e, 'none')}
+                                color={clickedVariants.has('none') ? 'success.main' : 'primary'}
+                            >
+                                No Underline {clickedVariants.has('none') && '✓'}
+                            </Link>
+                            <Link
+                                id="link-underline-hover"
+                                href="#"
+                                underline="hover"
+                                onClick={(e) => handleClick(e, 'hover')}
+                                color={clickedVariants.has('hover') ? 'success.main' : 'primary'}
+                            >
+                                Underline on Hover {clickedVariants.has('hover') && '✓'}
+                            </Link>
+                            <Link
+                                id="link-underline-always"
+                                href="#"
+                                underline="always"
+                                onClick={(e) => handleClick(e, 'always')}
+                                color={clickedVariants.has('always') ? 'success.main' : 'primary'}
+                            >
+                                Always Underlined {clickedVariants.has('always') && '✓'}
+                            </Link>
+                        </div>
+                    </Stack>
+                    <div className="click-display">
+                        Variants Clicked: {clickedVariants.size}/{variants.length}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Link Colors
+        const LinkColorsTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'error', 'inherit', 'textPrimary', 'textSecondary'];
+            
+            const handleClick = (event, color) => {
+                event.preventDefault();
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size >= 4) {
+                    completeTest(true, 'Multiple link colors tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click at least 4 different colored links:
+                    </Typography>
+                    <Stack spacing={1}>
+                        {colors.map((color) => (
+                            <Link
+                                key={color}
+                                id={`link-color-${color.toLowerCase()}`}
+                                href="#"
+                                color={color}
+                                onClick={(e) => handleClick(e, color)}
+                                sx={{ 
+                                    display: 'inline-block',
+                                    textDecoration: clickedColors.has(color) ? 'line-through' : 'underline'
+                                }}
+                            >
+                                {color} Link {clickedColors.has(color) && '✓'}
+                            </Link>
+                        ))}
+                    </Stack>
+                    <div className="click-display">
+                        Colors Clicked: {clickedColors.size}/4 required
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Typography Integration
+        const TypographyIntegrationTest = ({ completeTest }) => {
+            const [interactions, setInteractions] = React.useState([]);
+            const requiredInteractions = ['body1', 'h4', 'button', 'caption'];
+            
+            const handleClick = (event, type) => {
+                event.preventDefault();
+                const newInteractions = [...interactions, type];
+                setInteractions(newInteractions);
+                
+                const uniqueInteractions = new Set(newInteractions);
+                if (uniqueInteractions.has('body1') && uniqueInteractions.has('h4') && 
+                    uniqueInteractions.has('button') && uniqueInteractions.has('caption')) {
+                    completeTest(true, 'Typography integration working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each link type to test typography integration:
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Typography variant="body1">
+                            This is a{' '}
+                            <Link
+                                id="link-in-body"
+                                href="#"
+                                onClick={(e) => handleClick(e, 'body1')}
+                            >
+                                link within body text
+                            </Link>{' '}
+                            that maintains typography styling.
+                        </Typography>
+                        
+                        <Typography variant="h4">
+                            <Link
+                                id="link-as-heading"
+                                href="#"
+                                onClick={(e) => handleClick(e, 'h4')}
+                                color="inherit"
+                                underline="none"
+                            >
+                                Clickable Heading Link
+                            </Link>
+                        </Typography>
+                        
+                        <Link
+                            id="link-as-button"
+                            component="button"
+                            variant="body2"
+                            onClick={(e) => handleClick(e, 'button')}
+                            sx={{
+                                border: 'none',
+                                background: 'none',
+                                cursor: 'pointer',
+                                color: 'primary.main',
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            Link styled as button
+                        </Link>
+                        
+                        <Typography variant="caption">
+                            Small text with a{' '}
+                            <Link
+                                id="link-in-caption"
+                                href="#"
+                                onClick={(e) => handleClick(e, 'caption')}
+                                variant="caption"
+                            >
+                                tiny link
+                            </Link>
+                        </Typography>
+                    </Stack>
+                    <div className="interaction-log">
+                        Interactions: {interactions.join(' → ') || 'None'}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Link with Target and Rel
+        const TargetRelTest = ({ completeTest }) => {
+            const [clickedLinks, setClickedLinks] = React.useState(new Set());
+            const [preventedDefault, setPreventedDefault] = React.useState(0);
+            
+            const handleClick = (event, linkType) => {
+                event.preventDefault(); // Prevent actual navigation
+                const newClicked = new Set(clickedLinks);
+                newClicked.add(linkType);
+                setClickedLinks(newClicked);
+                setPreventedDefault(preventedDefault + 1);
+                
+                if (newClicked.has('external') && newClicked.has('internal') && preventedDefault >= 3) {
+                    completeTest(true, 'Target and rel attributes working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both external and internal links (navigation is prevented for testing):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Link
+                            id="link-external"
+                            href="https://example.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => handleClick(e, 'external')}
+                        >
+                            External Link (opens in new tab)
+                        </Link>
+                        
+                        <Link
+                            id="link-internal"
+                            href="/internal-page"
+                            onClick={(e) => handleClick(e, 'internal')}
+                        >
+                            Internal Link (same tab)
+                        </Link>
+                        
+                        <Link
+                            id="link-download"
+                            href="/download/file.pdf"
+                            download
+                            onClick={(e) => handleClick(e, 'download')}
+                        >
+                            Download Link
+                        </Link>
+                    </Stack>
+                    <div className="click-display">
+                        Links Clicked: {Array.from(clickedLinks).join(', ') || 'None'}
+                        <br />
+                        Default Actions Prevented: {preventedDefault}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'link',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-link"
+                        testName="Test 1: Basic Link Click"
+                        description="Test basic link click functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicLinkTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="underline-variants"
+                        testName="Test 2: Underline Variants"
+                        description="Test different underline behaviors"
+                        onComplete={handleTestComplete}
+                    >
+                        <UnderlineVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="link-colors"
+                        testName="Test 3: Link Colors"
+                        description="Test different link color options"
+                        onComplete={handleTestComplete}
+                    >
+                        <LinkColorsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="typography-integration"
+                        testName="Test 4: Typography Integration"
+                        description="Test links within different typography contexts"
+                        onComplete={handleTestComplete}
+                    >
+                        <TypographyIntegrationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="target-rel"
+                        testName="Test 5: Target and Rel Attributes"
+                        description="Test links with target and rel attributes"
+                        onComplete={handleTestComplete}
+                    >
+                        <TargetRelTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

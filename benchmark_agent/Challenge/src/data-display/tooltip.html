@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Tooltip Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .tooltip-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            justify-items: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .tooltip-item {
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 16px;
+            margin: 40px auto;
+            width: fit-content;
+        }
+        
+        .position-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .position-item:hover {
+            background-color: #bbdefb;
+        }
+        
+        .hover-counter {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Tooltip</h1>
+            <p>Test the functionality and behavior of the Material UI Tooltip component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Tooltip,
+            Box,
+            Typography,
+            Button,
+            IconButton,
+            Fab,
+            Stack,
+            Icon,
+            Fade,
+            Zoom,
+            TextField
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Tooltip Hover
+        const BasicTooltipTest = ({ completeTest }) => {
+            const [hoveredTooltips, setHoveredTooltips] = React.useState(new Set());
+            const tooltips = [
+                { id: 'delete', title: 'Delete', icon: 'delete' },
+                { id: 'add', title: 'Add', icon: 'add' },
+                { id: 'edit', title: 'Edit', icon: 'edit' }
+            ];
+            
+            const handleTooltipOpen = (id) => {
+                const newHovered = new Set(hoveredTooltips);
+                newHovered.add(id);
+                setHoveredTooltips(newHovered);
+                
+                if (newHovered.size === tooltips.length) {
+                    completeTest(true, 'All tooltips displayed successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Hover over each icon to display its tooltip:
+                    </Typography>
+                    <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+                        {tooltips.map(({ id, title, icon }) => (
+                            <Tooltip 
+                                key={id}
+                                id={`${id}-tooltip`}
+                                title={title}
+                                onOpen={() => handleTooltipOpen(id)}
+                            >
+                                <IconButton>
+                                    <Icon>{icon}</Icon>
+                                </IconButton>
+                            </Tooltip>
+                        ))}
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        Tooltips shown: {hoveredTooltips.size}/{tooltips.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 2: Tooltip Positions
+        const PositionTooltipTest = ({ completeTest }) => {
+            const [hoveredPositions, setHoveredPositions] = React.useState(new Set());
+            const positions = [
+                'top-start', 'top', 'top-end',
+                'left', 'center', 'right',
+                'bottom-start', 'bottom', 'bottom-end'
+            ];
+            
+            const handlePositionHover = (position) => {
+                const newHovered = new Set(hoveredPositions);
+                newHovered.add(position);
+                setHoveredPositions(newHovered);
+                
+                if (newHovered.size === positions.length - 1) { // excluding center
+                    completeTest(true, 'All tooltip positions tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Hover over each button to see tooltips in different positions:
+                    </Typography>
+                    <div className="position-grid">
+                        {positions.map((position, index) => {
+                            if (position === 'center') {
+                                return <div key={position} />;
+                            }
+                            
+                            const placement = position.replace('left', 'left-start')
+                                                    .replace('right', 'right-start');
+                            
+                            return (
+                                <Tooltip
+                                    key={position}
+                                    id={`${position}-position-tooltip`}
+                                    title={`Tooltip ${position}`}
+                                    placement={placement}
+                                    onOpen={() => handlePositionHover(position)}
+                                >
+                                    <div className="position-item">
+                                        <Typography variant="caption">
+                                            {position.split('-')[0]}
+                                        </Typography>
+                                    </div>
+                                </Tooltip>
+                            );
+                        })}
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                        Positions tested: {hoveredPositions.size}/8
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 3: Controlled Tooltip
+        const ControlledTooltipTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleToggle = () => {
+                setOpen(!open);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 4) {
+                    completeTest(true, 'Controlled tooltip toggled successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to toggle the tooltip (4 times):
+                    </Typography>
+                    <Stack direction="row" spacing={3} alignItems="center" sx={{ mt: 3 }}>
+                        <Tooltip
+                            id="controlled-tooltip"
+                            title="Controlled Tooltip"
+                            open={open}
+                            disableHoverListener
+                            disableFocusListener
+                            disableTouchListener
+                        >
+                            <Button variant="outlined">
+                                Tooltip Target
+                            </Button>
+                        </Tooltip>
+                        <Button
+                            id="toggle-tooltip-button"
+                            variant="contained"
+                            onClick={handleToggle}
+                        >
+                            {open ? 'Hide' : 'Show'} Tooltip ({toggleCount}/4)
+                        </Button>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Tooltip with Arrow
+        const ArrowTooltipTest = ({ completeTest }) => {
+            const [interactedTooltips, setInteractedTooltips] = React.useState(new Set());
+            const tooltipTypes = [
+                { id: 'arrow', arrow: true, title: 'Tooltip with arrow' },
+                { id: 'no-arrow', arrow: false, title: 'Tooltip without arrow' }
+            ];
+            
+            const handleTooltipInteraction = (id) => {
+                const newInteracted = new Set(interactedTooltips);
+                newInteracted.add(id);
+                setInteractedTooltips(newInteracted);
+                
+                if (newInteracted.size === tooltipTypes.length) {
+                    completeTest(true, 'Both arrow and non-arrow tooltips tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Hover over both buttons to compare arrow tooltips:
+                    </Typography>
+                    <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+                        {tooltipTypes.map(({ id, arrow, title }) => (
+                            <Tooltip
+                                key={id}
+                                id={`${id}-tooltip`}
+                                title={title}
+                                arrow={arrow}
+                                onOpen={() => handleTooltipInteraction(id)}
+                            >
+                                <Button variant="contained" color={arrow ? 'primary' : 'secondary'}>
+                                    {arrow ? 'With Arrow' : 'Without Arrow'}
+                                </Button>
+                            </Tooltip>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Custom Tooltip Content
+        const CustomTooltipTest = ({ completeTest }) => {
+            const [clickedCustom, setClickedCustom] = React.useState(false);
+            const [hoveredLong, setHoveredLong] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (clickedCustom && hoveredLong) {
+                    completeTest(true, 'Custom tooltip content tested successfully!');
+                }
+            }, [clickedCustom, hoveredLong]);
+            
+            const longContent = (
+                <React.Fragment>
+                    <Typography color="inherit">Multi-line Tooltip</Typography>
+                    <Typography variant="body2">
+                        This tooltip contains multiple lines of text
+                        and demonstrates how tooltips can display
+                        rich content beyond simple strings.
+                    </Typography>
+                </React.Fragment>
+            );
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Interact with tooltips containing custom content:
+                    </Typography>
+                    <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+                        <Tooltip
+                            id="interactive-tooltip"
+                            title={
+                                <Button 
+                                    size="small" 
+                                    onClick={() => setClickedCustom(true)}
+                                    sx={{ color: 'white' }}
+                                >
+                                    Click me!
+                                </Button>
+                            }
+                            interactive
+                        >
+                            <Button variant="outlined">
+                                Interactive Tooltip
+                            </Button>
+                        </Tooltip>
+                        <Tooltip
+                            id="multiline-tooltip"
+                            title={longContent}
+                            onOpen={() => setHoveredLong(true)}
+                        >
+                            <Button variant="outlined">
+                                Multi-line Tooltip
+                            </Button>
+                        </Tooltip>
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        Interactive clicked: {clickedCustom ? '✓' : '✗'} | 
+                        Multi-line hovered: {hoveredLong ? '✓' : '✗'}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Tooltip Transitions
+        const TransitionTooltipTest = ({ completeTest }) => {
+            const [testedTransitions, setTestedTransitions] = React.useState(new Set());
+            const transitions = [
+                { id: 'fade', component: Fade, name: 'Fade' },
+                { id: 'zoom', component: Zoom, name: 'Zoom' },
+                { id: 'grow', component: undefined, name: 'Grow (default)' }
+            ];
+            
+            const handleTransitionOpen = (id) => {
+                const newTested = new Set(testedTransitions);
+                newTested.add(id);
+                setTestedTransitions(newTested);
+                
+                if (newTested.size === transitions.length) {
+                    completeTest(true, 'All tooltip transitions tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Hover over each fab to see different tooltip transitions:
+                    </Typography>
+                    <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+                        {transitions.map(({ id, component, name }) => (
+                            <Tooltip
+                                key={id}
+                                id={`${id}-transition-tooltip`}
+                                title={`${name} transition`}
+                                TransitionComponent={component}
+                                onOpen={() => handleTransitionOpen(id)}
+                                TransitionProps={{ timeout: 600 }}
+                            >
+                                <Fab color="primary" size="small">
+                                    <Icon>{id === 'fade' ? 'fade' : id === 'zoom' ? 'zoom_in' : 'unfold_more'}</Icon>
+                                </Fab>
+                            </Tooltip>
+                        ))}
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        Transitions tested: {testedTransitions.size}/{transitions.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'tooltip',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-hover"
+                        testName="Test 1: Basic Tooltip Hover"
+                        description="Hover over icons to display tooltips"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicTooltipTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="positions"
+                        testName="Test 2: Tooltip Positions"
+                        description="Test tooltips in all available positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <PositionTooltipTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="controlled"
+                        testName="Test 3: Controlled Tooltip"
+                        description="Control tooltip visibility with a button"
+                        onComplete={handleTestComplete}
+                    >
+                        <ControlledTooltipTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="arrow"
+                        testName="Test 4: Tooltip with Arrow"
+                        description="Compare tooltips with and without arrows"
+                        onComplete={handleTestComplete}
+                    >
+                        <ArrowTooltipTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-content"
+                        testName="Test 5: Custom Tooltip Content"
+                        description="Test tooltips with interactive and rich content"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomTooltipTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="transitions"
+                        testName="Test 6: Tooltip Transitions"
+                        description="Test different tooltip transition animations"
+                        onComplete={handleTestComplete}
+                    >
+                        <TransitionTooltipTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

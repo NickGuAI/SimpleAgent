@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Snackbar Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 400px;
+            margin: 16px auto;
+        }
+        
+        .position-button {
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .status-info {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Snackbar</h1>
+            <p>Test the functionality and behavior of the Material UI Snackbar component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Snackbar,
+            Alert,
+            Box,
+            Button,
+            Typography,
+            IconButton,
+            Slide,
+            Grow,
+            Fade,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Transition components
+        function SlideTransition(props) {
+            return <Slide {...props} direction="up" />;
+        }
+        
+        function GrowTransition(props) {
+            return <Grow {...props} />;
+        }
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Simple Snackbar
+        const SimpleSnackbarTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleClick = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'clickaway') {
+                    return;
+                }
+                
+                setOpen(false);
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Simple snackbar tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open and close the snackbar 3 times:
+                    </Typography>
+                    <Button 
+                        id="simple-snackbar-button"
+                        onClick={handleClick}
+                        variant="outlined"
+                    >
+                        Open Simple Snackbar ({clickCount}/3)
+                    </Button>
+                    <Snackbar
+                        id="simple-snackbar"
+                        open={open}
+                        autoHideDuration={3000}
+                        onClose={handleClose}
+                        message="Note archived"
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 2: Snackbar with Alert
+        const AlertSnackbarTest = ({ completeTest }) => {
+            const [severities, setSeverities] = React.useState({
+                success: false,
+                error: false,
+                warning: false,
+                info: false
+            });
+            const [currentSeverity, setCurrentSeverity] = React.useState(null);
+            const [open, setOpen] = React.useState(false);
+            
+            const handleClick = (severity) => {
+                setCurrentSeverity(severity);
+                setOpen(true);
+                setSeverities(prev => ({ ...prev, [severity]: true }));
+                
+                const newSeverities = { ...severities, [severity]: true };
+                if (Object.values(newSeverities).every(v => v === true)) {
+                    setTimeout(() => {
+                        completeTest(true, 'All alert snackbar severities tested successfully!');
+                    }, 1000);
+                }
+            };
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'clickaway') {
+                    return;
+                }
+                setOpen(false);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Show all severity types:
+                    </Typography>
+                    <div className="button-grid">
+                        {Object.keys(severities).map((severity) => (
+                            <Button
+                                key={severity}
+                                id={`alert-snackbar-${severity}`}
+                                variant="contained"
+                                color={severity}
+                                onClick={() => handleClick(severity)}
+                                disabled={severities[severity]}
+                            >
+                                {severity} {severities[severity] && '✓'}
+                            </Button>
+                        ))}
+                    </div>
+                    <Snackbar 
+                        id="alert-snackbar"
+                        open={open} 
+                        autoHideDuration={3000} 
+                        onClose={handleClose}
+                    >
+                        <Alert 
+                            onClose={handleClose} 
+                            severity={currentSeverity} 
+                            sx={{ width: '100%' }}
+                        >
+                            This is a {currentSeverity} message!
+                        </Alert>
+                    </Snackbar>
+                </Box>
+            );
+        };
+        
+        // Test 3: Snackbar Positions
+        const PositionSnackbarTest = ({ completeTest }) => {
+            const [position, setPosition] = React.useState({
+                open: false,
+                vertical: 'top',
+                horizontal: 'center',
+            });
+            const [testedPositions, setTestedPositions] = React.useState(new Set());
+            
+            const { vertical, horizontal, open } = position;
+            
+            const handleClick = (newState) => () => {
+                const positionKey = `${newState.vertical}-${newState.horizontal}`;
+                setTestedPositions(prev => new Set([...prev, positionKey]));
+                setPosition({ ...newState, open: true });
+                
+                if (testedPositions.size >= 5) {
+                    setTimeout(() => {
+                        completeTest(true, 'Multiple snackbar positions tested successfully!');
+                    }, 1000);
+                }
+            };
+            
+            const handleClose = () => {
+                setPosition({ ...position, open: false });
+            };
+            
+            const positions = [
+                { vertical: 'top', horizontal: 'left' },
+                { vertical: 'top', horizontal: 'center' },
+                { vertical: 'top', horizontal: 'right' },
+                { vertical: 'bottom', horizontal: 'left' },
+                { vertical: 'bottom', horizontal: 'center' },
+                { vertical: 'bottom', horizontal: 'right' },
+            ];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test at least 6 different positions:
+                    </Typography>
+                    <div className="position-grid">
+                        {positions.map((pos) => {
+                            const key = `${pos.vertical}-${pos.horizontal}`;
+                            const isActive = vertical === pos.vertical && horizontal === pos.horizontal;
+                            const isTested = testedPositions.has(key);
+                            
+                            return (
+                                <Button
+                                    key={key}
+                                    id={`position-${key}`}
+                                    variant={isActive ? "contained" : "outlined"}
+                                    size="small"
+                                    onClick={handleClick(pos)}
+                                    color={isTested ? "success" : "primary"}
+                                >
+                                    {pos.vertical.charAt(0).toUpperCase()}-{pos.horizontal.charAt(0).toUpperCase()}
+                                    {isTested && ' ✓'}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                        Tested: {testedPositions.size}/6
+                    </Typography>
+                    <Snackbar
+                        id="position-snackbar"
+                        anchorOrigin={{ vertical, horizontal }}
+                        open={open}
+                        onClose={handleClose}
+                        message={`Position: ${vertical}-${horizontal}`}
+                        key={vertical + horizontal}
+                        autoHideDuration={2000}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 4: Snackbar Transitions
+        const TransitionSnackbarTest = ({ completeTest }) => {
+            const [state, setState] = React.useState({
+                open: false,
+                Transition: Fade,
+            });
+            const [testedTransitions, setTestedTransitions] = React.useState(new Set());
+            
+            const transitions = [
+                { name: 'Fade', component: Fade },
+                { name: 'Grow', component: GrowTransition },
+                { name: 'Slide', component: SlideTransition }
+            ];
+            
+            const handleClick = (Transition, name) => () => {
+                setState({
+                    open: true,
+                    Transition,
+                });
+                setTestedTransitions(prev => new Set([...prev, name]));
+                
+                if (testedTransitions.size >= 2) {
+                    setTimeout(() => {
+                        completeTest(true, 'All snackbar transitions tested successfully!');
+                    }, 1000);
+                }
+            };
+            
+            const handleClose = () => {
+                setState({
+                    ...state,
+                    open: false,
+                });
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test all transition types:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {transitions.map(({ name, component }) => (
+                            <Button
+                                key={name}
+                                id={`transition-${name.toLowerCase()}`}
+                                variant="outlined"
+                                onClick={handleClick(component, name)}
+                                color={testedTransitions.has(name) ? "success" : "primary"}
+                            >
+                                {name} {testedTransitions.has(name) && '✓'}
+                            </Button>
+                        ))}
+                    </Stack>
+                    <Snackbar
+                        id="transition-snackbar"
+                        open={state.open}
+                        onClose={handleClose}
+                        TransitionComponent={state.Transition}
+                        message="Transition snackbar"
+                        autoHideDuration={2000}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 5: Snackbar with Action
+        const ActionSnackbarTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [undoClicked, setUndoClicked] = React.useState(false);
+            const [closeClicked, setCloseClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (undoClicked && closeClicked) {
+                    completeTest(true, 'Snackbar actions tested successfully!');
+                }
+            }, [undoClicked, closeClicked]);
+            
+            const handleClick = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'clickaway') {
+                    return;
+                }
+                setOpen(false);
+            };
+            
+            const handleUndo = () => {
+                setUndoClicked(true);
+                setOpen(false);
+            };
+            
+            const action = (
+                <React.Fragment>
+                    <Button 
+                        id="undo-action"
+                        color="secondary" 
+                        size="small" 
+                        onClick={handleUndo}
+                    >
+                        UNDO
+                    </Button>
+                    <IconButton
+                        id="close-action"
+                        size="small"
+                        aria-label="close"
+                        color="inherit"
+                        onClick={() => {
+                            setCloseClicked(true);
+                            handleClose();
+                        }}
+                    >
+                        <span className="material-icons" style={{ fontSize: '20px' }}>close</span>
+                    </IconButton>
+                </React.Fragment>
+            );
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both the UNDO button and close icon:
+                    </Typography>
+                    <Button 
+                        id="action-snackbar-button"
+                        onClick={handleClick}
+                        variant="outlined"
+                    >
+                        Open Snackbar with Actions
+                    </Button>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            UNDO clicked: {undoClicked ? '✓' : '✗'}<br/>
+                            Close clicked: {closeClicked ? '✓' : '✗'}
+                        </Typography>
+                    </div>
+                    <Snackbar
+                        id="action-snackbar"
+                        open={open}
+                        autoHideDuration={6000}
+                        onClose={handleClose}
+                        message="Message sent"
+                        action={action}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 6: Consecutive Snackbars
+        const ConsecutiveSnackbarsTest = ({ completeTest }) => {
+            const [snackPack, setSnackPack] = React.useState([]);
+            const [open, setOpen] = React.useState(false);
+            const [messageInfo, setMessageInfo] = React.useState(undefined);
+            const [messagesShown, setMessagesShown] = React.useState(0);
+            
+            React.useEffect(() => {
+                if (snackPack.length && !messageInfo) {
+                    // Set a new snack when we don't have an active one
+                    setMessageInfo({ ...snackPack[0] });
+                    setSnackPack((prev) => prev.slice(1));
+                    setOpen(true);
+                }
+            }, [snackPack, messageInfo, open]);
+            
+            const handleClick = (message) => () => {
+                setSnackPack((prev) => [...prev, { message, key: new Date().getTime() }]);
+            };
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'clickaway') {
+                    return;
+                }
+                setOpen(false);
+            };
+            
+            const handleExited = () => {
+                setMessageInfo(undefined);
+                setMessagesShown(prev => {
+                    const newCount = prev + 1;
+                    if (newCount >= 5) {
+                        completeTest(true, 'Consecutive snackbars tested successfully!');
+                    }
+                    return newCount;
+                });
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Queue at least 5 messages:
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                        <Button 
+                            id="queue-message-a"
+                            variant="outlined"
+                            onClick={handleClick('Message A')}
+                        >
+                            Queue A
+                        </Button>
+                        <Button 
+                            id="queue-message-b"
+                            variant="outlined"
+                            onClick={handleClick('Message B')}
+                        >
+                            Queue B
+                        </Button>
+                        <Button 
+                            id="queue-message-c"
+                            variant="outlined"
+                            onClick={handleClick('Message C')}
+                        >
+                            Queue C
+                        </Button>
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Messages shown: {messagesShown}/5 | Queue length: {snackPack.length}
+                    </Typography>
+                    <Snackbar
+                        id="consecutive-snackbar"
+                        key={messageInfo ? messageInfo.key : undefined}
+                        open={open}
+                        autoHideDuration={1500}
+                        onClose={handleClose}
+                        TransitionProps={{ onExited: handleExited }}
+                        message={messageInfo ? messageInfo.message : undefined}
+                    />
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'snackbar',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="simple"
+                        testName="Test 1: Simple Snackbar"
+                        description="Test basic snackbar with auto-hide duration"
+                        onComplete={handleTestComplete}
+                    >
+                        <SimpleSnackbarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="alert"
+                        testName="Test 2: Snackbar with Alert"
+                        description="Test snackbar with different alert severities"
+                        onComplete={handleTestComplete}
+                    >
+                        <AlertSnackbarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="positions"
+                        testName="Test 3: Snackbar Positions"
+                        description="Test snackbar in different positions on the screen"
+                        onComplete={handleTestComplete}
+                    >
+                        <PositionSnackbarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="transitions"
+                        testName="Test 4: Snackbar Transitions"
+                        description="Test different transition animations"
+                        onComplete={handleTestComplete}
+                    >
+                        <TransitionSnackbarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="actions"
+                        testName="Test 5: Snackbar with Action"
+                        description="Test snackbar with action buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <ActionSnackbarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="consecutive"
+                        testName="Test 6: Consecutive Snackbars"
+                        description="Test queueing multiple snackbar messages"
+                        onComplete={handleTestComplete}
+                    >
+                        <ConsecutiveSnackbarsTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

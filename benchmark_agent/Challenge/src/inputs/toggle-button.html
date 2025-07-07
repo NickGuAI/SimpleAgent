@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Toggle Button Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .selection-display {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .alignment-preview {
+            width: 100%;
+            height: 100px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+        }
+        
+        .format-display {
+            padding: 16px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            margin-top: 16px;
+            font-family: Georgia, serif;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Toggle Button</h1>
+            <p>Test the functionality and behavior of the Material UI Toggle Button component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            ToggleButton,
+            ToggleButtonGroup,
+            Box,
+            Typography,
+            Stack,
+            Paper
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Single Selection (Exclusive)
+        const SingleSelectionTest = ({ completeTest }) => {
+            const [alignment, setAlignment] = React.useState('');
+            const targetAlignment = 'center';
+            
+            const handleChange = (event, newAlignment) => {
+                setAlignment(newAlignment);
+                if (newAlignment === targetAlignment) {
+                    completeTest(true, 'Center alignment selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "Center" alignment:
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={alignment}
+                        exclusive
+                        onChange={handleChange}
+                        aria-label="text alignment"
+                    >
+                        <ToggleButton value="left" aria-label="left aligned">
+                            ⬅️ Left
+                        </ToggleButton>
+                        <ToggleButton value="center" aria-label="centered">
+                            ↔️ Center
+                        </ToggleButton>
+                        <ToggleButton value="right" aria-label="right aligned">
+                            ➡️ Right
+                        </ToggleButton>
+                        <ToggleButton value="justify" aria-label="justified">
+                            ☰ Justify
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                    <div className="alignment-preview" style={{ textAlign: alignment || 'left' }}>
+                        <Typography>Text alignment preview</Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Multiple Selection
+        const MultipleSelectionTest = ({ completeTest }) => {
+            const [formats, setFormats] = React.useState([]);
+            const requiredFormats = ['bold', 'italic'];
+            
+            const handleFormat = (event, newFormats) => {
+                setFormats(newFormats);
+                
+                const hasRequired = requiredFormats.every(f => newFormats.includes(f));
+                const onlyRequired = newFormats.length === requiredFormats.length;
+                
+                if (hasRequired && onlyRequired) {
+                    completeTest(true, 'Bold and Italic selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select only Bold and Italic formatting:
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={formats}
+                        onChange={handleFormat}
+                        aria-label="text formatting"
+                    >
+                        <ToggleButton value="bold" aria-label="bold">
+                            <strong>B</strong>
+                        </ToggleButton>
+                        <ToggleButton value="italic" aria-label="italic">
+                            <em>I</em>
+                        </ToggleButton>
+                        <ToggleButton value="underlined" aria-label="underlined">
+                            <u>U</u>
+                        </ToggleButton>
+                        <ToggleButton value="code" aria-label="code">
+                            {"</>"}
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                    <div className="format-display">
+                        <span style={{
+                            fontWeight: formats.includes('bold') ? 'bold' : 'normal',
+                            fontStyle: formats.includes('italic') ? 'italic' : 'normal',
+                            textDecoration: formats.includes('underlined') ? 'underline' : 'none',
+                            fontFamily: formats.includes('code') ? 'monospace' : 'inherit'
+                        }}>
+                            Sample formatted text
+                        </span>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Color Selection
+        const ColorSelectionTest = ({ completeTest }) => {
+            const [selectedColor, setSelectedColor] = React.useState('');
+            const targetColor = 'error';
+            
+            const handleChange = (event, newColor) => {
+                setSelectedColor(newColor);
+                if (newColor === targetColor) {
+                    completeTest(true, 'Error color selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the "Error" (red) color:
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={selectedColor}
+                        exclusive
+                        onChange={handleChange}
+                        aria-label="color selection"
+                    >
+                        <ToggleButton value="primary" aria-label="primary color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'primary.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                        <ToggleButton value="secondary" aria-label="secondary color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'secondary.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                        <ToggleButton value="success" aria-label="success color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'success.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                        <ToggleButton value="error" aria-label="error color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'error.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                        <ToggleButton value="warning" aria-label="warning color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'warning.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                        <ToggleButton value="info" aria-label="info color">
+                            <Box sx={{ width: 20, height: 20, bgcolor: 'info.main', borderRadius: 1 }} />
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                    {selectedColor && (
+                        <div className="selection-display">
+                            <Typography>Selected color: <strong>{selectedColor}</strong></Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Size Variants
+        const SizeVariantsTest = ({ completeTest }) => {
+            const [selections, setSelections] = React.useState({ small: '', medium: '', large: '' });
+            const sizes = ['small', 'medium', 'large'];
+            
+            const handleSizeChange = (size) => (event, value) => {
+                const newSelections = { ...selections, [size]: value };
+                setSelections(newSelections);
+                
+                const allSelected = sizes.every(s => newSelections[s] !== '' && newSelections[s] !== null);
+                if (allSelected) {
+                    completeTest(true, 'All size variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select any option in each size variant:
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Box>
+                            <Typography variant="caption">Small Size:</Typography>
+                            <ToggleButtonGroup
+                                size="small"
+                                value={selections.small}
+                                exclusive
+                                onChange={handleSizeChange('small')}
+                            >
+                                <ToggleButton value="option1">Option 1</ToggleButton>
+                                <ToggleButton value="option2">Option 2</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Medium Size (default):</Typography>
+                            <ToggleButtonGroup
+                                size="medium"
+                                value={selections.medium}
+                                exclusive
+                                onChange={handleSizeChange('medium')}
+                            >
+                                <ToggleButton value="option1">Option 1</ToggleButton>
+                                <ToggleButton value="option2">Option 2</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Large Size:</Typography>
+                            <ToggleButtonGroup
+                                size="large"
+                                value={selections.large}
+                                exclusive
+                                onChange={handleSizeChange('large')}
+                            >
+                                <ToggleButton value="option1">Option 1</ToggleButton>
+                                <ToggleButton value="option2">Option 2</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Disabled Options
+        const DisabledOptionsTest = ({ completeTest }) => {
+            const [plan, setPlan] = React.useState('');
+            const availablePlan = 'premium';
+            
+            const handleChange = (event, newPlan) => {
+                setPlan(newPlan);
+                if (newPlan === availablePlan) {
+                    completeTest(true, 'Premium plan selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the "Premium" plan (some options are disabled):
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={plan}
+                        exclusive
+                        onChange={handleChange}
+                        aria-label="subscription plan"
+                    >
+                        <ToggleButton value="free" disabled aria-label="free plan">
+                            Free (Unavailable)
+                        </ToggleButton>
+                        <ToggleButton value="basic" disabled aria-label="basic plan">
+                            Basic (Sold Out)
+                        </ToggleButton>
+                        <ToggleButton value="premium" aria-label="premium plan">
+                            Premium
+                        </ToggleButton>
+                        <ToggleButton value="enterprise" disabled aria-label="enterprise plan">
+                            Enterprise (Coming Soon)
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
+            );
+        };
+        
+        // Test 6: Orientation Test
+        const OrientationTest = ({ completeTest }) => {
+            const [view, setView] = React.useState('');
+            const targetView = 'module';
+            
+            const handleChange = (event, newView) => {
+                setView(newView);
+                if (newView === targetView) {
+                    completeTest(true, 'Module view selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "Module" view from the vertical toggle group:
+                    </Typography>
+                    <ToggleButtonGroup
+                        orientation="vertical"
+                        value={view}
+                        exclusive
+                        onChange={handleChange}
+                        aria-label="view selection"
+                    >
+                        <ToggleButton value="list" aria-label="list view">
+                            📋 List View
+                        </ToggleButton>
+                        <ToggleButton value="module" aria-label="module view">
+                            🏢 Module View
+                        </ToggleButton>
+                        <ToggleButton value="grid" aria-label="grid view">
+                            ⚏ Grid View
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
+            );
+        };
+        
+        // Test 7: Complex Selection Pattern
+        const ComplexSelectionTest = ({ completeTest }) => {
+            const [selectedDays, setSelectedDays] = React.useState([]);
+            const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+            const targetDays = ['Mon', 'Wed', 'Fri'];
+            
+            const handleDaySelection = (event, newDays) => {
+                setSelectedDays(newDays);
+                
+                const correctDays = 
+                    targetDays.every(day => newDays.includes(day)) &&
+                    newDays.length === targetDays.length;
+                    
+                if (correctDays) {
+                    completeTest(true, 'Correct days selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select Monday, Wednesday, and Friday:
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={selectedDays}
+                        onChange={handleDaySelection}
+                        aria-label="weekday selection"
+                    >
+                        {weekdays.map((day) => (
+                            <ToggleButton key={day} value={day} aria-label={day}>
+                                {day}
+                            </ToggleButton>
+                        ))}
+                    </ToggleButtonGroup>
+                    <div className="selection-display">
+                        <Typography variant="body2">
+                            Selected: {selectedDays.length > 0 ? selectedDays.join(', ') : 'None'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            Target: {targetDays.join(', ')}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 8: Enforce Value
+        const EnforceValueTest = ({ completeTest }) => {
+            const [alignment, setAlignment] = React.useState('left');
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleAlignment = (event, newAlignment) => {
+                // This demonstrates that at least one button must always be selected
+                if (newAlignment !== null) {
+                    setAlignment(newAlignment);
+                }
+                
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount >= 5 && alignment) {
+                    completeTest(true, 'Enforce value behavior verified!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Try to deselect all buttons (click any button 5 times):
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={alignment}
+                        exclusive
+                        onChange={handleAlignment}
+                        aria-label="text alignment"
+                    >
+                        <ToggleButton value="left" aria-label="left">
+                            Left
+                        </ToggleButton>
+                        <ToggleButton value="center" aria-label="center">
+                            Center
+                        </ToggleButton>
+                        <ToggleButton value="right" aria-label="right">
+                            Right
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                        Click count: {clickCount}/5 (Current: {alignment})
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        Note: At least one option must remain selected
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'toggle-button',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="single-selection"
+                        testName="Test 1: Single Selection"
+                        description="Select one option exclusively"
+                        onComplete={handleTestComplete}
+                    >
+                        <SingleSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-selection"
+                        testName="Test 2: Multiple Selection"
+                        description="Select multiple options together"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-selection"
+                        testName="Test 3: Color Selection"
+                        description="Select a specific color option"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size-variants"
+                        testName="Test 4: Size Variants"
+                        description="Test different toggle button sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-options"
+                        testName="Test 5: Disabled Options"
+                        description="Select from available options (some disabled)"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledOptionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="orientation"
+                        testName="Test 6: Vertical Orientation"
+                        description="Use vertically oriented toggle buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <OrientationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="complex-selection"
+                        testName="Test 7: Complex Selection"
+                        description="Select specific multiple options"
+                        onComplete={handleTestComplete}
+                    >
+                        <ComplexSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="enforce-value"
+                        testName="Test 8: Enforce Value"
+                        description="Test that at least one value must be selected"
+                        onComplete={handleTestComplete}
+                    >
+                        <EnforceValueTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Bottom Navigation Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 200px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .navigation-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .content-area {
+            min-height: 300px;
+            padding: 20px;
+            background-color: #fafafa;
+            text-align: center;
+        }
+        
+        .selection-display {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Bottom Navigation</h1>
+            <p>Test the functionality and behavior of the Material UI Bottom Navigation component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            BottomNavigation,
+            BottomNavigationAction,
+            Paper,
+            Box,
+            Typography,
+            Icon
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Navigation
+        const BasicNavigationTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [clicked, setClicked] = React.useState(new Set());
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newClicked = new Set(clicked);
+                newClicked.add(newValue);
+                setClicked(newClicked);
+                
+                if (newClicked.size === 3) {
+                    completeTest(true, 'All navigation items clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three navigation items to complete the test:
+                    </Typography>
+                    <div className="navigation-container">
+                        <div className="content-area">
+                            <Typography variant="h6">
+                                {value === 0 && 'Recents Page'}
+                                {value === 1 && 'Favorites Page'}
+                                {value === 2 && 'Nearby Page'}
+                            </Typography>
+                            <div className="selection-display">
+                                Current Selection: {value}
+                            </div>
+                        </div>
+                        <Paper elevation={3}>
+                            <BottomNavigation
+                                value={value}
+                                onChange={handleChange}
+                                showLabels
+                                id="basic-bottom-nav"
+                            >
+                                <BottomNavigationAction 
+                                    label="Recents" 
+                                    icon={<Icon>restore</Icon>}
+                                    id="nav-recents"
+                                />
+                                <BottomNavigationAction 
+                                    label="Favorites" 
+                                    icon={<Icon>favorite</Icon>}
+                                    id="nav-favorites"
+                                />
+                                <BottomNavigationAction 
+                                    label="Nearby" 
+                                    icon={<Icon>location_on</Icon>}
+                                    id="nav-nearby"
+                                />
+                            </BottomNavigation>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Without Labels
+        const NoLabelsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount >= 4) {
+                    completeTest(true, 'Navigation without labels working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate using icons only (click at least 4 times):
+                    </Typography>
+                    <div className="navigation-container">
+                        <div className="content-area">
+                            <Typography variant="h6">
+                                Icon-Only Navigation
+                            </Typography>
+                            <div className="selection-display">
+                                Clicks: {clickCount}
+                            </div>
+                        </div>
+                        <Paper elevation={3}>
+                            <BottomNavigation
+                                value={value}
+                                onChange={handleChange}
+                                id="no-labels-nav"
+                            >
+                                <BottomNavigationAction 
+                                    icon={<Icon>home</Icon>}
+                                    id="nav-home"
+                                />
+                                <BottomNavigationAction 
+                                    icon={<Icon>search</Icon>}
+                                    id="nav-search"
+                                />
+                                <BottomNavigationAction 
+                                    icon={<Icon>account_circle</Icon>}
+                                    id="nav-profile"
+                                />
+                            </BottomNavigation>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: More Than Three Actions
+        const MultipleActionsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [visited, setVisited] = React.useState(new Set([0]));
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newVisited = new Set(visited);
+                newVisited.add(newValue);
+                setVisited(newVisited);
+                
+                if (newVisited.size === 5) {
+                    completeTest(true, 'All 5 navigation items visited!');
+                }
+            };
+            
+            const pages = ['Home', 'Search', 'Add', 'Notifications', 'Profile'];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Visit all 5 navigation items:
+                    </Typography>
+                    <div className="navigation-container">
+                        <div className="content-area">
+                            <Typography variant="h6">
+                                {pages[value]} Page
+                            </Typography>
+                            <div className="selection-display">
+                                Visited: {visited.size}/5
+                            </div>
+                        </div>
+                        <Paper elevation={3}>
+                            <BottomNavigation
+                                value={value}
+                                onChange={handleChange}
+                                showLabels
+                                id="multiple-actions-nav"
+                            >
+                                <BottomNavigationAction 
+                                    label="Home" 
+                                    icon={<Icon>home</Icon>}
+                                    id="nav-action-0"
+                                />
+                                <BottomNavigationAction 
+                                    label="Search" 
+                                    icon={<Icon>search</Icon>}
+                                    id="nav-action-1"
+                                />
+                                <BottomNavigationAction 
+                                    label="Add" 
+                                    icon={<Icon>add_circle</Icon>}
+                                    id="nav-action-2"
+                                />
+                                <BottomNavigationAction 
+                                    label="Notifications" 
+                                    icon={<Icon>notifications</Icon>}
+                                    id="nav-action-3"
+                                />
+                                <BottomNavigationAction 
+                                    label="Profile" 
+                                    icon={<Icon>person</Icon>}
+                                    id="nav-action-4"
+                                />
+                            </BottomNavigation>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Color Customization
+        const ColorCustomizationTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [cycleCount, setCycleCount] = React.useState(0);
+            const [lastValue, setLastValue] = React.useState(0);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                
+                // Check if we completed a cycle (0 -> 1 -> 2 -> 0)
+                if ((lastValue === 2 && newValue === 0) || 
+                    (lastValue === 0 && newValue === 1) || 
+                    (lastValue === 1 && newValue === 2)) {
+                    if (lastValue === 2 && newValue === 0) {
+                        const newCount = cycleCount + 1;
+                        setCycleCount(newCount);
+                        if (newCount >= 2) {
+                            completeTest(true, 'Color customization working correctly!');
+                        }
+                    }
+                }
+                setLastValue(newValue);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Complete 2 full navigation cycles (0→1→2→0):
+                    </Typography>
+                    <div className="navigation-container">
+                        <div className="content-area">
+                            <Typography variant="h6">
+                                Custom Styled Navigation
+                            </Typography>
+                            <div className="selection-display">
+                                Cycles: {cycleCount}/2
+                            </div>
+                        </div>
+                        <Paper elevation={3} sx={{ backgroundColor: '#1976d2' }}>
+                            <BottomNavigation
+                                value={value}
+                                onChange={handleChange}
+                                showLabels
+                                id="colored-nav"
+                                sx={{
+                                    backgroundColor: '#1976d2',
+                                    '& .Mui-selected': {
+                                        color: '#fff',
+                                    },
+                                    '& .MuiBottomNavigationAction-root': {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                    }
+                                }}
+                            >
+                                <BottomNavigationAction 
+                                    label="Dashboard" 
+                                    icon={<Icon>dashboard</Icon>}
+                                    id="nav-dashboard"
+                                />
+                                <BottomNavigationAction 
+                                    label="Analytics" 
+                                    icon={<Icon>analytics</Icon>}
+                                    id="nav-analytics"
+                                />
+                                <BottomNavigationAction 
+                                    label="Settings" 
+                                    icon={<Icon>settings</Icon>}
+                                    id="nav-settings"
+                                />
+                            </BottomNavigation>
+                        </Paper>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'bottom-navigation',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-navigation"
+                        testName="Test 1: Basic Navigation"
+                        description="Test basic navigation between different actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicNavigationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="no-labels"
+                        testName="Test 2: Icon-Only Navigation"
+                        description="Test navigation without labels"
+                        onComplete={handleTestComplete}
+                    >
+                        <NoLabelsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-actions"
+                        testName="Test 3: Multiple Actions"
+                        description="Test navigation with more than three actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleActionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-customization"
+                        testName="Test 4: Color Customization"
+                        description="Test navigation with custom colors"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorCustomizationTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

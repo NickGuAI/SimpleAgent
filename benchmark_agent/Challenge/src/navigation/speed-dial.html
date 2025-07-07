@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Speed Dial Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .action-log {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .action-item {
+            padding: 4px 0;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        .speed-dial-container {
+            height: 250px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fafafa;
+            border-radius: 4px;
+        }
+        
+        .direction-test-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .direction-box {
+            height: 200px;
+            position: relative;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Speed Dial</h1>
+            <p>Test the functionality and behavior of the Material UI Speed Dial component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            SpeedDial,
+            SpeedDialAction,
+            SpeedDialIcon,
+            Box,
+            Typography,
+            Icon,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Speed Dial
+        const BasicSpeedDialTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [actions, setActions] = React.useState([]);
+            
+            const handleOpen = () => {
+                setOpen(true);
+                setActions([...actions, 'opened']);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+                setActions([...actions, 'closed']);
+            };
+            
+            const handleActionClick = (actionName) => {
+                const newActions = [...actions, `clicked-${actionName}`];
+                setActions(newActions);
+                
+                const clicks = newActions.filter(a => a.startsWith('clicked-')).length;
+                const opens = newActions.filter(a => a === 'opened').length;
+                
+                if (clicks >= 3 && opens >= 2) {
+                    completeTest(true, 'Basic speed dial working correctly!');
+                }
+            };
+            
+            const speedDialActions = [
+                { icon: <Icon>save</Icon>, name: 'Save', id: 'action-save' },
+                { icon: <Icon>print</Icon>, name: 'Print', id: 'action-print' },
+                { icon: <Icon>share</Icon>, name: 'Share', id: 'action-share' },
+                { icon: <Icon>content_copy</Icon>, name: 'Copy', id: 'action-copy' },
+            ];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the speed dial at least 2 times and click at least 3 actions:
+                    </Typography>
+                    <div className="speed-dial-container">
+                        <SpeedDial
+                            id="basic-speed-dial"
+                            ariaLabel="SpeedDial basic example"
+                            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                            icon={<SpeedDialIcon />}
+                            onClose={handleClose}
+                            onOpen={handleOpen}
+                            open={open}
+                        >
+                            {speedDialActions.map((action) => (
+                                <SpeedDialAction
+                                    key={action.name}
+                                    id={action.id}
+                                    icon={action.icon}
+                                    tooltipTitle={action.name}
+                                    tooltipOpen
+                                    onClick={() => handleActionClick(action.name)}
+                                />
+                            ))}
+                        </SpeedDial>
+                    </div>
+                    <div className="action-log">
+                        <Typography variant="body2" gutterBottom>
+                            Action Log:
+                        </Typography>
+                        {actions.map((action, index) => (
+                            <div key={index} className="action-item">
+                                {index + 1}. {action}
+                            </div>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Controlled Speed Dial
+        const ControlledSpeedDialTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [hidden, setHidden] = React.useState(false);
+            const [interactions, setInteractions] = React.useState({
+                toggles: 0,
+                hides: 0,
+                actions: 0
+            });
+            
+            const handleToggle = () => {
+                setOpen(!open);
+                setInteractions({
+                    ...interactions,
+                    toggles: interactions.toggles + 1
+                });
+            };
+            
+            const handleHideToggle = () => {
+                setHidden(!hidden);
+                const newInteractions = {
+                    ...interactions,
+                    hides: interactions.hides + 1
+                };
+                setInteractions(newInteractions);
+                
+                checkCompletion(newInteractions);
+            };
+            
+            const handleActionClick = () => {
+                const newInteractions = {
+                    ...interactions,
+                    actions: interactions.actions + 1
+                };
+                setInteractions(newInteractions);
+                setOpen(false);
+                
+                checkCompletion(newInteractions);
+            };
+            
+            const checkCompletion = (ints) => {
+                if (ints.toggles >= 3 && ints.hides >= 2 && ints.actions >= 2) {
+                    completeTest(true, 'Controlled speed dial working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle open 3+ times, hide/show 2+ times, click 2+ actions:
+                    </Typography>
+                    <Stack direction="row" spacing={2} mb={2}>
+                        <button onClick={handleToggle}>
+                            {open ? 'Close' : 'Open'} Speed Dial
+                        </button>
+                        <button onClick={handleHideToggle}>
+                            {hidden ? 'Show' : 'Hide'} Speed Dial
+                        </button>
+                    </Stack>
+                    <div className="speed-dial-container">
+                        <SpeedDial
+                            id="controlled-speed-dial"
+                            ariaLabel="Controlled speed dial"
+                            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                            icon={<SpeedDialIcon />}
+                            open={open}
+                            hidden={hidden}
+                            onClose={() => setOpen(false)}
+                            onOpen={() => setOpen(true)}
+                        >
+                            <SpeedDialAction
+                                id="controlled-action-1"
+                                icon={<Icon>edit</Icon>}
+                                tooltipTitle="Edit"
+                                onClick={handleActionClick}
+                            />
+                            <SpeedDialAction
+                                id="controlled-action-2"
+                                icon={<Icon>delete</Icon>}
+                                tooltipTitle="Delete"
+                                onClick={handleActionClick}
+                            />
+                            <SpeedDialAction
+                                id="controlled-action-3"
+                                icon={<Icon>add</Icon>}
+                                tooltipTitle="Add"
+                                onClick={handleActionClick}
+                            />
+                        </SpeedDial>
+                    </div>
+                    <div className="action-log">
+                        <Typography variant="body2">
+                            Toggles: {interactions.toggles} | Hides: {interactions.hides} | Actions: {interactions.actions}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Direction Variants
+        const DirectionSpeedDialTest = ({ completeTest }) => {
+            const [clickedDirections, setClickedDirections] = React.useState(new Set());
+            
+            const handleActionClick = (direction) => {
+                const newClicked = new Set(clickedDirections);
+                newClicked.add(direction);
+                setClickedDirections(newClicked);
+                
+                if (newClicked.size >= 3) {
+                    completeTest(true, 'Different directions tested successfully!');
+                }
+            };
+            
+            const directions = ['up', 'right', 'down', 'left'];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click actions from at least 3 different direction speed dials:
+                    </Typography>
+                    <div className="direction-test-container">
+                        {directions.map((direction) => (
+                            <div key={direction} className="direction-box">
+                                <Typography variant="caption" sx={{ position: 'absolute', top: 8, left: 8 }}>
+                                    Direction: {direction}
+                                </Typography>
+                                <SpeedDial
+                                    id={`speed-dial-${direction}`}
+                                    ariaLabel={`SpeedDial ${direction}`}
+                                    sx={{ 
+                                        position: 'absolute',
+                                        ...(direction === 'up' && { bottom: 16, right: 16 }),
+                                        ...(direction === 'right' && { top: '50%', left: 16, transform: 'translateY(-50%)' }),
+                                        ...(direction === 'down' && { top: 16, left: 16 }),
+                                        ...(direction === 'left' && { top: '50%', right: 16, transform: 'translateY(-50%)' })
+                                    }}
+                                    icon={<SpeedDialIcon />}
+                                    direction={direction}
+                                >
+                                    <SpeedDialAction
+                                        id={`${direction}-action-1`}
+                                        icon={<Icon>favorite</Icon>}
+                                        tooltipTitle="Favorite"
+                                        onClick={() => handleActionClick(direction)}
+                                    />
+                                    <SpeedDialAction
+                                        id={`${direction}-action-2`}
+                                        icon={<Icon>star</Icon>}
+                                        tooltipTitle="Star"
+                                        onClick={() => handleActionClick(direction)}
+                                    />
+                                </SpeedDial>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="action-log">
+                        <Typography variant="body2">
+                            Directions Used: {Array.from(clickedDirections).join(', ')}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Custom Icon
+        const CustomIconSpeedDialTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [iconClicks, setIconClicks] = React.useState(0);
+            const [actionClicks, setActionClicks] = React.useState(0);
+            
+            const handleOpen = () => {
+                setOpen(true);
+                const newClicks = iconClicks + 1;
+                setIconClicks(newClicks);
+                
+                if (newClicks >= 3 && actionClicks >= 2) {
+                    completeTest(true, 'Custom icon speed dial working correctly!');
+                }
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const handleActionClick = () => {
+                const newClicks = actionClicks + 1;
+                setActionClicks(newClicks);
+                
+                if (iconClicks >= 3 && newClicks >= 2) {
+                    completeTest(true, 'Custom icon speed dial working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the custom edit icon 3 times and select 2 actions:
+                    </Typography>
+                    <div className="speed-dial-container">
+                        <SpeedDial
+                            id="custom-icon-speed-dial"
+                            ariaLabel="SpeedDial custom icon"
+                            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                            icon={<Icon>edit</Icon>}
+                            onClose={handleClose}
+                            onOpen={handleOpen}
+                            open={open}
+                        >
+                            <SpeedDialAction
+                                id="custom-action-bold"
+                                icon={<Icon>format_bold</Icon>}
+                                tooltipTitle="Bold"
+                                onClick={handleActionClick}
+                            />
+                            <SpeedDialAction
+                                id="custom-action-italic"
+                                icon={<Icon>format_italic</Icon>}
+                                tooltipTitle="Italic"
+                                onClick={handleActionClick}
+                            />
+                            <SpeedDialAction
+                                id="custom-action-underline"
+                                icon={<Icon>format_underlined</Icon>}
+                                tooltipTitle="Underline"
+                                onClick={handleActionClick}
+                            />
+                            <SpeedDialAction
+                                id="custom-action-color"
+                                icon={<Icon>format_color_fill</Icon>}
+                                tooltipTitle="Color"
+                                onClick={handleActionClick}
+                            />
+                        </SpeedDial>
+                    </div>
+                    <div className="action-log">
+                        <Typography variant="body2">
+                            Icon Clicks: {iconClicks} | Action Clicks: {actionClicks}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Persistent Tooltips
+        const PersistentTooltipsTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [hoveredActions, setHoveredActions] = React.useState(new Set());
+            const [clickedActions, setClickedActions] = React.useState(new Set());
+            
+            const handleActionClick = (actionName) => {
+                const newClicked = new Set(clickedActions);
+                newClicked.add(actionName);
+                setClickedActions(newClicked);
+                
+                if (newClicked.size >= 3) {
+                    completeTest(true, 'Persistent tooltips speed dial working correctly!');
+                }
+            };
+            
+            const actions = [
+                { icon: <Icon>cloud_upload</Icon>, name: 'Upload', id: 'tooltip-upload' },
+                { icon: <Icon>cloud_download</Icon>, name: 'Download', id: 'tooltip-download' },
+                { icon: <Icon>cloud_sync</Icon>, name: 'Sync', id: 'tooltip-sync' },
+                { icon: <Icon>cloud_done</Icon>, name: 'Done', id: 'tooltip-done' },
+            ];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open speed dial and click 3 different actions (tooltips are always visible):
+                    </Typography>
+                    <div className="speed-dial-container">
+                        <SpeedDial
+                            id="persistent-tooltips-speed-dial"
+                            ariaLabel="SpeedDial persistent tooltips"
+                            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                            icon={<SpeedDialIcon />}
+                            onClose={() => setOpen(false)}
+                            onOpen={() => setOpen(true)}
+                            open={open}
+                        >
+                            {actions.map((action) => (
+                                <SpeedDialAction
+                                    key={action.name}
+                                    id={action.id}
+                                    icon={action.icon}
+                                    tooltipTitle={action.name}
+                                    tooltipOpen
+                                    onClick={() => handleActionClick(action.name)}
+                                />
+                            ))}
+                        </SpeedDial>
+                    </div>
+                    <div className="action-log">
+                        <Typography variant="body2">
+                            Clicked Actions: {Array.from(clickedActions).join(', ') || 'None'}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'speed-dial',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-speed-dial"
+                        testName="Test 1: Basic Speed Dial"
+                        description="Test basic speed dial functionality with actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicSpeedDialTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="controlled-speed-dial"
+                        testName="Test 2: Controlled Speed Dial"
+                        description="Test controlled open state and hidden property"
+                        onComplete={handleTestComplete}
+                    >
+                        <ControlledSpeedDialTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="direction-speed-dial"
+                        testName="Test 3: Direction Variants"
+                        description="Test speed dial opening in different directions"
+                        onComplete={handleTestComplete}
+                    >
+                        <DirectionSpeedDialTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-icon-speed-dial"
+                        testName="Test 4: Custom Icon"
+                        description="Test speed dial with custom main icon"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomIconSpeedDialTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="persistent-tooltips"
+                        testName="Test 5: Persistent Tooltips"
+                        description="Test speed dial with always-visible tooltips"
+                        onComplete={handleTestComplete}
+                    >
+                        <PersistentTooltipsTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

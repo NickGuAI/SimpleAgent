@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Transitions Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 200px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .transition-demo-area {
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .transition-box {
+            padding: 24px;
+            background-color: #1976d2;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .slide-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+        }
+        
+        .grow-demo {
+            display: inline-block;
+            margin: 16px;
+        }
+        
+        .collapse-content {
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+        
+        .transition-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .zoom-target {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Transitions</h1>
+            <p>Test the functionality and behavior of Material UI Transition components</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Fade,
+            Grow,
+            Slide,
+            Zoom,
+            Collapse,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            Paper,
+            FormControlLabel,
+            Switch,
+            IconButton,
+            Avatar
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Fade Transition
+        const FadeTransitionTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState(false);
+            const [transitionCount, setTransitionCount] = React.useState(0);
+            
+            const handleChange = () => {
+                setChecked((prev) => !prev);
+                setTransitionCount(prev => prev + 1);
+                
+                if (transitionCount >= 3) {
+                    completeTest(true, 'Fade transition working smoothly in and out!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the switch to see fade transitions:
+                    </Typography>
+                    
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                id="fade-switch"
+                                checked={checked}
+                                onChange={handleChange}
+                            />
+                        }
+                        label="Show element"
+                    />
+                    
+                    <div className="transition-demo-area">
+                        <Fade in={checked} timeout={1000}>
+                            <div className="transition-box">
+                                <Typography variant="h5">Fade Effect</Typography>
+                                <Typography variant="body2">
+                                    I fade in and out smoothly
+                                </Typography>
+                            </div>
+                        </Fade>
+                    </div>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Transitions: {transitionCount} (toggle 4 times to pass)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Slide Directions
+        const SlideDirectionsTest = ({ completeTest }) => {
+            const [slideIn, setSlideIn] = React.useState(false);
+            const [direction, setDirection] = React.useState('left');
+            const [testedDirections, setTestedDirections] = React.useState(new Set());
+            
+            const directions = ['left', 'right', 'up', 'down'];
+            
+            const handleDirectionTest = (dir) => {
+                setDirection(dir);
+                setSlideIn(false);
+                
+                setTimeout(() => {
+                    setSlideIn(true);
+                    const newTested = new Set(testedDirections);
+                    newTested.add(dir);
+                    setTestedDirections(newTested);
+                    
+                    if (newTested.size === directions.length) {
+                        completeTest(true, 'All slide directions tested successfully!');
+                    }
+                }, 100);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test slide transitions from all directions:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={1} mb={2}>
+                        {directions.map((dir) => (
+                            <Button
+                                key={dir}
+                                id={`slide-${dir}`}
+                                variant={testedDirections.has(dir) ? "contained" : "outlined"}
+                                color={testedDirections.has(dir) ? "success" : "primary"}
+                                size="small"
+                                onClick={() => handleDirectionTest(dir)}
+                            >
+                                {dir}
+                            </Button>
+                        ))}
+                    </Stack>
+                    
+                    <div className="slide-container">
+                        <Slide direction={direction} in={slideIn} mountOnEnter unmountOnExit>
+                            <Paper elevation={3} sx={{ p: 3, position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                                <Typography variant="h6">Sliding from {direction}</Typography>
+                                <Typography variant="body2">
+                                    Watch me slide in!
+                                </Typography>
+                            </Paper>
+                        </Slide>
+                    </div>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Tested: {testedDirections.size}/{directions.length} directions
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Grow Transition
+        const GrowTransitionTest = ({ completeTest }) => {
+            const [items, setItems] = React.useState([]);
+            const maxItems = 4;
+            
+            const addItem = () => {
+                if (items.length < maxItems) {
+                    setItems([...items, { id: Date.now(), show: true }]);
+                    
+                    if (items.length === maxItems - 1) {
+                        completeTest(true, 'Grow transitions working for multiple elements!');
+                    }
+                }
+            };
+            
+            const removeItem = (id) => {
+                setItems(items.filter(item => item.id !== id));
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Add items to see grow transitions:
+                    </Typography>
+                    
+                    <Button 
+                        id="add-grow-item"
+                        variant="contained" 
+                        onClick={addItem}
+                        disabled={items.length >= maxItems}
+                    >
+                        Add Item ({items.length}/{maxItems})
+                    </Button>
+                    
+                    <Stack direction="row" spacing={2} flexWrap="wrap" mt={3}>
+                        {items.map((item, index) => (
+                            <div key={item.id} className="grow-demo">
+                                <Grow in={item.show} timeout={(index + 1) * 500}>
+                                    <Paper elevation={2} sx={{ p: 2 }}>
+                                        <Typography variant="h6">Item {index + 1}</Typography>
+                                        <IconButton 
+                                            size="small" 
+                                            onClick={() => removeItem(item.id)}
+                                            sx={{ mt: 1 }}
+                                        >
+                                            ✕
+                                        </IconButton>
+                                    </Paper>
+                                </Grow>
+                            </div>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Zoom Transition
+        const ZoomTransitionTest = ({ completeTest }) => {
+            const [selectedAvatar, setSelectedAvatar] = React.useState(null);
+            const [zoomCount, setZoomCount] = React.useState(0);
+            
+            const avatars = [
+                { id: 1, color: '#f44336', initial: 'A' },
+                { id: 2, color: '#2196f3', initial: 'B' },
+                { id: 3, color: '#4caf50', initial: 'C' },
+                { id: 4, color: '#ff9800', initial: 'D' }
+            ];
+            
+            const handleAvatarClick = (avatar) => {
+                setSelectedAvatar(selectedAvatar?.id === avatar.id ? null : avatar);
+                setZoomCount(prev => prev + 1);
+                
+                if (zoomCount >= 5) {
+                    completeTest(true, 'Zoom transitions working perfectly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click avatars to see zoom transitions:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={2} justifyContent="center" mb={3}>
+                        {avatars.map((avatar) => (
+                            <IconButton
+                                key={avatar.id}
+                                id={`zoom-avatar-${avatar.id}`}
+                                onClick={() => handleAvatarClick(avatar)}
+                            >
+                                <Avatar sx={{ bgcolor: avatar.color }}>
+                                    {avatar.initial}
+                                </Avatar>
+                            </IconButton>
+                        ))}
+                    </Stack>
+                    
+                    <Box display="flex" justifyContent="center">
+                        <div className="zoom-target">
+                            <Zoom in={!!selectedAvatar} timeout={500}>
+                                <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+                                    {selectedAvatar && (
+                                        <>
+                                            <Avatar 
+                                                sx={{ 
+                                                    bgcolor: selectedAvatar.color, 
+                                                    width: 80, 
+                                                    height: 80,
+                                                    margin: '0 auto',
+                                                    mb: 2
+                                                }}
+                                            >
+                                                <Typography variant="h4">
+                                                    {selectedAvatar.initial}
+                                                </Typography>
+                                            </Avatar>
+                                            <Typography variant="h6">
+                                                Selected: {selectedAvatar.initial}
+                                            </Typography>
+                                        </>
+                                    )}
+                                </Paper>
+                            </Zoom>
+                        </div>
+                    </Box>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Zoom transitions: {zoomCount} (need 6 to pass)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 5: Collapse Transition
+        const CollapseTransitionTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState({});
+            const [collapseCount, setCollapseCount] = React.useState(0);
+            
+            const sections = [
+                { id: 'section1', title: 'Section 1', content: 'This is the content of section 1. It contains some interesting information.' },
+                { id: 'section2', title: 'Section 2', content: 'Section 2 has different content. It expands and collapses smoothly.' },
+                { id: 'section3', title: 'Section 3', content: 'The third section demonstrates the collapse transition effect.' }
+            ];
+            
+            const handleToggle = (sectionId) => {
+                setExpanded(prev => ({
+                    ...prev,
+                    [sectionId]: !prev[sectionId]
+                }));
+                setCollapseCount(prev => prev + 1);
+                
+                if (collapseCount >= 5) {
+                    completeTest(true, 'Collapse transitions working smoothly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click sections to expand/collapse:
+                    </Typography>
+                    
+                    <Stack spacing={2}>
+                        {sections.map((section) => (
+                            <Paper key={section.id} elevation={1}>
+                                <Box 
+                                    p={2} 
+                                    sx={{ cursor: 'pointer' }}
+                                    onClick={() => handleToggle(section.id)}
+                                    id={`collapse-${section.id}`}
+                                >
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                        <Typography variant="h6">{section.title}</Typography>
+                                        <Typography variant="h6">
+                                            {expanded[section.id] ? '−' : '+'}
+                                        </Typography>
+                                    </Stack>
+                                </Box>
+                                <Collapse in={expanded[section.id]} timeout="auto" unmountOnExit>
+                                    <div className="collapse-content">
+                                        <Typography>{section.content}</Typography>
+                                    </div>
+                                </Collapse>
+                            </Paper>
+                        ))}
+                    </Stack>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Toggle count: {collapseCount} (need 6 to pass)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 6: Combined Transitions
+        const CombinedTransitionsTest = ({ completeTest }) => {
+            const [show, setShow] = React.useState(false);
+            const [transitionType, setTransitionType] = React.useState('fade');
+            const [combinedCount, setCombinedCount] = React.useState(0);
+            
+            const transitionTypes = ['fade', 'grow', 'slide', 'zoom'];
+            
+            const handleTransitionChange = (type) => {
+                setShow(false);
+                setTransitionType(type);
+                
+                setTimeout(() => {
+                    setShow(true);
+                    setCombinedCount(prev => prev + 1);
+                    
+                    if (combinedCount >= 7) {
+                        completeTest(true, 'All transition types demonstrated successfully!');
+                    }
+                }, 300);
+            };
+            
+            const renderTransition = () => {
+                const content = (
+                    <Paper elevation={3} sx={{ p: 3 }}>
+                        <Typography variant="h5" gutterBottom>
+                            {transitionType.charAt(0).toUpperCase() + transitionType.slice(1)} Transition
+                        </Typography>
+                        <Typography variant="body2">
+                            This element uses {transitionType} effect
+                        </Typography>
+                    </Paper>
+                );
+                
+                switch (transitionType) {
+                    case 'fade':
+                        return <Fade in={show}>{content}</Fade>;
+                    case 'grow':
+                        return <Grow in={show}>{content}</Grow>;
+                    case 'slide':
+                        return <Slide direction="up" in={show}>{content}</Slide>;
+                    case 'zoom':
+                        return <Zoom in={show}>{content}</Zoom>;
+                    default:
+                        return null;
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test different transition types on the same element:
+                    </Typography>
+                    
+                    <div className="transition-grid">
+                        {transitionTypes.map((type) => (
+                            <Button
+                                key={type}
+                                id={`combined-${type}`}
+                                variant={transitionType === type ? "contained" : "outlined"}
+                                onClick={() => handleTransitionChange(type)}
+                                fullWidth
+                            >
+                                {type}
+                            </Button>
+                        ))}
+                    </div>
+                    
+                    <Box mt={3} height={150} display="flex" alignItems="center" justifyContent="center">
+                        {renderTransition()}
+                    </Box>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Transition changes: {combinedCount} (need 8 to pass)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'transitions',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="fade-transition"
+                        testName="Test 1: Fade Transition"
+                        description="Test fade in and out effects"
+                        onComplete={handleTestComplete}
+                    >
+                        <FadeTransitionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="slide-directions"
+                        testName="Test 2: Slide Directions"
+                        description="Test slide transitions from all directions"
+                        onComplete={handleTestComplete}
+                    >
+                        <SlideDirectionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="grow-transition"
+                        testName="Test 3: Grow Transition"
+                        description="Test grow effect for multiple elements"
+                        onComplete={handleTestComplete}
+                    >
+                        <GrowTransitionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="zoom-transition"
+                        testName="Test 4: Zoom Transition"
+                        description="Test zoom in and out effects"
+                        onComplete={handleTestComplete}
+                    >
+                        <ZoomTransitionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="collapse-transition"
+                        testName="Test 5: Collapse Transition"
+                        description="Test expanding and collapsing content"
+                        onComplete={handleTestComplete}
+                    >
+                        <CollapseTransitionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="combined-transitions"
+                        testName="Test 6: Combined Transitions"
+                        description="Compare different transition types"
+                        onComplete={handleTestComplete}
+                    >
+                        <CombinedTransitionsTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

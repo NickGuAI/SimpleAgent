@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Alert Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .alert-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Alert</h1>
+            <p>Test the functionality and behavior of the Material UI Alert component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Alert,
+            AlertTitle,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            IconButton,
+            Collapse,
+            Snackbar
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Alert Severities
+        const SeverityTest = ({ completeTest }) => {
+            const [clickedSeverities, setClickedSeverities] = React.useState(new Set());
+            const severities = ['error', 'warning', 'info', 'success'];
+            
+            const handleSeverityClick = (severity) => {
+                const newClicked = new Set(clickedSeverities);
+                newClicked.add(severity);
+                setClickedSeverities(newClicked);
+                
+                if (newClicked.size === severities.length) {
+                    completeTest(true, 'All alert severities tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all alert severities to test:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {severities.map((severity) => (
+                            <Alert 
+                                key={severity}
+                                id={`${severity}-alert`}
+                                severity={severity}
+                                onClick={() => handleSeverityClick(severity)}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                This is a {severity} alert — click me!
+                            </Alert>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 2: Alert Variants
+        const VariantTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['filled', 'outlined', 'standard'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All alert variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all alert variants:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {variants.map((variant) => (
+                            <Alert 
+                                key={variant}
+                                id={`${variant}-variant-alert`}
+                                variant={variant}
+                                severity="info"
+                                onClick={() => handleVariantClick(variant)}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                This is a {variant} alert — click me!
+                            </Alert>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Alert with Title
+        const TitleTest = ({ completeTest }) => {
+            const [titleClicked, setTitleClicked] = React.useState(false);
+            const [contentClicked, setContentClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (titleClicked && contentClicked) {
+                    completeTest(true, 'Alert title and content interaction tested successfully!');
+                }
+            }, [titleClicked, contentClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both the title and content area:
+                    </Typography>
+                    <Alert 
+                        id="titled-alert"
+                        severity="warning"
+                    >
+                        <AlertTitle 
+                            onClick={() => setTitleClicked(true)}
+                            sx={{ cursor: 'pointer', fontWeight: titleClicked ? 700 : 500 }}
+                        >
+                            Warning Title - Click me!
+                        </AlertTitle>
+                        <Box
+                            onClick={() => setContentClicked(true)}
+                            sx={{ cursor: 'pointer', textDecoration: contentClicked ? 'underline' : 'none' }}
+                        >
+                            This is a warning alert with a title — click this content too!
+                        </Box>
+                    </Alert>
+                    {(titleClicked || contentClicked) && (
+                        <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                            {titleClicked && 'Title clicked! '}
+                            {contentClicked && 'Content clicked!'}
+                        </Typography>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Closable Alert
+        const ClosableTest = ({ completeTest }) => {
+            const [alerts, setAlerts] = React.useState([
+                { id: 1, open: true, severity: 'error', text: 'Error alert' },
+                { id: 2, open: true, severity: 'warning', text: 'Warning alert' },
+                { id: 3, open: true, severity: 'success', text: 'Success alert' }
+            ]);
+            
+            const handleClose = (id) => {
+                setAlerts(prev => prev.map(alert => 
+                    alert.id === id ? { ...alert, open: false } : alert
+                ));
+                
+                const closedCount = alerts.filter(a => a.id === id ? false : !a.open).length + 1;
+                if (closedCount === alerts.length) {
+                    completeTest(true, 'All closable alerts closed successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Close all alerts using the X button:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {alerts.map(({ id, open, severity, text }) => (
+                            <Collapse key={id} in={open}>
+                                <Alert 
+                                    id={`closable-alert-${id}`}
+                                    severity={severity}
+                                    onClose={() => handleClose(id)}
+                                >
+                                    {text} — close me!
+                                </Alert>
+                            </Collapse>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Alert Actions
+        const ActionTest = ({ completeTest }) => {
+            const [undoClicked, setUndoClicked] = React.useState(false);
+            const [learnClicked, setLearnClicked] = React.useState(false);
+            const [alertClosed, setAlertClosed] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (undoClicked && learnClicked && alertClosed) {
+                    completeTest(true, 'All alert actions tested successfully!');
+                }
+            }, [undoClicked, learnClicked, alertClosed]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both action buttons and close the alert:
+                    </Typography>
+                    <Collapse in={!alertClosed}>
+                        <Alert 
+                            id="action-alert"
+                            severity="info"
+                            onClose={() => setAlertClosed(true)}
+                            action={
+                                <>
+                                    <Button 
+                                        id="undo-button"
+                                        color="inherit" 
+                                        size="small"
+                                        onClick={() => setUndoClicked(true)}
+                                        disabled={undoClicked}
+                                    >
+                                        UNDO
+                                    </Button>
+                                    <Button 
+                                        id="learn-button"
+                                        color="inherit" 
+                                        size="small"
+                                        onClick={() => setLearnClicked(true)}
+                                        disabled={learnClicked}
+                                    >
+                                        LEARN MORE
+                                    </Button>
+                                </>
+                            }
+                        >
+                            This alert has action buttons — try them!
+                        </Alert>
+                    </Collapse>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        {undoClicked && 'UNDO clicked! '}
+                        {learnClicked && 'LEARN MORE clicked! '}
+                        {alertClosed && 'Alert closed!'}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Alert Icons
+        const IconTest = ({ completeTest }) => {
+            const [defaultIconClicked, setDefaultIconClicked] = React.useState(false);
+            const [customIconClicked, setCustomIconClicked] = React.useState(false);
+            const [noIconClicked, setNoIconClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (defaultIconClicked && customIconClicked && noIconClicked) {
+                    completeTest(true, 'All alert icon variations tested successfully!');
+                }
+            }, [defaultIconClicked, customIconClicked, noIconClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three alerts with different icon configurations:
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Alert 
+                            id="default-icon-alert"
+                            severity="success"
+                            onClick={() => setDefaultIconClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        >
+                            Default icon — {defaultIconClicked ? 'Clicked!' : 'Click me!'}
+                        </Alert>
+                        <Alert 
+                            id="custom-icon-alert"
+                            severity="info"
+                            icon={<span style={{ fontSize: '20px' }}>🚀</span>}
+                            onClick={() => setCustomIconClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        >
+                            Custom icon — {customIconClicked ? 'Clicked!' : 'Click me!'}
+                        </Alert>
+                        <Alert 
+                            id="no-icon-alert"
+                            severity="warning"
+                            icon={false}
+                            onClick={() => setNoIconClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        >
+                            No icon — {noIconClicked ? 'Clicked!' : 'Click me!'}
+                        </Alert>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'alert',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="severities"
+                        testName="Test 1: Alert Severities"
+                        description="Test all alert severity levels: error, warning, info, and success"
+                        onComplete={handleTestComplete}
+                    >
+                        <SeverityTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 2: Alert Variants"
+                        description="Test all alert variants: filled, outlined, and standard"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="title"
+                        testName="Test 3: Alert with Title"
+                        description="Test alert with AlertTitle component"
+                        onComplete={handleTestComplete}
+                    >
+                        <TitleTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="closable"
+                        testName="Test 4: Closable Alert"
+                        description="Test closing alerts with onClose handler"
+                        onComplete={handleTestComplete}
+                    >
+                        <ClosableTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="actions"
+                        testName="Test 5: Alert Actions"
+                        description="Test alert with action buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <ActionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icons"
+                        testName="Test 6: Alert Icons"
+                        description="Test alerts with default, custom, and no icons"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

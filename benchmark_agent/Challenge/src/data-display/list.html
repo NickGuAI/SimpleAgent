@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI List Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .list-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .selected-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: List</h1>
+            <p>Test the functionality and behavior of the Material UI List component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            List,
+            ListItem,
+            ListItemButton,
+            ListItemIcon,
+            ListItemText,
+            ListItemAvatar,
+            ListItemSecondaryAction,
+            ListSubheader,
+            Avatar,
+            IconButton,
+            Checkbox,
+            Switch,
+            Divider,
+            Collapse,
+            Box,
+            Typography,
+            Icon,
+            Paper
+        } = window['MaterialUI'];
+        
+        // Create material icons as React components
+        const InboxIcon = () => <Icon>inbox</Icon>;
+        const DraftsIcon = () => <Icon>drafts</Icon>;
+        const SendIcon = () => <Icon>send</Icon>;
+        const ExpandLess = () => <Icon>expand_less</Icon>;
+        const ExpandMore = () => <Icon>expand_more</Icon>;
+        const StarBorder = () => <Icon>star_border</Icon>;
+        const DeleteIcon = () => <Icon>delete</Icon>;
+        const FolderIcon = () => <Icon>folder</Icon>;
+        const ImageIcon = () => <Icon>image</Icon>;
+        const WorkIcon = () => <Icon>work</Icon>;
+        const BeachAccessIcon = () => <Icon>beach_access</Icon>;
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic List Selection
+        const BasicListTest = ({ completeTest }) => {
+            const [selectedIndex, setSelectedIndex] = React.useState(null);
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            const items = ['Inbox', 'Starred', 'Send email', 'Drafts'];
+            
+            const handleListItemClick = (index) => {
+                setSelectedIndex(index);
+                const newClicked = new Set(clickedItems);
+                newClicked.add(index);
+                setClickedItems(newClicked);
+                
+                if (newClicked.size === items.length) {
+                    completeTest(true, 'All list items clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all list items to complete the test:
+                    </Typography>
+                    <div className="list-container">
+                        <List component="nav" aria-label="main mailbox folders">
+                            {items.map((text, index) => (
+                                <ListItemButton
+                                    key={text}
+                                    id={`list-item-${index}`}
+                                    selected={selectedIndex === index}
+                                    onClick={() => handleListItemClick(index)}
+                                >
+                                    <ListItemIcon>
+                                        {index === 0 && <InboxIcon />}
+                                        {index === 1 && <StarBorder />}
+                                        {index === 2 && <SendIcon />}
+                                        {index === 3 && <DraftsIcon />}
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary={text} 
+                                        secondary={clickedItems.has(index) ? 'Clicked' : null}
+                                    />
+                                </ListItemButton>
+                            ))}
+                        </List>
+                    </div>
+                    {selectedIndex !== null && (
+                        <div className="selected-info">
+                            Selected: {items[selectedIndex]} | Progress: {clickedItems.size}/{items.length}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: List with Checkboxes
+        const CheckboxListTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState([]);
+            const items = ['Task 1', 'Task 2', 'Task 3', 'Task 4'];
+            
+            const handleToggle = (value) => () => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+                
+                if (newChecked.length === items.length) {
+                    completeTest(true, 'All checkboxes selected successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check all items in the list:
+                    </Typography>
+                    <div className="list-container">
+                        <List>
+                            {items.map((item, index) => {
+                                const labelId = `checkbox-list-label-${index}`;
+                                
+                                return (
+                                    <ListItem
+                                        key={item}
+                                        id={`checkbox-item-${index}`}
+                                        disablePadding
+                                    >
+                                        <ListItemButton role={undefined} onClick={handleToggle(index)} dense>
+                                            <ListItemIcon>
+                                                <Checkbox
+                                                    edge="start"
+                                                    checked={checked.indexOf(index) !== -1}
+                                                    tabIndex={-1}
+                                                    disableRipple
+                                                    inputProps={{ 'aria-labelledby': labelId }}
+                                                />
+                                            </ListItemIcon>
+                                            <ListItemText id={labelId} primary={item} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                );
+                            })}
+                        </List>
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Checked: {checked.length}/{items.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 3: Nested List
+        const NestedListTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState({});
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            const totalItems = 6; // 2 parent + 4 nested items
+            
+            const handleClick = (id) => {
+                setOpen(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+            
+            const handleItemClick = (itemId) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(itemId);
+                setClickedItems(newClicked);
+                
+                if (newClicked.size === totalItems) {
+                    completeTest(true, 'All nested list items explored successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand all sections and click all items:
+                    </Typography>
+                    <div className="list-container">
+                        <List
+                            component="nav"
+                            aria-labelledby="nested-list-subheader"
+                            subheader={
+                                <ListSubheader component="div" id="nested-list-subheader">
+                                    Nested List Items
+                                </ListSubheader>
+                            }
+                        >
+                            <ListItemButton 
+                                id="inbox-parent"
+                                onClick={() => {
+                                    handleClick('inbox');
+                                    handleItemClick('inbox');
+                                }}
+                            >
+                                <ListItemIcon>
+                                    <InboxIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Inbox" />
+                                {open.inbox ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+                            <Collapse in={open.inbox} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding>
+                                    <ListItemButton 
+                                        id="starred-nested"
+                                        sx={{ pl: 4 }}
+                                        onClick={() => handleItemClick('starred')}
+                                    >
+                                        <ListItemIcon>
+                                            <StarBorder />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Starred" />
+                                    </ListItemButton>
+                                    <ListItemButton 
+                                        id="important-nested"
+                                        sx={{ pl: 4 }}
+                                        onClick={() => handleItemClick('important')}
+                                    >
+                                        <ListItemIcon>
+                                            <Icon>label_important</Icon>
+                                        </ListItemIcon>
+                                        <ListItemText primary="Important" />
+                                    </ListItemButton>
+                                </List>
+                            </Collapse>
+                            
+                            <ListItemButton 
+                                id="folders-parent"
+                                onClick={() => {
+                                    handleClick('folders');
+                                    handleItemClick('folders');
+                                }}
+                            >
+                                <ListItemIcon>
+                                    <FolderIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Folders" />
+                                {open.folders ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+                            <Collapse in={open.folders} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding>
+                                    <ListItemButton 
+                                        id="work-nested"
+                                        sx={{ pl: 4 }}
+                                        onClick={() => handleItemClick('work')}
+                                    >
+                                        <ListItemIcon>
+                                            <WorkIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Work" />
+                                    </ListItemButton>
+                                    <ListItemButton 
+                                        id="personal-nested"
+                                        sx={{ pl: 4 }}
+                                        onClick={() => handleItemClick('personal')}
+                                    >
+                                        <ListItemIcon>
+                                            <BeachAccessIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Personal" />
+                                    </ListItemButton>
+                                </List>
+                            </Collapse>
+                        </List>
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Progress: {clickedItems.size}/{totalItems} items clicked
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 4: List with Secondary Actions
+        const SecondaryActionTest = ({ completeTest }) => {
+            const [deleted, setDeleted] = React.useState(new Set());
+            const items = [
+                { id: 'photo1', primary: 'Photos', secondary: 'Jan 9, 2024', icon: ImageIcon },
+                { id: 'work1', primary: 'Work', secondary: 'Jan 7, 2024', icon: WorkIcon },
+                { id: 'vaca1', primary: 'Vacation', secondary: 'July 20, 2023', icon: BeachAccessIcon }
+            ];
+            
+            const handleDelete = (itemId) => {
+                const newDeleted = new Set(deleted);
+                newDeleted.add(itemId);
+                setDeleted(newDeleted);
+                
+                if (newDeleted.size === items.length) {
+                    completeTest(true, 'All items deleted successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Delete all items using the secondary action buttons:
+                    </Typography>
+                    <div className="list-container">
+                        <List>
+                            {items.map(({ id, primary, secondary, icon: IconComponent }) => (
+                                !deleted.has(id) && (
+                                    <ListItem
+                                        key={id}
+                                        id={`action-item-${id}`}
+                                        secondaryAction={
+                                            <IconButton 
+                                                edge="end" 
+                                                aria-label="delete"
+                                                onClick={() => handleDelete(id)}
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        }
+                                    >
+                                        <ListItemAvatar>
+                                            <Avatar>
+                                                <IconComponent />
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={primary}
+                                            secondary={secondary}
+                                        />
+                                    </ListItem>
+                                )
+                            ))}
+                        </List>
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Deleted: {deleted.size}/{items.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 5: List with Switches
+        const SwitchListTest = ({ completeTest }) => {
+            const [settings, setSettings] = React.useState({
+                wifi: false,
+                bluetooth: false,
+                notifications: true,
+                location: false
+            });
+            
+            const handleToggle = (setting) => () => {
+                setSettings(prev => ({
+                    ...prev,
+                    [setting]: !prev[setting]
+                }));
+            };
+            
+            React.useEffect(() => {
+                const allOn = Object.values(settings).every(value => value === true);
+                if (allOn) {
+                    completeTest(true, 'All settings enabled successfully!');
+                }
+            }, [settings]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enable all settings by toggling the switches:
+                    </Typography>
+                    <div className="list-container">
+                        <List>
+                            <ListItem id="wifi-setting">
+                                <ListItemIcon>
+                                    <Icon>wifi</Icon>
+                                </ListItemIcon>
+                                <ListItemText primary="Wi-Fi" secondary="Enable wireless connection" />
+                                <Switch
+                                    edge="end"
+                                    onChange={handleToggle('wifi')}
+                                    checked={settings.wifi}
+                                />
+                            </ListItem>
+                            <ListItem id="bluetooth-setting">
+                                <ListItemIcon>
+                                    <Icon>bluetooth</Icon>
+                                </ListItemIcon>
+                                <ListItemText primary="Bluetooth" secondary="Connect to devices" />
+                                <Switch
+                                    edge="end"
+                                    onChange={handleToggle('bluetooth')}
+                                    checked={settings.bluetooth}
+                                />
+                            </ListItem>
+                            <ListItem id="notifications-setting">
+                                <ListItemIcon>
+                                    <Icon>notifications</Icon>
+                                </ListItemIcon>
+                                <ListItemText primary="Notifications" secondary="Receive alerts" />
+                                <Switch
+                                    edge="end"
+                                    onChange={handleToggle('notifications')}
+                                    checked={settings.notifications}
+                                />
+                            </ListItem>
+                            <ListItem id="location-setting">
+                                <ListItemIcon>
+                                    <Icon>location_on</Icon>
+                                </ListItemIcon>
+                                <ListItemText primary="Location" secondary="Share your location" />
+                                <Switch
+                                    edge="end"
+                                    onChange={handleToggle('location')}
+                                    checked={settings.location}
+                                />
+                            </ListItem>
+                        </List>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Dense List
+        const DenseListTest = ({ completeTest }) => {
+            const [dense, setDense] = React.useState(false);
+            const [clickedInBothModes, setClickedInBothModes] = React.useState({
+                normal: new Set(),
+                dense: new Set()
+            });
+            const items = ['Item 1', 'Item 2', 'Item 3'];
+            
+            const handleItemClick = (index) => {
+                const mode = dense ? 'dense' : 'normal';
+                setClickedInBothModes(prev => ({
+                    ...prev,
+                    [mode]: new Set([...prev[mode], index])
+                }));
+            };
+            
+            React.useEffect(() => {
+                const normalComplete = clickedInBothModes.normal.size === items.length;
+                const denseComplete = clickedInBothModes.dense.size === items.length;
+                
+                if (normalComplete && denseComplete) {
+                    completeTest(true, 'List tested in both normal and dense modes!');
+                }
+            }, [clickedInBothModes]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all items in both normal and dense modes:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={dense}
+                                    onChange={(e) => setDense(e.target.checked)}
+                                />
+                            }
+                            label="Enable dense mode"
+                        />
+                    </Box>
+                    <div className="list-container">
+                        <Paper elevation={1}>
+                            <List dense={dense}>
+                                {items.map((text, index) => (
+                                    <ListItem
+                                        key={index}
+                                        id={`dense-item-${index}`}
+                                        button
+                                        onClick={() => handleItemClick(index)}
+                                    >
+                                        <ListItemIcon>
+                                            <FolderIcon />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={text}
+                                            secondary={dense ? 'Dense mode' : 'Normal mode'}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Paper>
+                    </div>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Normal mode: {clickedInBothModes.normal.size}/{items.length} | 
+                        Dense mode: {clickedInBothModes.dense.size}/{items.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // FormControlLabel import was missing
+        const { FormControlLabel } = window['MaterialUI'];
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'list',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-selection"
+                        testName="Test 1: Basic List Selection"
+                        description="Test list item selection and navigation"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicListTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="checkbox-list"
+                        testName="Test 2: List with Checkboxes"
+                        description="Test list items with checkbox controls"
+                        onComplete={handleTestComplete}
+                    >
+                        <CheckboxListTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-list"
+                        testName="Test 3: Nested List"
+                        description="Test collapsible nested list structure"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedListTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="secondary-actions"
+                        testName="Test 4: Secondary Actions"
+                        description="Test list items with secondary action buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <SecondaryActionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="switch-list"
+                        testName="Test 5: List with Switches"
+                        description="Test list items with switch controls"
+                        onComplete={handleTestComplete}
+                    >
+                        <SwitchListTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="dense-list"
+                        testName="Test 6: Dense List"
+                        description="Test list in both normal and dense modes"
+                        onComplete={handleTestComplete}
+                    >
+                        <DenseListTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

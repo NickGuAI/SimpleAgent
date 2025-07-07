@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI App Bar Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 0;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            position: relative;
+            min-height: 200px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .app-content {
+            padding: 80px 20px 20px 20px;
+            min-height: 200px;
+        }
+        
+        .click-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .menu-paper {
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: App Bar</h1>
+            <p>Test the functionality and behavior of the Material UI App Bar component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            AppBar,
+            Toolbar,
+            Typography,
+            IconButton,
+            Button,
+            Box,
+            Menu,
+            MenuItem,
+            Avatar,
+            Tooltip
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic App Bar
+        const BasicAppBarTest = ({ completeTest }) => {
+            const [menuClicked, setMenuClicked] = React.useState(false);
+            const [loginClicked, setLoginClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (menuClicked && loginClicked) {
+                    completeTest(true, 'Both menu button and login button clicked successfully!');
+                }
+            }, [menuClicked, loginClicked]);
+            
+            return (
+                <Box>
+                    <AppBar position="static" id="basic-appbar">
+                        <Toolbar>
+                            <IconButton
+                                id="menu-button"
+                                edge="start"
+                                color="inherit"
+                                onClick={() => setMenuClicked(true)}
+                            >
+                                <span className="material-icons">menu</span>
+                            </IconButton>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                My Application
+                            </Typography>
+                            <Button 
+                                id="login-button"
+                                color="inherit"
+                                onClick={() => setLoginClicked(true)}
+                            >
+                                Login
+                            </Button>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="app-content">
+                        <Typography variant="body2">
+                            Click both the menu icon and Login button in the App Bar above
+                        </Typography>
+                        <div className="click-info">
+                            <div>Menu button clicked: {menuClicked ? '✓' : '✗'}</div>
+                            <div>Login button clicked: {loginClicked ? '✓' : '✗'}</div>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: App Bar with Menu
+        const AppBarMenuTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            const menuItems = ['Profile', 'Account', 'Logout'];
+            
+            const handleMenuOpen = (event) => {
+                setAnchorEl(event.currentTarget);
+            };
+            
+            const handleMenuClose = () => {
+                setAnchorEl(null);
+            };
+            
+            const handleMenuItemClick = (item) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(item);
+                setClickedItems(newClicked);
+                handleMenuClose();
+                
+                if (newClicked.size === menuItems.length) {
+                    completeTest(true, 'All menu items clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <AppBar position="static" id="menu-appbar">
+                        <Toolbar>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                App with Menu
+                            </Typography>
+                            <IconButton
+                                id="user-menu-button"
+                                color="inherit"
+                                onClick={handleMenuOpen}
+                            >
+                                <span className="material-icons">account_circle</span>
+                            </IconButton>
+                        </Toolbar>
+                    </AppBar>
+                    <Menu
+                        id="user-menu"
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                    >
+                        {menuItems.map((item) => (
+                            <MenuItem 
+                                key={item}
+                                id={`menu-item-${item.toLowerCase()}`}
+                                onClick={() => handleMenuItemClick(item)}
+                            >
+                                {item} {clickedItems.has(item) && '✓'}
+                            </MenuItem>
+                        ))}
+                    </Menu>
+                    <div className="app-content">
+                        <Typography variant="body2">
+                            Click the user icon and then click all menu items
+                        </Typography>
+                        <div className="click-info">
+                            <div>Items clicked: {clickedItems.size} / {menuItems.length}</div>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: App Bar Colors
+        const AppBarColorsTest = ({ completeTest }) => {
+            const [currentColor, setCurrentColor] = React.useState('primary');
+            const [visitedColors, setVisitedColors] = React.useState(new Set(['primary']));
+            const colors = ['primary', 'secondary', 'default', 'transparent'];
+            
+            const handleColorChange = () => {
+                const currentIndex = colors.indexOf(currentColor);
+                const nextIndex = (currentIndex + 1) % colors.length;
+                const nextColor = colors[nextIndex];
+                
+                setCurrentColor(nextColor);
+                const newVisited = new Set(visitedColors);
+                newVisited.add(nextColor);
+                setVisitedColors(newVisited);
+                
+                if (newVisited.size === colors.length) {
+                    completeTest(true, 'All App Bar colors tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <AppBar 
+                        position="static" 
+                        id="color-appbar"
+                        color={currentColor}
+                    >
+                        <Toolbar>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                Color: {currentColor}
+                            </Typography>
+                            <Button 
+                                id="color-change-button"
+                                color="inherit"
+                                onClick={handleColorChange}
+                            >
+                                Change Color
+                            </Button>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="app-content">
+                        <Typography variant="body2">
+                            Click "Change Color" to cycle through all App Bar colors
+                        </Typography>
+                        <div className="click-info">
+                            <div>Colors visited: {visitedColors.size} / {colors.length}</div>
+                            <div>Current: {currentColor}</div>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: App Bar Positions
+        const AppBarPositionsTest = ({ completeTest }) => {
+            const [position, setPosition] = React.useState('static');
+            const [visitedPositions, setVisitedPositions] = React.useState(new Set(['static']));
+            const positions = ['static', 'fixed', 'absolute', 'sticky', 'relative'];
+            
+            const handlePositionChange = () => {
+                const currentIndex = positions.indexOf(position);
+                const nextIndex = (currentIndex + 1) % positions.length;
+                const nextPosition = positions[nextIndex];
+                
+                setPosition(nextPosition);
+                const newVisited = new Set(visitedPositions);
+                newVisited.add(nextPosition);
+                setVisitedPositions(newVisited);
+                
+                if (newVisited.size === positions.length) {
+                    completeTest(true, 'All App Bar positions tested!');
+                }
+            };
+            
+            return (
+                <Box sx={{ position: 'relative', height: '250px', overflow: 'auto' }}>
+                    <AppBar 
+                        position={position}
+                        id="position-appbar"
+                    >
+                        <Toolbar>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                Position: {position}
+                            </Typography>
+                            <Button 
+                                id="position-change-button"
+                                color="inherit"
+                                onClick={handlePositionChange}
+                            >
+                                Change Position
+                            </Button>
+                        </Toolbar>
+                    </AppBar>
+                    <Box sx={{ 
+                        paddingTop: position === 'fixed' || position === 'absolute' ? '64px' : '0',
+                        minHeight: '300px',
+                        padding: '20px'
+                    }}>
+                        <Typography variant="body2">
+                            Click "Change Position" to test all positioning options
+                        </Typography>
+                        <div className="click-info">
+                            <div>Positions tested: {visitedPositions.size} / {positions.length}</div>
+                        </div>
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            Some content below the App Bar to demonstrate positioning...
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 5: App Bar with Multiple Actions
+        const MultipleActionsTest = ({ completeTest }) => {
+            const [actions, setActions] = React.useState({
+                search: false,
+                notifications: false,
+                settings: false,
+                avatar: false
+            });
+            
+            const handleAction = (action) => {
+                const newActions = { ...actions, [action]: true };
+                setActions(newActions);
+                
+                if (Object.values(newActions).every(v => v === true)) {
+                    completeTest(true, 'All App Bar actions triggered!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <AppBar position="static" id="actions-appbar">
+                        <Toolbar>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                Multi-Action App Bar
+                            </Typography>
+                            <Tooltip title="Search">
+                                <IconButton
+                                    id="search-action"
+                                    color="inherit"
+                                    onClick={() => handleAction('search')}
+                                >
+                                    <span className="material-icons">
+                                        {actions.search ? 'search_off' : 'search'}
+                                    </span>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Notifications">
+                                <IconButton
+                                    id="notifications-action"
+                                    color="inherit"
+                                    onClick={() => handleAction('notifications')}
+                                >
+                                    <span className="material-icons">
+                                        {actions.notifications ? 'notifications_off' : 'notifications'}
+                                    </span>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Settings">
+                                <IconButton
+                                    id="settings-action"
+                                    color="inherit"
+                                    onClick={() => handleAction('settings')}
+                                >
+                                    <span className="material-icons">settings</span>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Account">
+                                <IconButton
+                                    id="avatar-action"
+                                    onClick={() => handleAction('avatar')}
+                                >
+                                    <Avatar sx={{ width: 32, height: 32, bgcolor: actions.avatar ? 'success.main' : 'grey.500' }}>
+                                        U
+                                    </Avatar>
+                                </IconButton>
+                            </Tooltip>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="app-content">
+                        <Typography variant="body2">
+                            Click all four action buttons in the App Bar
+                        </Typography>
+                        <div className="click-info">
+                            <div>Search: {actions.search ? '✓' : '✗'}</div>
+                            <div>Notifications: {actions.notifications ? '✓' : '✗'}</div>
+                            <div>Settings: {actions.settings ? '✓' : '✗'}</div>
+                            <div>Avatar: {actions.avatar ? '✓' : '✗'}</div>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Dense App Bar
+        const DenseAppBarTest = ({ completeTest }) => {
+            const [dense, setDense] = React.useState(false);
+            const [regularClicked, setRegularClicked] = React.useState(false);
+            const [denseClicked, setDenseClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (regularClicked && denseClicked) {
+                    completeTest(true, 'Both regular and dense App Bar variants tested!');
+                }
+            }, [regularClicked, denseClicked]);
+            
+            const handleToggle = () => {
+                if (!dense && !regularClicked) {
+                    setRegularClicked(true);
+                } else if (dense && !denseClicked) {
+                    setDenseClicked(true);
+                }
+                setDense(!dense);
+            };
+            
+            return (
+                <Box>
+                    <AppBar position="static" id="dense-appbar">
+                        <Toolbar variant={dense ? "dense" : "regular"}>
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                {dense ? 'Dense' : 'Regular'} Toolbar
+                            </Typography>
+                            <Button 
+                                id="density-toggle"
+                                color="inherit"
+                                onClick={handleToggle}
+                            >
+                                Toggle Density
+                            </Button>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="app-content">
+                        <Typography variant="body2">
+                            Toggle between regular and dense toolbar variants
+                        </Typography>
+                        <div className="click-info">
+                            <div>Current: {dense ? 'Dense' : 'Regular'}</div>
+                            <div>Regular tested: {regularClicked ? '✓' : '✗'}</div>
+                            <div>Dense tested: {denseClicked ? '✓' : '✗'}</div>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'appbar',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-appbar"
+                        testName="Test 1: Basic App Bar"
+                        description="Test basic App Bar with menu button and action button"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicAppBarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="appbar-menu"
+                        testName="Test 2: App Bar with Menu"
+                        description="Test App Bar with dropdown menu functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <AppBarMenuTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="appbar-colors"
+                        testName="Test 3: App Bar Colors"
+                        description="Test different App Bar color variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <AppBarColorsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="appbar-positions"
+                        testName="Test 4: App Bar Positions"
+                        description="Test different positioning options for App Bar"
+                        onComplete={handleTestComplete}
+                    >
+                        <AppBarPositionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-actions"
+                        testName="Test 5: Multiple Actions"
+                        description="Test App Bar with multiple action buttons"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleActionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="dense-appbar"
+                        testName="Test 6: Dense Toolbar"
+                        description="Test regular vs dense toolbar variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <DenseAppBarTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

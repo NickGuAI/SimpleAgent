@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Progress Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .progress-grid {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .linear-progress-container {
+            width: 100%;
+            margin: 16px 0;
+        }
+        
+        .status-info {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Progress</h1>
+            <p>Test the functionality and behavior of the Material UI Progress components (Circular & Linear)</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            CircularProgress,
+            LinearProgress,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            styled
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Circular Progress Variants
+        const CircularVariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = [
+                { type: 'indeterminate', value: undefined },
+                { type: 'determinate', value: 75 }
+            ];
+            
+            const handleVariantClick = (type) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(type);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All circular progress variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both circular progress variants:
+                    </Typography>
+                    <div className="progress-grid">
+                        {variants.map(({ type, value }) => (
+                            <div key={type} className="progress-item">
+                                <Box
+                                    onClick={() => handleVariantClick(type)}
+                                    sx={{ cursor: 'pointer', display: 'flex' }}
+                                >
+                                    <CircularProgress
+                                        id={`circular-${type}`}
+                                        variant={type}
+                                        value={value}
+                                        size={60}
+                                        thickness={4}
+                                    />
+                                </Box>
+                                <Typography variant="caption">
+                                    {type} {clickedVariants.has(type) && '✓'}
+                                </Typography>
+                            </div>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Circular Progress with Label
+        const CircularWithLabelTest = ({ completeTest }) => {
+            const [progress, setProgress] = React.useState(10);
+            const [isRunning, setIsRunning] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (isRunning) {
+                    const timer = setInterval(() => {
+                        setProgress((prevProgress) => {
+                            if (prevProgress >= 100) {
+                                setIsRunning(false);
+                                completeTest(true, 'Circular progress with label completed successfully!');
+                                return 100;
+                            }
+                            return prevProgress + 10;
+                        });
+                    }, 300);
+                    return () => {
+                        clearInterval(timer);
+                    };
+                }
+            }, [isRunning]);
+            
+            const CircularProgressWithLabel = (props) => {
+                return (
+                    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                        <CircularProgress variant="determinate" {...props} />
+                        <Box
+                            sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                            >
+                                {`${Math.round(props.value)}%`}
+                            </Typography>
+                        </Box>
+                    </Box>
+                );
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Start the progress to watch it reach 100%:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <CircularProgressWithLabel 
+                            id="circular-with-label"
+                            value={progress} 
+                            size={80}
+                        />
+                        <Button
+                            id="start-circular-progress"
+                            variant="contained"
+                            onClick={() => {
+                                setProgress(10);
+                                setIsRunning(true);
+                            }}
+                            disabled={isRunning}
+                        >
+                            {isRunning ? 'Running...' : 'Start Progress'}
+                        </Button>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Linear Progress Variants
+        const LinearVariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['determinate', 'indeterminate', 'buffer', 'query'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All linear progress variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all linear progress variants:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {variants.map((variant) => (
+                            <Box key={variant}>
+                                <Typography variant="caption" gutterBottom>
+                                    {variant} {clickedVariants.has(variant) && '✓'}
+                                </Typography>
+                                <Box
+                                    onClick={() => handleVariantClick(variant)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <LinearProgress
+                                        id={`linear-${variant}`}
+                                        variant={variant}
+                                        value={variant === 'determinate' ? 60 : undefined}
+                                        valueBuffer={variant === 'buffer' ? 80 : undefined}
+                                    />
+                                </Box>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Linear Progress with Label
+        const LinearWithLabelTest = ({ completeTest }) => {
+            const [progress, setProgress] = React.useState(0);
+            const [isRunning, setIsRunning] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (isRunning) {
+                    const timer = setInterval(() => {
+                        setProgress((prevProgress) => {
+                            if (prevProgress >= 100) {
+                                setIsRunning(false);
+                                completeTest(true, 'Linear progress with label completed successfully!');
+                                return 100;
+                            }
+                            return prevProgress + 10;
+                        });
+                    }, 400);
+                    return () => {
+                        clearInterval(timer);
+                    };
+                }
+            }, [isRunning]);
+            
+            const LinearProgressWithLabel = (props) => {
+                return (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ width: '100%', mr: 1 }}>
+                            <LinearProgress variant="determinate" {...props} />
+                        </Box>
+                        <Box sx={{ minWidth: 35 }}>
+                            <Typography variant="body2" color="text.secondary">{`${Math.round(
+                                props.value,
+                            )}%`}</Typography>
+                        </Box>
+                    </Box>
+                );
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Start the linear progress to watch it reach 100%:
+                    </Typography>
+                    <LinearProgressWithLabel 
+                        id="linear-with-label"
+                        value={progress} 
+                    />
+                    <Button
+                        id="start-linear-progress"
+                        variant="contained"
+                        onClick={() => {
+                            setProgress(0);
+                            setIsRunning(true);
+                        }}
+                        disabled={isRunning}
+                        sx={{ mt: 2 }}
+                    >
+                        {isRunning ? 'Running...' : 'Start Progress'}
+                    </Button>
+                </Box>
+            );
+        };
+        
+        // Test 5: Circular Progress Colors and Sizes
+        const CircularCustomizationTest = ({ completeTest }) => {
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error'];
+            const sizes = [20, 40, 60, 80];
+            
+            const handleItemClick = (item) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(item);
+                setClickedItems(newClicked);
+                
+                // Need to click at least 6 items (mix of colors and sizes)
+                if (newClicked.size >= 6) {
+                    completeTest(true, 'Circular progress customization tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click at least 6 different progress indicators:
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Colors:</Typography>
+                    <div className="progress-grid">
+                        {colors.map((color) => (
+                            <div key={color} className="progress-item">
+                                <Box
+                                    onClick={() => handleItemClick(`color-${color}`)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <CircularProgress
+                                        id={`circular-color-${color}`}
+                                        color={color}
+                                        size={40}
+                                    />
+                                </Box>
+                                <Typography variant="caption">
+                                    {color}
+                                </Typography>
+                            </div>
+                        ))}
+                    </div>
+                    <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>Sizes:</Typography>
+                    <div className="progress-grid">
+                        {sizes.map((size) => (
+                            <div key={size} className="progress-item">
+                                <Box
+                                    onClick={() => handleItemClick(`size-${size}`)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <CircularProgress
+                                        id={`circular-size-${size}`}
+                                        size={size}
+                                    />
+                                </Box>
+                                <Typography variant="caption">
+                                    {size}px
+                                </Typography>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Items clicked: {clickedItems.size}/6
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Linear Progress Colors
+        const LinearCustomizationTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error', 'info', 'warning'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size === colors.length) {
+                    completeTest(true, 'All linear progress colors tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all linear progress color variants:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {colors.map((color) => (
+                            <Box key={color}>
+                                <Typography variant="caption" gutterBottom>
+                                    {color} {clickedColors.has(color) && '✓'}
+                                </Typography>
+                                <Box
+                                    onClick={() => handleColorClick(color)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <LinearProgress
+                                        id={`linear-color-${color}`}
+                                        color={color}
+                                        variant="determinate"
+                                        value={70}
+                                        sx={{ height: 8, borderRadius: 4 }}
+                                    />
+                                </Box>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'progress',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="circular-variants"
+                        testName="Test 1: Circular Progress Variants"
+                        description="Test indeterminate and determinate circular progress"
+                        onComplete={handleTestComplete}
+                    >
+                        <CircularVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="circular-label"
+                        testName="Test 2: Circular Progress with Label"
+                        description="Test circular progress with percentage label"
+                        onComplete={handleTestComplete}
+                    >
+                        <CircularWithLabelTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="linear-variants"
+                        testName="Test 3: Linear Progress Variants"
+                        description="Test all linear progress variants: determinate, indeterminate, buffer, and query"
+                        onComplete={handleTestComplete}
+                    >
+                        <LinearVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="linear-label"
+                        testName="Test 4: Linear Progress with Label"
+                        description="Test linear progress with percentage label"
+                        onComplete={handleTestComplete}
+                    >
+                        <LinearWithLabelTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="circular-customization"
+                        testName="Test 5: Circular Progress Customization"
+                        description="Test circular progress with different colors and sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <CircularCustomizationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="linear-customization"
+                        testName="Test 6: Linear Progress Colors"
+                        description="Test linear progress with all available colors"
+                        onComplete={handleTestComplete}
+                    >
+                        <LinearCustomizationTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

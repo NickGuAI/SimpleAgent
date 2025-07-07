@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Drawer Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 150px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .drawer-status {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .interaction-count {
+            margin-top: 8px;
+            font-size: 24px;
+            color: #1976d2;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Drawer</h1>
+            <p>Test the functionality and behavior of the Material UI Drawer component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Drawer,
+            Button,
+            Box,
+            Typography,
+            List,
+            ListItem,
+            ListItemButton,
+            ListItemIcon,
+            ListItemText,
+            Divider,
+            Icon,
+            IconButton,
+            AppBar,
+            Toolbar,
+            SwipeableDrawer
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Temporary Drawer
+        const TemporaryDrawerTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            
+            const toggleDrawer = (isOpen) => (event) => {
+                if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+                    return;
+                }
+                setOpen(isOpen);
+            };
+            
+            const handleItemClick = (item) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(item);
+                setClickedItems(newClicked);
+                
+                if (newClicked.size >= 3) {
+                    completeTest(true, 'Temporary drawer navigation working correctly!');
+                }
+            };
+            
+            const DrawerList = () => (
+                <Box
+                    sx={{ width: 250 }}
+                    role="presentation"
+                    onClick={toggleDrawer(false)}
+                    onKeyDown={toggleDrawer(false)}
+                >
+                    <List>
+                        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                            <ListItem key={text} disablePadding>
+                                <ListItemButton
+                                    id={`drawer-item-${text.toLowerCase().replace(' ', '-')}`}
+                                    onClick={() => handleItemClick(text)}
+                                >
+                                    <ListItemIcon>
+                                        <Icon>
+                                            {index === 0 ? 'inbox' : 
+                                             index === 1 ? 'star' : 
+                                             index === 2 ? 'send' : 'drafts'}
+                                        </Icon>
+                                    </ListItemIcon>
+                                    <ListItemText primary={text} />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                </Box>
+            );
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the drawer and click on at least 3 different menu items:
+                    </Typography>
+                    <Button 
+                        id="open-temporary-drawer"
+                        variant="contained" 
+                        onClick={toggleDrawer(true)}
+                    >
+                        Open Drawer
+                    </Button>
+                    <Drawer
+                        id="temporary-drawer"
+                        anchor="left"
+                        open={open}
+                        onClose={toggleDrawer(false)}
+                    >
+                        <DrawerList />
+                    </Drawer>
+                    <div className="drawer-status">
+                        Drawer Status: {open ? 'Open' : 'Closed'}
+                        <div className="interaction-count">
+                            Items Clicked: {clickedItems.size}/3
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Persistent Drawer
+        const PersistentDrawerTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [openCount, setOpenCount] = React.useState(0);
+            const [closeCount, setCloseCount] = React.useState(0);
+            
+            const handleDrawerOpen = () => {
+                setOpen(true);
+                const newOpenCount = openCount + 1;
+                setOpenCount(newOpenCount);
+                
+                checkCompletion(newOpenCount, closeCount);
+            };
+            
+            const handleDrawerClose = () => {
+                setOpen(false);
+                const newCloseCount = closeCount + 1;
+                setCloseCount(newCloseCount);
+                
+                checkCompletion(openCount, newCloseCount);
+            };
+            
+            const checkCompletion = (opens, closes) => {
+                if (opens >= 2 && closes >= 2) {
+                    completeTest(true, 'Persistent drawer open/close working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ display: 'flex' }}>
+                    <AppBar 
+                        position="relative" 
+                        sx={{ 
+                            width: open ? 'calc(100% - 240px)' : '100%',
+                            marginLeft: open ? '240px' : 0,
+                            transition: 'all 0.3s'
+                        }}
+                    >
+                        <Toolbar>
+                            <IconButton
+                                id="menu-button"
+                                color="inherit"
+                                aria-label="open drawer"
+                                onClick={handleDrawerOpen}
+                                edge="start"
+                                sx={{ mr: 2, ...(open && { display: 'none' }) }}
+                            >
+                                <Icon>menu</Icon>
+                            </IconButton>
+                            <Typography variant="h6" noWrap component="div">
+                                Persistent Drawer Test
+                            </Typography>
+                        </Toolbar>
+                    </AppBar>
+                    <Drawer
+                        id="persistent-drawer"
+                        sx={{
+                            width: 240,
+                            flexShrink: 0,
+                            '& .MuiDrawer-paper': {
+                                width: 240,
+                                boxSizing: 'border-box',
+                                position: 'relative',
+                                height: 'auto',
+                                minHeight: 200
+                            },
+                        }}
+                        variant="persistent"
+                        anchor="left"
+                        open={open}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', p: 1 }}>
+                            <IconButton id="close-drawer" onClick={handleDrawerClose}>
+                                <Icon>chevron_left</Icon>
+                            </IconButton>
+                        </Box>
+                        <Divider />
+                        <List>
+                            {['Dashboard', 'Reports', 'Settings'].map((text) => (
+                                <ListItem key={text} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon>
+                                            <Icon>
+                                                {text === 'Dashboard' ? 'dashboard' : 
+                                                 text === 'Reports' ? 'assessment' : 'settings'}
+                                            </Icon>
+                                        </ListItemIcon>
+                                        <ListItemText primary={text} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Drawer>
+                    <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                        <div className="drawer-status">
+                            Opens: {openCount} | Closes: {closeCount}
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                Open and close the drawer at least 2 times each
+                            </Typography>
+                        </div>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Different Anchor Positions
+        const AnchorPositionsTest = ({ completeTest }) => {
+            const [drawers, setDrawers] = React.useState({
+                top: false,
+                left: false,
+                bottom: false,
+                right: false,
+            });
+            const [openedAnchors, setOpenedAnchors] = React.useState(new Set());
+            
+            const toggleDrawer = (anchor, open) => (event) => {
+                if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+                    return;
+                }
+                
+                setDrawers({ ...drawers, [anchor]: open });
+                
+                if (open) {
+                    const newOpened = new Set(openedAnchors);
+                    newOpened.add(anchor);
+                    setOpenedAnchors(newOpened);
+                    
+                    if (newOpened.size === 4) {
+                        completeTest(true, 'All drawer anchor positions tested successfully!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open drawers from all 4 positions:
+                    </Typography>
+                    <div className="button-group">
+                        {['top', 'left', 'bottom', 'right'].map((anchor) => (
+                            <React.Fragment key={anchor}>
+                                <Button
+                                    id={`open-${anchor}-drawer`}
+                                    variant={openedAnchors.has(anchor) ? "contained" : "outlined"}
+                                    color={openedAnchors.has(anchor) ? "success" : "primary"}
+                                    onClick={toggleDrawer(anchor, true)}
+                                >
+                                    {anchor} {openedAnchors.has(anchor) && '✓'}
+                                </Button>
+                                <Drawer
+                                    id={`${anchor}-drawer`}
+                                    anchor={anchor}
+                                    open={drawers[anchor]}
+                                    onClose={toggleDrawer(anchor, false)}
+                                >
+                                    <Box
+                                        sx={{ 
+                                            width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250,
+                                            height: anchor === 'top' || anchor === 'bottom' ? 150 : 'auto',
+                                            p: 2
+                                        }}
+                                        role="presentation"
+                                        onClick={toggleDrawer(anchor, false)}
+                                        onKeyDown={toggleDrawer(anchor, false)}
+                                    >
+                                        <Typography variant="h6">
+                                            {anchor.charAt(0).toUpperCase() + anchor.slice(1)} Drawer
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ mt: 2 }}>
+                                            This drawer opens from the {anchor}
+                                        </Typography>
+                                    </Box>
+                                </Drawer>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                    <div className="drawer-status">
+                        Positions Tested: {openedAnchors.size}/4
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Swipeable Drawer
+        const SwipeableDrawerTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [interactions, setInteractions] = React.useState({
+                opens: 0,
+                closes: 0,
+                swipeOpens: 0,
+                swipeCloses: 0
+            });
+            
+            const toggleDrawer = (isOpen, isSwipe = false) => (event) => {
+                if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+                    return;
+                }
+                
+                setOpen(isOpen);
+                
+                const newInteractions = { ...interactions };
+                if (isOpen) {
+                    if (isSwipe) {
+                        newInteractions.swipeOpens++;
+                    } else {
+                        newInteractions.opens++;
+                    }
+                } else {
+                    if (isSwipe) {
+                        newInteractions.swipeCloses++;
+                    } else {
+                        newInteractions.closes++;
+                    }
+                }
+                setInteractions(newInteractions);
+                
+                const totalInteractions = Object.values(newInteractions).reduce((a, b) => a + b, 0);
+                if (totalInteractions >= 4) {
+                    completeTest(true, 'Swipeable drawer interactions working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Interact with the swipeable drawer (open/close) at least 4 times:
+                    </Typography>
+                    <Button 
+                        id="open-swipeable-drawer"
+                        variant="contained" 
+                        onClick={toggleDrawer(true)}
+                    >
+                        Open Swipeable Drawer
+                    </Button>
+                    <SwipeableDrawer
+                        id="swipeable-drawer"
+                        anchor="bottom"
+                        open={open}
+                        onClose={toggleDrawer(false)}
+                        onOpen={toggleDrawer(true, true)}
+                    >
+                        <Box
+                            sx={{ 
+                                width: 'auto',
+                                height: 300,
+                                p: 2
+                            }}
+                            role="presentation"
+                        >
+                            <Box
+                                sx={{
+                                    width: 60,
+                                    height: 6,
+                                    backgroundColor: 'grey.300',
+                                    borderRadius: 3,
+                                    position: 'absolute',
+                                    top: 8,
+                                    left: 'calc(50% - 30px)',
+                                }}
+                            />
+                            <Typography variant="h6" sx={{ mt: 4 }}>
+                                Swipeable Drawer
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 2 }}>
+                                This drawer can be swiped open and closed on touch devices
+                            </Typography>
+                            <Button 
+                                id="close-from-inside"
+                                variant="outlined" 
+                                onClick={toggleDrawer(false)}
+                                sx={{ mt: 2 }}
+                            >
+                                Close Drawer
+                            </Button>
+                        </Box>
+                    </SwipeableDrawer>
+                    <div className="drawer-status">
+                        Total Interactions: {Object.values(interactions).reduce((a, b) => a + b, 0)}
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                            Opens: {interactions.opens}, Closes: {interactions.closes}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'drawer',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="temporary-drawer"
+                        testName="Test 1: Temporary Drawer"
+                        description="Test opening a temporary drawer and clicking menu items"
+                        onComplete={handleTestComplete}
+                    >
+                        <TemporaryDrawerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="persistent-drawer"
+                        testName="Test 2: Persistent Drawer"
+                        description="Test persistent drawer that stays beside page content"
+                        onComplete={handleTestComplete}
+                    >
+                        <PersistentDrawerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="anchor-positions"
+                        testName="Test 3: Anchor Positions"
+                        description="Test drawers opening from different positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <AnchorPositionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="swipeable-drawer"
+                        testName="Test 4: Swipeable Drawer"
+                        description="Test swipeable drawer with touch gesture support"
+                        onComplete={handleTestComplete}
+                    >
+                        <SwipeableDrawerTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Radio Group Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .selection-display {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .quiz-section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .radio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Radio Group</h1>
+            <p>Test the functionality and behavior of the Material UI Radio Group component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Radio,
+            RadioGroup,
+            FormControlLabel,
+            FormControl,
+            FormLabel,
+            FormHelperText,
+            Box,
+            Typography,
+            Stack,
+            Button,
+            Paper
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Selection
+        const BasicSelectionTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const correctAnswer = 'mars';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setValue(newValue);
+                
+                if (newValue === correctAnswer) {
+                    completeTest(true, 'Correct answer selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the correct answer: Which planet is known as the "Red Planet"?
+                    </Typography>
+                    <FormControl>
+                        <RadioGroup
+                            id="basic-radio-group"
+                            value={value}
+                            onChange={handleChange}
+                        >
+                            <FormControlLabel value="venus" control={<Radio />} label="Venus" />
+                            <FormControlLabel value="mars" control={<Radio />} label="Mars" />
+                            <FormControlLabel value="jupiter" control={<Radio />} label="Jupiter" />
+                            <FormControlLabel value="saturn" control={<Radio />} label="Saturn" />
+                        </RadioGroup>
+                    </FormControl>
+                    {value && (
+                        <div className="selection-display">
+                            <Typography variant="body2">
+                                Selected: <strong>{value.charAt(0).toUpperCase() + value.slice(1)}</strong>
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: Row Layout
+        const RowLayoutTest = ({ completeTest }) => {
+            const [size, setSize] = React.useState('');
+            const targetSize = 'large';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setSize(newValue);
+                
+                if (newValue === targetSize) {
+                    completeTest(true, 'Large size selected successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "Large" from the horizontal radio group:
+                    </Typography>
+                    <FormControl>
+                        <FormLabel id="row-radio-label">Size Selection</FormLabel>
+                        <RadioGroup
+                            row
+                            aria-labelledby="row-radio-label"
+                            value={size}
+                            onChange={handleChange}
+                        >
+                            <FormControlLabel value="small" control={<Radio />} label="Small" />
+                            <FormControlLabel value="medium" control={<Radio />} label="Medium" />
+                            <FormControlLabel value="large" control={<Radio />} label="Large" />
+                            <FormControlLabel value="extra-large" control={<Radio />} label="Extra Large" />
+                        </RadioGroup>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 3: Color Variants
+        const ColorVariantsTest = ({ completeTest }) => {
+            const [selectedColor, setSelectedColor] = React.useState('');
+            const colors = ['primary', 'secondary', 'success', 'error', 'warning', 'info'];
+            const targetColor = 'success';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setSelectedColor(newValue);
+                
+                if (newValue === targetColor) {
+                    completeTest(true, 'Success color variant selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the "Success" (green) colored radio button:
+                    </Typography>
+                    <RadioGroup
+                        value={selectedColor}
+                        onChange={handleChange}
+                    >
+                        <div className="radio-grid">
+                            {colors.map((color) => (
+                                <FormControlLabel
+                                    key={color}
+                                    value={color}
+                                    control={<Radio color={color} />}
+                                    label={color.charAt(0).toUpperCase() + color.slice(1)}
+                                />
+                            ))}
+                        </div>
+                    </RadioGroup>
+                </Box>
+            );
+        };
+        
+        // Test 4: Disabled Options
+        const DisabledOptionsTest = ({ completeTest }) => {
+            const [plan, setPlan] = React.useState('');
+            const availablePlan = 'premium';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setPlan(newValue);
+                
+                if (newValue === availablePlan) {
+                    completeTest(true, 'Available plan selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the available plan (some options are disabled):
+                    </Typography>
+                    <FormControl>
+                        <FormLabel id="disabled-radio-label">Subscription Plans</FormLabel>
+                        <RadioGroup
+                            aria-labelledby="disabled-radio-label"
+                            value={plan}
+                            onChange={handleChange}
+                        >
+                            <FormControlLabel 
+                                value="free" 
+                                disabled 
+                                control={<Radio />} 
+                                label="Free (Sold Out)" 
+                            />
+                            <FormControlLabel 
+                                value="basic" 
+                                disabled 
+                                control={<Radio />} 
+                                label="Basic (Sold Out)" 
+                            />
+                            <FormControlLabel 
+                                value="premium" 
+                                control={<Radio />} 
+                                label="Premium (Available)" 
+                            />
+                            <FormControlLabel 
+                                value="enterprise" 
+                                disabled 
+                                control={<Radio />} 
+                                label="Enterprise (Coming Soon)" 
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 5: Size Variants
+        const SizeVariantsTest = ({ completeTest }) => {
+            const [selectedSize, setSelectedSize] = React.useState('');
+            const sizes = ['small', 'medium'];
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            
+            const handleChange = (size) => (event) => {
+                setSelectedSize(event.target.value);
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'Both size variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test both size variants by selecting an option in each group:
+                    </Typography>
+                    <Stack spacing={3}>
+                        <FormControl>
+                            <FormLabel>Small Size Radio</FormLabel>
+                            <RadioGroup onChange={handleChange('small')}>
+                                <FormControlLabel 
+                                    value="small-1" 
+                                    control={<Radio size="small" />} 
+                                    label="Small Option 1" 
+                                />
+                                <FormControlLabel 
+                                    value="small-2" 
+                                    control={<Radio size="small" />} 
+                                    label="Small Option 2" 
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        
+                        <FormControl>
+                            <FormLabel>Medium Size Radio (Default)</FormLabel>
+                            <RadioGroup onChange={handleChange('medium')}>
+                                <FormControlLabel 
+                                    value="medium-1" 
+                                    control={<Radio />} 
+                                    label="Medium Option 1" 
+                                />
+                                <FormControlLabel 
+                                    value="medium-2" 
+                                    control={<Radio />} 
+                                    label="Medium Option 2" 
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Form Validation
+        const FormValidationTest = ({ completeTest }) => {
+            const [agreement, setAgreement] = React.useState('');
+            const [error, setError] = React.useState(false);
+            const [helperText, setHelperText] = React.useState('Please select your agreement status');
+            
+            const handleSubmit = () => {
+                if (agreement === '') {
+                    setError(true);
+                    setHelperText('This field is required');
+                } else if (agreement === 'agree') {
+                    setError(false);
+                    completeTest(true, 'Form submitted successfully!');
+                } else {
+                    setError(true);
+                    setHelperText('You must agree to continue');
+                }
+            };
+            
+            const handleChange = (event) => {
+                setAgreement(event.target.value);
+                setError(false);
+                setHelperText('');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select "I Agree" and submit the form:
+                    </Typography>
+                    <FormControl error={error} required>
+                        <FormLabel id="agreement-radio">Terms and Conditions</FormLabel>
+                        <RadioGroup
+                            aria-labelledby="agreement-radio"
+                            value={agreement}
+                            onChange={handleChange}
+                        >
+                            <FormControlLabel 
+                                value="agree" 
+                                control={<Radio />} 
+                                label="I Agree" 
+                            />
+                            <FormControlLabel 
+                                value="disagree" 
+                                control={<Radio />} 
+                                label="I Disagree" 
+                            />
+                        </RadioGroup>
+                        <FormHelperText>{helperText}</FormHelperText>
+                    </FormControl>
+                    <Box mt={2}>
+                        <Button variant="contained" onClick={handleSubmit}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 7: Quiz Challenge
+        const QuizChallengeTest = ({ completeTest }) => {
+            const [answers, setAnswers] = React.useState({
+                q1: '',
+                q2: '',
+                q3: ''
+            });
+            
+            const correctAnswers = {
+                q1: 'paris',
+                q2: 'pacific',
+                q3: 'einstein'
+            };
+            
+            const handleAnswer = (question) => (event) => {
+                const newAnswers = { ...answers, [question]: event.target.value };
+                setAnswers(newAnswers);
+                
+                const allCorrect = Object.keys(correctAnswers).every(
+                    key => newAnswers[key] === correctAnswers[key]
+                );
+                
+                if (allCorrect) {
+                    completeTest(true, 'All questions answered correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Answer all questions correctly:
+                    </Typography>
+                    
+                    <div className="quiz-section">
+                        <FormControl>
+                            <FormLabel>Q1: What is the capital of France?</FormLabel>
+                            <RadioGroup value={answers.q1} onChange={handleAnswer('q1')}>
+                                <FormControlLabel value="london" control={<Radio />} label="London" />
+                                <FormControlLabel value="paris" control={<Radio />} label="Paris" />
+                                <FormControlLabel value="berlin" control={<Radio />} label="Berlin" />
+                            </RadioGroup>
+                        </FormControl>
+                    </div>
+                    
+                    <div className="quiz-section">
+                        <FormControl>
+                            <FormLabel>Q2: Which ocean is the largest?</FormLabel>
+                            <RadioGroup value={answers.q2} onChange={handleAnswer('q2')}>
+                                <FormControlLabel value="atlantic" control={<Radio />} label="Atlantic" />
+                                <FormControlLabel value="pacific" control={<Radio />} label="Pacific" />
+                                <FormControlLabel value="indian" control={<Radio />} label="Indian" />
+                            </RadioGroup>
+                        </FormControl>
+                    </div>
+                    
+                    <div className="quiz-section">
+                        <FormControl>
+                            <FormLabel>Q3: Who developed the theory of relativity?</FormLabel>
+                            <RadioGroup value={answers.q3} onChange={handleAnswer('q3')}>
+                                <FormControlLabel value="newton" control={<Radio />} label="Newton" />
+                                <FormControlLabel value="galileo" control={<Radio />} label="Galileo" />
+                                <FormControlLabel value="einstein" control={<Radio />} label="Einstein" />
+                            </RadioGroup>
+                        </FormControl>
+                    </div>
+                    
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
+                        Progress: {Object.values(answers).filter(a => a !== '').length}/3
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'radio-group',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-selection"
+                        testName="Test 1: Basic Selection"
+                        description="Select the correct answer from radio options"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="row-layout"
+                        testName="Test 2: Row Layout"
+                        description="Test horizontal radio group layout"
+                        onComplete={handleTestComplete}
+                    >
+                        <RowLayoutTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-variants"
+                        testName="Test 3: Color Variants"
+                        description="Select radio button with specific color"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-options"
+                        testName="Test 4: Disabled Options"
+                        description="Select from available options (some are disabled)"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledOptionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size-variants"
+                        testName="Test 5: Size Variants"
+                        description="Test different radio button sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="form-validation"
+                        testName="Test 6: Form Validation"
+                        description="Test required radio group with validation"
+                        onComplete={handleTestComplete}
+                    >
+                        <FormValidationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="quiz-challenge"
+                        testName="Test 7: Quiz Challenge"
+                        description="Answer multiple questions correctly"
+                        onComplete={handleTestComplete}
+                    >
+                        <QuizChallengeTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

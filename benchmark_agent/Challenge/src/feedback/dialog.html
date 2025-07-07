@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Dialog Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .status-info {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Dialog</h1>
+            <p>Test the functionality and behavior of the Material UI Dialog component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Dialog,
+            DialogTitle,
+            DialogContent,
+            DialogContentText,
+            DialogActions,
+            Box,
+            Button,
+            Typography,
+            TextField,
+            IconButton,
+            Slide,
+            List,
+            ListItem,
+            ListItemButton,
+            ListItemText,
+            FormControlLabel,
+            Switch
+        } = window['MaterialUI'];
+        
+        // Transition component for dialog
+        const Transition = React.forwardRef(function Transition(props, ref) {
+            return <Slide direction="up" ref={ref} {...props} />;
+        });
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Dialog
+        const BasicDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [agreeClicked, setAgreeClicked] = React.useState(false);
+            const [disagreeClicked, setDisagreeClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (agreeClicked && disagreeClicked) {
+                    completeTest(true, 'Basic dialog actions tested successfully!');
+                }
+            }, [agreeClicked, disagreeClicked]);
+            
+            const handleClickOpen = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const handleAgree = () => {
+                setAgreeClicked(true);
+                handleClose();
+            };
+            
+            const handleDisagree = () => {
+                setDisagreeClicked(true);
+                handleClose();
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the dialog and click both Agree and Disagree buttons:
+                    </Typography>
+                    <Button 
+                        id="basic-dialog-button"
+                        variant="outlined" 
+                        onClick={handleClickOpen}
+                    >
+                        Open Basic Dialog
+                    </Button>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Agree clicked: {agreeClicked ? '✓' : '✗'}<br/>
+                            Disagree clicked: {disagreeClicked ? '✓' : '✗'}
+                        </Typography>
+                    </div>
+                    <Dialog
+                        id="basic-dialog"
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="basic-dialog-title"
+                        aria-describedby="basic-dialog-description"
+                    >
+                        <DialogTitle id="basic-dialog-title">
+                            Use Google's location service?
+                        </DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="basic-dialog-description">
+                                Let Google help apps determine location. This means sending anonymous
+                                location data to Google, even when no apps are running.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button id="disagree-button" onClick={handleDisagree}>Disagree</Button>
+                            <Button id="agree-button" onClick={handleAgree} autoFocus>
+                                Agree
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Test 2: Form Dialog
+        const FormDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [email, setEmail] = React.useState('');
+            const [subscribed, setSubscribed] = React.useState(false);
+            
+            const handleClickOpen = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const handleSubscribe = () => {
+                if (email && email.includes('@')) {
+                    setSubscribed(true);
+                    handleClose();
+                    completeTest(true, 'Form dialog with valid email submitted successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the dialog, enter a valid email, and subscribe:
+                    </Typography>
+                    <Button 
+                        id="form-dialog-button"
+                        variant="outlined" 
+                        onClick={handleClickOpen}
+                    >
+                        Open Form Dialog
+                    </Button>
+                    {subscribed && (
+                        <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                            Subscribed with: {email}
+                        </Typography>
+                    )}
+                    <Dialog 
+                        id="form-dialog"
+                        open={open} 
+                        onClose={handleClose}
+                        PaperProps={{
+                            component: 'form',
+                            onSubmit: (event) => {
+                                event.preventDefault();
+                                handleSubscribe();
+                            },
+                        }}
+                    >
+                        <DialogTitle>Subscribe</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                To subscribe to this website, please enter your email address here. We
+                                will send updates occasionally.
+                            </DialogContentText>
+                            <TextField
+                                id="email-field"
+                                autoFocus
+                                required
+                                margin="dense"
+                                name="email"
+                                label="Email Address"
+                                type="email"
+                                fullWidth
+                                variant="standard"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleClose}>Cancel</Button>
+                            <Button id="subscribe-button" type="submit">Subscribe</Button>
+                        </DialogActions>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Test 3: Full Screen Dialog
+        const FullScreenDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [fullscreenEnabled, setFullscreenEnabled] = React.useState(true);
+            const [interactionCount, setInteractionCount] = React.useState(0);
+            
+            const handleClickOpen = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+                if (interactionCount >= 2) {
+                    completeTest(true, 'Full screen dialog tested with both modes!');
+                }
+            };
+            
+            const handleToggleFullscreen = () => {
+                setFullscreenEnabled(!fullscreenEnabled);
+                setInteractionCount(prev => prev + 1);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the dialog and toggle fullscreen mode:
+                    </Typography>
+                    <Button 
+                        id="fullscreen-dialog-button"
+                        variant="outlined" 
+                        onClick={handleClickOpen}
+                    >
+                        Open Full Screen Dialog
+                    </Button>
+                    <Dialog
+                        id="fullscreen-dialog"
+                        fullScreen={fullscreenEnabled}
+                        open={open}
+                        onClose={handleClose}
+                        TransitionComponent={Transition}
+                    >
+                        <DialogTitle sx={{ m: 0, p: 2 }}>
+                            {fullscreenEnabled ? 'Full Screen' : 'Normal'} Dialog
+                            <IconButton
+                                aria-label="close"
+                                onClick={handleClose}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                            >
+                                <span className="material-icons">close</span>
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent dividers>
+                            <Typography gutterBottom>
+                                This dialog can be toggled between fullscreen and normal modes.
+                            </Typography>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        id="fullscreen-toggle"
+                                        checked={fullscreenEnabled}
+                                        onChange={handleToggleFullscreen}
+                                    />
+                                }
+                                label="Enable Fullscreen"
+                            />
+                            <Typography variant="body2" sx={{ mt: 2 }}>
+                                Toggle count: {interactionCount}
+                            </Typography>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button id="fullscreen-close-button" autoFocus onClick={handleClose}>
+                                Close
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Test 4: Scrollable Dialog
+        const ScrollableDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [scroll, setScroll] = React.useState('paper');
+            const [testedScrollTypes, setTestedScrollTypes] = React.useState(new Set());
+            
+            const handleClickOpen = (scrollType) => () => {
+                setScroll(scrollType);
+                setOpen(true);
+                const newTested = new Set(testedScrollTypes);
+                newTested.add(scrollType);
+                setTestedScrollTypes(newTested);
+                
+                if (newTested.size >= 2) {
+                    completeTest(true, 'Both scroll types tested successfully!');
+                }
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const descriptionElementRef = React.useRef(null);
+            React.useEffect(() => {
+                if (open) {
+                    const { current: descriptionElement } = descriptionElementRef;
+                    if (descriptionElement !== null) {
+                        descriptionElement.focus();
+                    }
+                }
+            }, [open]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test both scroll types (paper and body):
+                    </Typography>
+                    <div className="button-group">
+                        <Button 
+                            id="scroll-paper-button"
+                            variant="outlined"
+                            onClick={handleClickOpen('paper')}
+                        >
+                            scroll=paper
+                        </Button>
+                        <Button 
+                            id="scroll-body-button"
+                            variant="outlined"
+                            onClick={handleClickOpen('body')}
+                        >
+                            scroll=body
+                        </Button>
+                    </div>
+                    <Dialog
+                        id="scrollable-dialog"
+                        open={open}
+                        onClose={handleClose}
+                        scroll={scroll}
+                        aria-labelledby="scroll-dialog-title"
+                        aria-describedby="scroll-dialog-description"
+                    >
+                        <DialogTitle id="scroll-dialog-title">Scrollable Dialog ({scroll})</DialogTitle>
+                        <DialogContent dividers={scroll === 'paper'}>
+                            <DialogContentText
+                                id="scroll-dialog-description"
+                                ref={descriptionElementRef}
+                                tabIndex={-1}
+                            >
+                                {[...new Array(50)]
+                                    .map(
+                                        () => `Cras mattis consectetur purus sit amet fermentum.
+                                        Cras justo odio, dapibus ac facilisis in, egestas eget quam.
+                                        Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
+                                        Praesent commodo cursus magna, vel scelerisque nisl consectetur et.`,
+                                    )
+                                    .join('\n')}
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleClose}>Cancel</Button>
+                            <Button onClick={handleClose}>Subscribe</Button>
+                        </DialogActions>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Test 5: Confirmation Dialog
+        const ConfirmationDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [value, setValue] = React.useState('');
+            const [confirmed, setConfirmed] = React.useState(false);
+            
+            const options = [
+                'None',
+                'Atria',
+                'Callisto',
+                'Dione',
+                'Ganymede',
+                'Hangouts Call',
+                'Luna',
+                'Oberon',
+                'Phobos',
+                'Pyxis',
+                'Sedna',
+                'Titania',
+                'Triton',
+                'Umbriel',
+            ];
+            
+            const handleClickListItem = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = (newValue) => {
+                setOpen(false);
+                
+                if (newValue) {
+                    setValue(newValue);
+                    setConfirmed(true);
+                    completeTest(true, 'Confirmation dialog selection made successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click to open dialog and select a ringtone:
+                    </Typography>
+                    <List>
+                        <ListItem
+                            button
+                            divider
+                            aria-haspopup="true"
+                            aria-controls="ringtone-menu"
+                            aria-label="phone ringtone"
+                            onClick={handleClickListItem}
+                        >
+                            <ListItemText 
+                                primary="Phone ringtone" 
+                                secondary={value || 'Click to select'} 
+                            />
+                        </ListItem>
+                    </List>
+                    <Dialog
+                        id="confirmation-dialog"
+                        sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+                        maxWidth="xs"
+                        open={open}
+                    >
+                        <DialogTitle>Phone Ringtone</DialogTitle>
+                        <List sx={{ pt: 0 }}>
+                            {options.map((option) => (
+                                <ListItem
+                                    button
+                                    onClick={() => handleClose(option)}
+                                    key={option}
+                                >
+                                    <ListItemButton
+                                        autoFocus={option === 'Atria'}
+                                        selected={value === option}
+                                    >
+                                        <ListItemText primary={option} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Test 6: Dialog Size
+        const SizeDialogTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [maxWidth, setMaxWidth] = React.useState('sm');
+            const [fullWidth, setFullWidth] = React.useState(true);
+            const [sizesTestd, setSizesTested] = React.useState(new Set());
+            
+            const handleClickOpen = () => {
+                setOpen(true);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+            };
+            
+            const handleMaxWidthChange = (event) => {
+                const newSize = event.target.value;
+                setMaxWidth(newSize);
+                const newTested = new Set(sizesTestd);
+                newTested.add(newSize);
+                setSizesTested(newTested);
+                
+                if (newTested.size >= 3) {
+                    completeTest(true, 'Dialog sizes tested successfully!');
+                }
+            };
+            
+            const handleFullWidthChange = (event) => {
+                setFullWidth(event.target.checked);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open dialog and test at least 3 different sizes:
+                    </Typography>
+                    <Button 
+                        id="size-dialog-button"
+                        variant="outlined" 
+                        onClick={handleClickOpen}
+                    >
+                        Open Size Dialog
+                    </Button>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Sizes tested: {Array.from(sizesTestd).join(', ') || 'None'}
+                        </Typography>
+                    </div>
+                    <Dialog
+                        id="size-dialog"
+                        fullWidth={fullWidth}
+                        maxWidth={maxWidth}
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <DialogTitle>Optional sizes</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                You can set my maximum width and whether I adapt or not.
+                            </DialogContentText>
+                            <Box
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                <FormControlLabel
+                                    sx={{ mt: 1 }}
+                                    control={
+                                        <Switch
+                                            checked={fullWidth}
+                                            onChange={handleFullWidthChange}
+                                        />
+                                    }
+                                    label="Full width"
+                                />
+                                <TextField
+                                    select
+                                    label="Max width"
+                                    value={maxWidth}
+                                    onChange={handleMaxWidthChange}
+                                    SelectProps={{
+                                        native: true,
+                                    }}
+                                    sx={{ mt: 2, minWidth: 120 }}
+                                >
+                                    <option value={false}>false</option>
+                                    <option value="xs">xs</option>
+                                    <option value="sm">sm</option>
+                                    <option value="md">md</option>
+                                    <option value="lg">lg</option>
+                                    <option value="xl">xl</option>
+                                </TextField>
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleClose}>Close</Button>
+                        </DialogActions>
+                    </Dialog>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'dialog',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic"
+                        testName="Test 1: Basic Dialog"
+                        description="Test basic dialog with title, content, and actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicDialogTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="form"
+                        testName="Test 2: Form Dialog"
+                        description="Test dialog with form input and validation"
+                        onComplete={handleTestComplete}
+                    >
+                        <FormDialogTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fullscreen"
+                        testName="Test 3: Full Screen Dialog"
+                        description="Test dialog that can toggle between fullscreen and normal modes"
+                        onComplete={handleTestComplete}
+                    >
+                        <FullScreenDialogTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="scrollable"
+                        testName="Test 4: Scrollable Dialog"
+                        description="Test dialog with scrollable content (paper vs body scroll)"
+                        onComplete={handleTestComplete}
+                    >
+                        <ScrollableDialogTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="confirmation"
+                        testName="Test 5: Confirmation Dialog"
+                        description="Test dialog for selecting from a list of options"
+                        onComplete={handleTestComplete}
+                    >
+                        <ConfirmationDialogTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size"
+                        testName="Test 6: Dialog Size"
+                        description="Test dialog with configurable max width and full width options"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeDialogTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

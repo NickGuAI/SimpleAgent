@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Date/Time Pickers Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- MUI X Date Pickers -->
+    <script src="https://unpkg.com/@mui/x-date-pickers@6.0.0/umd/x-date-pickers.production.min.js"></script>
+    
+    <!-- Date adapter - dayjs -->
+    <script src="https://unpkg.com/dayjs@1.11.7/dayjs.min.js"></script>
+    <script src="https://unpkg.com/@date-io/dayjs@2.16.0/build/index.umd.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .date-info {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI X Challenge: Date/Time Pickers</h1>
+            <p>Test the functionality and behavior of the Material UI Date and Time Picker components</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Box,
+            Typography,
+            Stack,
+            Button,
+            TextField
+        } = window['MaterialUI'];
+        
+        const {
+            LocalizationProvider,
+            DatePicker,
+            TimePicker,
+            DateTimePicker,
+            DesktopDatePicker,
+            MobileDatePicker,
+            StaticDatePicker
+        } = window['MaterialUIXDatePickers'];
+        
+        const { AdapterDayjs } = window['DateIODayjs'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            {React.cloneElement(children, { completeTest })}
+                        </LocalizationProvider>
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Date Picker
+        const BasicDatePickerTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(null);
+            
+            const handleChange = (newValue) => {
+                setValue(newValue);
+                if (newValue) {
+                    completeTest(true, `Date selected successfully: ${newValue.format('YYYY-MM-DD')}`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select any date using the date picker:
+                    </Typography>
+                    <DatePicker
+                        label="Select Date"
+                        value={value}
+                        onChange={handleChange}
+                        renderInput={(params) => <TextField {...params} id="basic-date-picker" />}
+                        slotProps={{
+                            textField: {
+                                id: "basic-date-picker"
+                            }
+                        }}
+                    />
+                    {value && (
+                        <div className="date-info">
+                            <Typography variant="body2">
+                                Selected Date: {value.format('MMMM D, YYYY')}
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: Time Picker
+        const TimePickerTest = ({ completeTest }) => {
+            const [morningTime, setMorningTime] = React.useState(null);
+            const [afternoonTime, setAfternoonTime] = React.useState(null);
+            
+            React.useEffect(() => {
+                if (morningTime && afternoonTime) {
+                    const morning = morningTime.hour();
+                    const afternoon = afternoonTime.hour();
+                    
+                    if (morning < 12 && afternoon >= 12) {
+                        completeTest(true, 'Morning and afternoon times selected correctly!');
+                    }
+                }
+            }, [morningTime, afternoonTime]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select a morning time (before 12 PM) and an afternoon time (after 12 PM):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <TimePicker
+                            label="Morning Time"
+                            value={morningTime}
+                            onChange={setMorningTime}
+                            slotProps={{
+                                textField: {
+                                    id: "morning-time-picker"
+                                }
+                            }}
+                        />
+                        <TimePicker
+                            label="Afternoon Time"
+                            value={afternoonTime}
+                            onChange={setAfternoonTime}
+                            slotProps={{
+                                textField: {
+                                    id: "afternoon-time-picker"
+                                }
+                            }}
+                        />
+                    </Stack>
+                    {(morningTime || afternoonTime) && (
+                        <div className="date-info">
+                            {morningTime && (
+                                <Typography variant="body2">
+                                    Morning: {morningTime.format('h:mm A')}
+                                </Typography>
+                            )}
+                            {afternoonTime && (
+                                <Typography variant="body2">
+                                    Afternoon: {afternoonTime.format('h:mm A')}
+                                </Typography>
+                            )}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Date Time Picker
+        const DateTimePickerTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(null);
+            const targetDate = dayjs().add(7, 'day').startOf('day').hour(14);
+            
+            const handleChange = (newValue) => {
+                setValue(newValue);
+                
+                // Check if selected date is at least 7 days in the future
+                if (newValue && newValue.isAfter(dayjs().add(6, 'day'))) {
+                    completeTest(true, 'Future date and time selected successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select a date and time at least 7 days in the future:
+                    </Typography>
+                    <DateTimePicker
+                        label="Future Date & Time"
+                        value={value}
+                        onChange={handleChange}
+                        minDateTime={dayjs()}
+                        slotProps={{
+                            textField: {
+                                id: "datetime-picker",
+                                helperText: "Must be at least 7 days from today"
+                            }
+                        }}
+                    />
+                    {value && (
+                        <div className="date-info">
+                            <Typography variant="body2">
+                                Selected: {value.format('MMMM D, YYYY at h:mm A')}
+                            </Typography>
+                            <Typography variant="body2">
+                                Days from now: {value.diff(dayjs(), 'day')}
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Date Range Validation
+        const DateRangeValidationTest = ({ completeTest }) => {
+            const [startDate, setStartDate] = React.useState(null);
+            const [endDate, setEndDate] = React.useState(null);
+            
+            React.useEffect(() => {
+                if (startDate && endDate) {
+                    if (endDate.isAfter(startDate)) {
+                        const daysDiff = endDate.diff(startDate, 'day');
+                        if (daysDiff >= 3 && daysDiff <= 7) {
+                            completeTest(true, `Valid date range selected: ${daysDiff} days`);
+                        }
+                    }
+                }
+            }, [startDate, endDate]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select a date range between 3 to 7 days (end date must be after start date):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <DatePicker
+                            label="Start Date"
+                            value={startDate}
+                            onChange={setStartDate}
+                            slotProps={{
+                                textField: {
+                                    id: "start-date-picker"
+                                }
+                            }}
+                        />
+                        <DatePicker
+                            label="End Date"
+                            value={endDate}
+                            onChange={setEndDate}
+                            minDate={startDate}
+                            slotProps={{
+                                textField: {
+                                    id: "end-date-picker",
+                                    helperText: startDate ? "Must be 3-7 days after start date" : "Select start date first"
+                                }
+                            }}
+                        />
+                    </Stack>
+                    {startDate && endDate && (
+                        <div className="date-info">
+                            <Typography variant="body2">
+                                Range: {startDate.format('MMM D')} - {endDate.format('MMM D, YYYY')}
+                            </Typography>
+                            <Typography variant="body2">
+                                Duration: {endDate.diff(startDate, 'day')} days
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Static Date Picker
+        const StaticDatePickerTest = ({ completeTest }) => {
+            const [selectedDates, setSelectedDates] = React.useState(new Set());
+            const today = dayjs();
+            const targetDates = [
+                today.format('YYYY-MM-DD'),
+                today.add(1, 'week').format('YYYY-MM-DD'),
+                today.add(1, 'month').format('YYYY-MM-DD')
+            ];
+            
+            const handleDateChange = (newValue) => {
+                if (newValue) {
+                    const dateStr = newValue.format('YYYY-MM-DD');
+                    const newSelected = new Set(selectedDates);
+                    newSelected.add(dateStr);
+                    setSelectedDates(newSelected);
+                    
+                    // Check if all target dates types are selected (today, next week, next month)
+                    const hasToday = Array.from(newSelected).some(date => 
+                        dayjs(date).isSame(today, 'day')
+                    );
+                    const hasNextWeek = Array.from(newSelected).some(date => 
+                        dayjs(date).isAfter(today.add(5, 'day')) && 
+                        dayjs(date).isBefore(today.add(10, 'day'))
+                    );
+                    const hasNextMonth = Array.from(newSelected).some(date => 
+                        dayjs(date).isAfter(today.add(25, 'day'))
+                    );
+                    
+                    if (hasToday && hasNextWeek && hasNextMonth) {
+                        completeTest(true, 'Selected dates from today, next week, and next month!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select three dates: one today, one next week, and one next month
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <StaticDatePicker
+                            displayStaticWrapperAs="desktop"
+                            value={null}
+                            onChange={handleDateChange}
+                            slotProps={{
+                                actionBar: {
+                                    actions: ['clear', 'today'],
+                                },
+                            }}
+                        />
+                    </Box>
+                    {selectedDates.size > 0 && (
+                        <div className="date-info">
+                            <Typography variant="body2">
+                                Selected Dates ({selectedDates.size}):
+                            </Typography>
+                            {Array.from(selectedDates).map(date => (
+                                <Typography key={date} variant="body2">
+                                    • {dayjs(date).format('MMMM D, YYYY')}
+                                </Typography>
+                            ))}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 6: Different Picker Variants
+        const PickerVariantsTest = ({ completeTest }) => {
+            const [desktopDate, setDesktopDate] = React.useState(null);
+            const [mobileDate, setMobileDate] = React.useState(null);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            React.useEffect(() => {
+                if (desktopDate && mobileDate) {
+                    completeTest(true, 'Both desktop and mobile date pickers used successfully!');
+                }
+            }, [desktopDate, mobileDate]);
+            
+            const handleViewToggle = () => {
+                setClickCount(prev => prev + 1);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Use both desktop and mobile date picker variants:
+                    </Typography>
+                    <div className="picker-grid">
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Desktop Date Picker:
+                            </Typography>
+                            <DesktopDatePicker
+                                label="Desktop Picker"
+                                value={desktopDate}
+                                onChange={setDesktopDate}
+                                slotProps={{
+                                    textField: {
+                                        id: "desktop-date-picker"
+                                    }
+                                }}
+                            />
+                        </Box>
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Mobile Date Picker:
+                            </Typography>
+                            <MobileDatePicker
+                                label="Mobile Picker"
+                                value={mobileDate}
+                                onChange={setMobileDate}
+                                slotProps={{
+                                    textField: {
+                                        id: "mobile-date-picker"
+                                    }
+                                }}
+                            />
+                        </Box>
+                    </div>
+                    <Button
+                        id="view-toggle-button"
+                        variant="outlined"
+                        onClick={handleViewToggle}
+                        sx={{ mt: 2 }}
+                    >
+                        Toggle View ({clickCount})
+                    </Button>
+                    {(desktopDate || mobileDate) && (
+                        <div className="date-info">
+                            {desktopDate && (
+                                <Typography variant="body2">
+                                    Desktop: {desktopDate.format('MMMM D, YYYY')}
+                                </Typography>
+                            )}
+                            {mobileDate && (
+                                <Typography variant="body2">
+                                    Mobile: {mobileDate.format('MMMM D, YYYY')}
+                                </Typography>
+                            )}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'date-time-pickers',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-date-picker"
+                        testName="Test 1: Basic Date Picker"
+                        description="Select any date using the date picker"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicDatePickerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="time-picker"
+                        testName="Test 2: Time Picker"
+                        description="Select morning and afternoon times"
+                        onComplete={handleTestComplete}
+                    >
+                        <TimePickerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="datetime-picker"
+                        testName="Test 3: DateTime Picker"
+                        description="Select a future date and time"
+                        onComplete={handleTestComplete}
+                    >
+                        <DateTimePickerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="date-range"
+                        testName="Test 4: Date Range Validation"
+                        description="Select a valid date range between 3-7 days"
+                        onComplete={handleTestComplete}
+                    >
+                        <DateRangeValidationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="static-picker"
+                        testName="Test 5: Static Date Picker"
+                        description="Select multiple dates using the static calendar view"
+                        onComplete={handleTestComplete}
+                    >
+                        <StaticDatePickerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="picker-variants"
+                        testName="Test 6: Picker Variants"
+                        description="Test both desktop and mobile picker variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <PickerVariantsTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

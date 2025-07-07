@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Stepper Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .step-content {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .navigation-log {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Stepper</h1>
+            <p>Test the functionality and behavior of the Material UI Stepper component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Stepper,
+            Step,
+            StepLabel,
+            StepContent,
+            StepButton,
+            Button,
+            Box,
+            Typography,
+            Paper,
+            Icon
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Linear Horizontal Stepper
+        const LinearStepperTest = ({ completeTest }) => {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [visitedSteps, setVisitedSteps] = React.useState(new Set([0]));
+            
+            const steps = ['Select campaign settings', 'Create an ad group', 'Create an ad'];
+            
+            const handleNext = () => {
+                const newStep = activeStep + 1;
+                setActiveStep(newStep);
+                const newVisited = new Set(visitedSteps);
+                newVisited.add(newStep);
+                setVisitedSteps(newVisited);
+                
+                if (newStep === steps.length - 1) {
+                    completeTest(true, 'Linear stepper navigation completed successfully!');
+                }
+            };
+            
+            const handleBack = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep - 1);
+            };
+            
+            const handleReset = () => {
+                setActiveStep(0);
+                setVisitedSteps(new Set([0]));
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate through all steps to complete the test:
+                    </Typography>
+                    <Stepper id="linear-stepper" activeStep={activeStep}>
+                        {steps.map((label, index) => (
+                            <Step key={label}>
+                                <StepLabel id={`step-label-${index}`}>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    <div className="step-content">
+                        {activeStep === steps.length ? (
+                            <>
+                                <Typography>
+                                    All steps completed - you're finished!
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                                    <Box sx={{ flex: '1 1 auto' }} />
+                                    <Button id="reset-button" onClick={handleReset}>Reset</Button>
+                                </Box>
+                            </>
+                        ) : (
+                            <>
+                                <Typography>Step {activeStep + 1}: {steps[activeStep]}</Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                                    <Button
+                                        id="back-button"
+                                        color="inherit"
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        sx={{ mr: 1 }}
+                                    >
+                                        Back
+                                    </Button>
+                                    <Box sx={{ flex: '1 1 auto' }} />
+                                    <Button
+                                        id="next-button"
+                                        onClick={handleNext}
+                                        variant="contained"
+                                    >
+                                        {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                    </div>
+                    <div className="navigation-log">
+                        Visited Steps: {Array.from(visitedSteps).sort().join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Non-Linear Stepper
+        const NonLinearStepperTest = ({ completeTest }) => {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [completed, setCompleted] = React.useState({});
+            
+            const steps = ['Step One', 'Step Two', 'Step Three', 'Step Four'];
+            
+            const totalSteps = () => steps.length;
+            const completedSteps = () => Object.keys(completed).length;
+            const isLastStep = () => activeStep === totalSteps() - 1;
+            const allStepsCompleted = () => completedSteps() === totalSteps();
+            
+            const handleNext = () => {
+                const newActiveStep =
+                    isLastStep() && !allStepsCompleted()
+                        ? steps.findIndex((step, i) => !(i in completed))
+                        : activeStep + 1;
+                setActiveStep(newActiveStep);
+            };
+            
+            const handleBack = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep - 1);
+            };
+            
+            const handleStep = (step) => () => {
+                setActiveStep(step);
+            };
+            
+            const handleComplete = () => {
+                const newCompleted = completed;
+                newCompleted[activeStep] = true;
+                setCompleted(newCompleted);
+                handleNext();
+                
+                if (Object.keys(newCompleted).length === totalSteps()) {
+                    completeTest(true, 'Non-linear stepper with all steps completed!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Complete all steps in any order:
+                    </Typography>
+                    <Stepper id="non-linear-stepper" nonLinear activeStep={activeStep}>
+                        {steps.map((label, index) => (
+                            <Step key={label} completed={completed[index]}>
+                                <StepButton
+                                    id={`step-button-${index}`}
+                                    color="inherit"
+                                    onClick={handleStep(index)}
+                                >
+                                    {label}
+                                </StepButton>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    <div className="step-content">
+                        {allStepsCompleted() ? (
+                            <>
+                                <Typography>
+                                    All steps completed - you're finished!
+                                </Typography>
+                            </>
+                        ) : (
+                            <>
+                                <Typography>Step {activeStep + 1}: {steps[activeStep]}</Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                                    <Button
+                                        id="nl-back-button"
+                                        color="inherit"
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        sx={{ mr: 1 }}
+                                    >
+                                        Back
+                                    </Button>
+                                    <Box sx={{ flex: '1 1 auto' }} />
+                                    {activeStep !== steps.length &&
+                                        (completed[activeStep] ? (
+                                            <Typography variant="caption" sx={{ display: 'inline-block' }}>
+                                                Step {activeStep + 1} already completed
+                                            </Typography>
+                                        ) : (
+                                            <Button id="complete-button" onClick={handleComplete} variant="contained">
+                                                Complete Step
+                                            </Button>
+                                        ))}
+                                </Box>
+                            </>
+                        )}
+                    </div>
+                    <div className="navigation-log">
+                        Completed: {completedSteps()}/{totalSteps()} steps
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Vertical Stepper
+        const VerticalStepperTest = ({ completeTest }) => {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [navigationCount, setNavigationCount] = React.useState(0);
+            
+            const steps = [
+                {
+                    label: 'Select master blaster campaign settings',
+                    description: `For each ad campaign that you create, you can control how much
+                                you're willing to spend on clicks and conversions, which networks
+                                and geographical locations you want your ads to show on, and more.`,
+                },
+                {
+                    label: 'Create an ad group',
+                    description: 'An ad group contains one or more ads which target a shared set of keywords.',
+                },
+                {
+                    label: 'Create an ad',
+                    description: `Try out different ad text to see what brings in the most customers,
+                                and learn how to enhance your ads using features like ad extensions.`,
+                },
+            ];
+            
+            const handleNext = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                const newCount = navigationCount + 1;
+                setNavigationCount(newCount);
+                
+                if (activeStep === steps.length - 1 && newCount >= 5) {
+                    completeTest(true, 'Vertical stepper navigation completed!');
+                }
+            };
+            
+            const handleBack = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep - 1);
+                setNavigationCount(navigationCount + 1);
+            };
+            
+            const handleReset = () => {
+                setActiveStep(0);
+            };
+            
+            return (
+                <Box sx={{ maxWidth: 400 }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate back and forth at least 5 times and reach the end:
+                    </Typography>
+                    <Stepper id="vertical-stepper" activeStep={activeStep} orientation="vertical">
+                        {steps.map((step, index) => (
+                            <Step key={step.label}>
+                                <StepLabel
+                                    id={`v-step-label-${index}`}
+                                    optional={
+                                        index === 2 ? (
+                                            <Typography variant="caption">Last step</Typography>
+                                        ) : null
+                                    }
+                                >
+                                    {step.label}
+                                </StepLabel>
+                                <StepContent>
+                                    <Typography>{step.description}</Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <div>
+                                            <Button
+                                                id={`v-continue-${index}`}
+                                                variant="contained"
+                                                onClick={handleNext}
+                                                sx={{ mt: 1, mr: 1 }}
+                                            >
+                                                {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                                            </Button>
+                                            <Button
+                                                id={`v-back-${index}`}
+                                                disabled={index === 0}
+                                                onClick={handleBack}
+                                                sx={{ mt: 1, mr: 1 }}
+                                            >
+                                                Back
+                                            </Button>
+                                        </div>
+                                    </Box>
+                                </StepContent>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    {activeStep === steps.length && (
+                        <Paper square elevation={0} sx={{ p: 3 }}>
+                            <Typography>All steps completed - you're finished</Typography>
+                            <Button id="v-reset-button" onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                                Reset
+                            </Button>
+                        </Paper>
+                    )}
+                    <div className="navigation-log">
+                        Navigation Count: {navigationCount}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Alternative Label Stepper
+        const AlternativeLabelStepperTest = ({ completeTest }) => {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [skipped, setSkipped] = React.useState(new Set());
+            
+            const steps = ['Create account', 'Add personal info', 'Review & submit'];
+            
+            const isStepOptional = (step) => step === 1;
+            const isStepSkipped = (step) => skipped.has(step);
+            
+            const handleNext = () => {
+                let newSkipped = skipped;
+                if (isStepSkipped(activeStep)) {
+                    newSkipped = new Set(newSkipped.values());
+                    newSkipped.delete(activeStep);
+                }
+                
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                setSkipped(newSkipped);
+                
+                if (activeStep === steps.length - 1) {
+                    completeTest(true, 'Alternative label stepper completed with optional step!');
+                }
+            };
+            
+            const handleBack = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep - 1);
+            };
+            
+            const handleSkip = () => {
+                if (!isStepOptional(activeStep)) {
+                    throw new Error("You can't skip a step that isn't optional.");
+                }
+                
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                setSkipped((prevSkipped) => {
+                    const newSkipped = new Set(prevSkipped.values());
+                    newSkipped.add(activeStep);
+                    return newSkipped;
+                });
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Complete the stepper (step 2 is optional and can be skipped):
+                    </Typography>
+                    <Stepper id="alternative-stepper" activeStep={activeStep} alternativeLabel>
+                        {steps.map((label, index) => {
+                            const stepProps = {};
+                            const labelProps = {};
+                            if (isStepOptional(index)) {
+                                labelProps.optional = (
+                                    <Typography variant="caption">Optional</Typography>
+                                );
+                            }
+                            if (isStepSkipped(index)) {
+                                stepProps.completed = false;
+                            }
+                            return (
+                                <Step key={label} {...stepProps}>
+                                    <StepLabel id={`alt-step-${index}`} {...labelProps}>{label}</StepLabel>
+                                </Step>
+                            );
+                        })}
+                    </Stepper>
+                    <div className="step-content">
+                        {activeStep === steps.length ? (
+                            <>
+                                <Typography>
+                                    All steps completed - you're finished!
+                                </Typography>
+                            </>
+                        ) : (
+                            <>
+                                <Typography>Step {activeStep + 1}: {steps[activeStep]}</Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                                    <Button
+                                        id="alt-back-button"
+                                        color="inherit"
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        sx={{ mr: 1 }}
+                                    >
+                                        Back
+                                    </Button>
+                                    <Box sx={{ flex: '1 1 auto' }} />
+                                    {isStepOptional(activeStep) && (
+                                        <Button id="skip-button" color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                                            Skip
+                                        </Button>
+                                    )}
+                                    <Button id="alt-next-button" onClick={handleNext} variant="contained">
+                                        {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                    </div>
+                    <div className="navigation-log">
+                        Current Step: {activeStep + 1} | Skipped Steps: {Array.from(skipped).join(', ') || 'None'}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Error Step
+        const ErrorStepTest = ({ completeTest }) => {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [stepErrors, setStepErrors] = React.useState({ 1: true });
+            const [fixAttempts, setFixAttempts] = React.useState(0);
+            
+            const steps = ['Basic Info', 'Verification', 'Confirmation'];
+            
+            const handleNext = () => {
+                if (activeStep === 1 && stepErrors[1]) {
+                    alert('Please fix the error in this step before proceeding');
+                    return;
+                }
+                
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                
+                if (activeStep === steps.length - 1 && !stepErrors[1]) {
+                    completeTest(true, 'Error step handled correctly!');
+                }
+            };
+            
+            const handleBack = () => {
+                setActiveStep((prevActiveStep) => prevActiveStep - 1);
+            };
+            
+            const handleFixError = () => {
+                const attempts = fixAttempts + 1;
+                setFixAttempts(attempts);
+                
+                if (attempts >= 2) {
+                    setStepErrors({ ...stepErrors, 1: false });
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Fix the error in step 2 (click Fix Error 2 times) and complete all steps:
+                    </Typography>
+                    <Stepper id="error-stepper" activeStep={activeStep}>
+                        {steps.map((label, index) => {
+                            const labelProps = {};
+                            if (index === 1 && stepErrors[1]) {
+                                labelProps.optional = (
+                                    <Typography variant="caption" color="error">
+                                        Error - verification required
+                                    </Typography>
+                                );
+                                labelProps.error = true;
+                            }
+                            return (
+                                <Step key={label}>
+                                    <StepLabel id={`error-step-${index}`} {...labelProps}>{label}</StepLabel>
+                                </Step>
+                            );
+                        })}
+                    </Stepper>
+                    <div className="step-content">
+                        {activeStep === steps.length ? (
+                            <>
+                                <Typography>
+                                    All steps completed successfully!
+                                </Typography>
+                            </>
+                        ) : (
+                            <>
+                                <Typography>Step {activeStep + 1}: {steps[activeStep]}</Typography>
+                                {activeStep === 1 && stepErrors[1] && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography color="error" variant="body2">
+                                            Error: Verification failed. Please fix this error to continue.
+                                        </Typography>
+                                        <Button
+                                            id="fix-error-button"
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={handleFixError}
+                                            sx={{ mt: 1 }}
+                                        >
+                                            Fix Error ({fixAttempts}/2 attempts)
+                                        </Button>
+                                    </Box>
+                                )}
+                                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                                    <Button
+                                        id="error-back-button"
+                                        color="inherit"
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        sx={{ mr: 1 }}
+                                    >
+                                        Back
+                                    </Button>
+                                    <Box sx={{ flex: '1 1 auto' }} />
+                                    <Button
+                                        id="error-next-button"
+                                        onClick={handleNext}
+                                        variant="contained"
+                                    >
+                                        {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                    </div>
+                    <div className="navigation-log">
+                        Step 2 Status: {stepErrors[1] ? 'Error' : 'Fixed'} | Fix Attempts: {fixAttempts}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'stepper',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="linear-stepper"
+                        testName="Test 1: Linear Horizontal Stepper"
+                        description="Navigate through a linear stepper from start to finish"
+                        onComplete={handleTestComplete}
+                    >
+                        <LinearStepperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="non-linear-stepper"
+                        testName="Test 2: Non-Linear Stepper"
+                        description="Complete all steps in any order"
+                        onComplete={handleTestComplete}
+                    >
+                        <NonLinearStepperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="vertical-stepper"
+                        testName="Test 3: Vertical Stepper"
+                        description="Navigate through a vertical stepper"
+                        onComplete={handleTestComplete}
+                    >
+                        <VerticalStepperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="alternative-label"
+                        testName="Test 4: Alternative Label Stepper"
+                        description="Test stepper with alternative label placement and optional steps"
+                        onComplete={handleTestComplete}
+                    >
+                        <AlternativeLabelStepperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="error-step"
+                        testName="Test 5: Error Step"
+                        description="Handle and fix errors in stepper steps"
+                        onComplete={handleTestComplete}
+                    >
+                        <ErrorStepTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

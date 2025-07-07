@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Popper Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 200px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .popper-content {
+            padding: 12px 16px;
+            background-color: rgba(0, 0, 0, 0.87);
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .placement-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .flip-boundary {
+            position: relative;
+            height: 250px;
+            border: 2px solid #1976d2;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+        
+        .draggable-anchor {
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background-color: #1976d2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .arrow-popper {
+            background-color: #1976d2;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .arrow-popper::before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #1976d2;
+            transform: rotate(45deg);
+        }
+        
+        .arrow-popper[data-placement^="top"]::before {
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        
+        .arrow-popper[data-placement^="bottom"]::before {
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        
+        .arrow-popper[data-placement^="left"]::before {
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+        }
+        
+        .arrow-popper[data-placement^="right"]::before {
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Popper</h1>
+            <p>Test the functionality and behavior of the Material UI Popper component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Popper,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            ClickAwayListener,
+            Fade,
+            Paper
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Popper
+        const BasicPopperTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [showCount, setShowCount] = React.useState(0);
+            
+            const handleClick = (event) => {
+                setAnchorEl(anchorEl ? null : event.currentTarget);
+                if (!anchorEl) {
+                    setShowCount(prev => prev + 1);
+                    if (showCount >= 1) {
+                        completeTest(true, 'Basic Popper toggled successfully!');
+                    }
+                }
+            };
+            
+            const open = Boolean(anchorEl);
+            const id = open ? 'basic-popper' : undefined;
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to toggle a basic Popper:
+                    </Typography>
+                    
+                    <Button 
+                        id="basic-popper-button"
+                        aria-describedby={id}
+                        variant="contained" 
+                        onClick={handleClick}
+                    >
+                        {open ? 'Hide' : 'Show'} Popper
+                    </Button>
+                    
+                    <Popper id={id} open={open} anchorEl={anchorEl}>
+                        <div className="popper-content">
+                            <Typography>This is a basic Popper!</Typography>
+                            <Typography variant="caption">
+                                Click the button again to hide
+                            </Typography>
+                        </div>
+                    </Popper>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Toggle count: {showCount}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Placement Options
+        const PlacementTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [placement, setPlacement] = React.useState('top');
+            const [testedPlacements, setTestedPlacements] = React.useState(new Set());
+            
+            const placements = [
+                'top-start', 'top', 'top-end',
+                'left-start', 'left', 'left-end',
+                'right-start', 'right', 'right-end',
+                'bottom-start', 'bottom', 'bottom-end'
+            ];
+            
+            const handlePlacementClick = (event, newPlacement) => {
+                setAnchorEl(event.currentTarget);
+                setPlacement(newPlacement);
+                
+                const newTested = new Set(testedPlacements);
+                newTested.add(newPlacement);
+                setTestedPlacements(newTested);
+                
+                if (newTested.size === placements.length) {
+                    completeTest(true, 'All placement options tested successfully!');
+                }
+            };
+            
+            const open = Boolean(anchorEl);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test all 12 placement options:
+                    </Typography>
+                    
+                    <Box display="flex" justifyContent="center" mb={2}>
+                        <Button
+                            ref={(el) => el && !anchorEl && setAnchorEl(el)}
+                            variant="outlined"
+                            sx={{ width: 150, height: 60 }}
+                        >
+                            Anchor Element
+                        </Button>
+                    </Box>
+                    
+                    <div className="placement-buttons">
+                        {placements.map((p) => {
+                            const tested = testedPlacements.has(p);
+                            return (
+                                <Button
+                                    key={p}
+                                    id={`placement-${p}`}
+                                    variant={tested ? "contained" : "outlined"}
+                                    color={tested ? "success" : "primary"}
+                                    size="small"
+                                    onClick={(e) => handlePlacementClick(e, p)}
+                                >
+                                    {p}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                    
+                    <Popper 
+                        open={open} 
+                        anchorEl={anchorEl} 
+                        placement={placement}
+                        modifiers={[
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 8],
+                                },
+                            },
+                        ]}
+                    >
+                        <Paper elevation={2}>
+                            <Box p={2}>
+                                <Typography variant="subtitle2">
+                                    Placement: {placement}
+                                </Typography>
+                            </Box>
+                        </Paper>
+                    </Popper>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Tested: {testedPlacements.size}/{placements.length} placements
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Transitions
+        const TransitionTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [transitionCount, setTransitionCount] = React.useState(0);
+            
+            const handleClick = (event) => {
+                setAnchorEl(anchorEl ? null : event.currentTarget);
+                setTransitionCount(prev => prev + 1);
+                
+                if (transitionCount >= 3) {
+                    completeTest(true, 'Popper transitions working smoothly!');
+                }
+            };
+            
+            const open = Boolean(anchorEl);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test Popper with fade transition (toggle 3 times):
+                    </Typography>
+                    
+                    <Button 
+                        id="transition-popper-button"
+                        variant="contained" 
+                        onClick={handleClick}
+                    >
+                        Toggle Fade Popper
+                    </Button>
+                    
+                    <Popper 
+                        open={open} 
+                        anchorEl={anchorEl} 
+                        transition
+                        placement="right"
+                    >
+                        {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={350}>
+                                <Paper elevation={3}>
+                                    <Box p={2} bgcolor="primary.main" color="white">
+                                        <Typography>Popper with Fade!</Typography>
+                                        <Typography variant="caption">
+                                            Smooth transition in/out
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            </Fade>
+                        )}
+                    </Popper>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Transitions: {transitionCount}/4
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Flip Behavior
+        const FlipBehaviorTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [position, setPosition] = React.useState({ top: 20, left: 100 });
+            const [isDragging, setIsDragging] = React.useState(false);
+            const [flipDetected, setFlipDetected] = React.useState(false);
+            const boundaryRef = React.useRef(null);
+            
+            const handleMouseDown = () => {
+                setIsDragging(true);
+            };
+            
+            const handleMouseMove = (event) => {
+                if (isDragging && boundaryRef.current) {
+                    const rect = boundaryRef.current.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    
+                    setPosition({
+                        left: Math.max(0, Math.min(x - 40, rect.width - 80)),
+                        top: Math.max(0, Math.min(y - 20, rect.height - 40))
+                    });
+                    
+                    // Check if near boundary to detect flip
+                    if (y < 60 || y > rect.height - 60) {
+                        setFlipDetected(true);
+                        completeTest(true, 'Popper flip behavior detected - placement adjusted automatically!');
+                    }
+                }
+            };
+            
+            const handleMouseUp = () => {
+                setIsDragging(false);
+            };
+            
+            React.useEffect(() => {
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                return () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [isDragging]);
+            
+            const open = Boolean(anchorEl);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Drag the blue box near the boundaries to see Popper flip:
+                    </Typography>
+                    
+                    <div 
+                        ref={boundaryRef}
+                        className="flip-boundary"
+                        style={{ position: 'relative' }}
+                    >
+                        <div
+                            ref={setAnchorEl}
+                            className="draggable-anchor"
+                            style={{
+                                position: 'absolute',
+                                top: position.top,
+                                left: position.left,
+                                cursor: isDragging ? 'grabbing' : 'grab'
+                            }}
+                            onMouseDown={handleMouseDown}
+                        >
+                            Drag me
+                        </div>
+                        
+                        <Popper 
+                            open={true} 
+                            anchorEl={anchorEl} 
+                            placement="top"
+                            popperOptions={{
+                                modifiers: [
+                                    {
+                                        name: 'flip',
+                                        enabled: true,
+                                        options: {
+                                            boundary: boundaryRef.current,
+                                        },
+                                    },
+                                    {
+                                        name: 'preventOverflow',
+                                        enabled: true,
+                                        options: {
+                                            boundary: boundaryRef.current,
+                                        },
+                                    },
+                                ],
+                            }}
+                        >
+                            <Paper elevation={2}>
+                                <Box p={1} bgcolor="secondary.main" color="white">
+                                    <Typography variant="caption">
+                                        Watch me flip!
+                                    </Typography>
+                                </Box>
+                            </Paper>
+                        </Popper>
+                    </div>
+                    
+                    {flipDetected && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="success.main">
+                                ✓ Flip behavior detected!
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Click Away Integration
+        const ClickAwayTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [clickAwayCount, setClickAwayCount] = React.useState(0);
+            
+            const handleClick = (event) => {
+                setAnchorEl(event.currentTarget);
+            };
+            
+            const handleClickAway = () => {
+                if (anchorEl) {
+                    setAnchorEl(null);
+                    setClickAwayCount(prev => prev + 1);
+                    
+                    if (clickAwayCount >= 1) {
+                        completeTest(true, 'Click away integration working - Popper closed on outside click!');
+                    }
+                }
+            };
+            
+            const open = Boolean(anchorEl);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the Popper and click outside to close it:
+                    </Typography>
+                    
+                    <ClickAwayListener onClickAway={handleClickAway}>
+                        <Box display="inline-block">
+                            <Button 
+                                id="clickaway-popper-button"
+                                variant="contained" 
+                                onClick={handleClick}
+                            >
+                                Open Popper
+                            </Button>
+                            
+                            <Popper 
+                                open={open} 
+                                anchorEl={anchorEl}
+                                placement="bottom-start"
+                            >
+                                <Paper elevation={3}>
+                                    <Box p={2}>
+                                        <Typography variant="h6" gutterBottom>
+                                            Click Outside to Close
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            This Popper will close when you click anywhere outside.
+                                        </Typography>
+                                        <Box mt={2}>
+                                            <Button 
+                                                size="small"
+                                                onClick={() => setAnchorEl(null)}
+                                            >
+                                                Or Close Here
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </Paper>
+                            </Popper>
+                        </Box>
+                    </ClickAwayListener>
+                    
+                    {clickAwayCount > 0 && (
+                        <Box mt={2}>
+                            <Typography variant="caption" color="textSecondary">
+                                Click away detected: {clickAwayCount} time(s)
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 6: Arrow Popper
+        const ArrowPopperTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [arrowRef, setArrowRef] = React.useState(null);
+            const [placement, setPlacement] = React.useState('top');
+            const [arrowsShown, setArrowsShown] = React.useState(0);
+            
+            const handleClick = (event, newPlacement) => {
+                setAnchorEl(event.currentTarget);
+                setPlacement(newPlacement);
+                setArrowsShown(prev => prev + 1);
+                
+                if (arrowsShown >= 3) {
+                    completeTest(true, 'Arrow Popper working correctly with proper arrow positioning!');
+                }
+            };
+            
+            const open = Boolean(anchorEl);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click buttons to see Popper with arrow in different positions:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+                        {['top', 'right', 'bottom', 'left'].map((p) => (
+                            <Button
+                                key={p}
+                                id={`arrow-${p}-button`}
+                                variant="outlined"
+                                onClick={(e) => handleClick(e, p)}
+                            >
+                                {p}
+                            </Button>
+                        ))}
+                    </Stack>
+                    
+                    <Popper 
+                        open={open} 
+                        anchorEl={anchorEl}
+                        placement={placement}
+                        modifiers={[
+                            {
+                                name: 'arrow',
+                                enabled: true,
+                                options: {
+                                    element: arrowRef,
+                                },
+                            },
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 10],
+                                },
+                            },
+                        ]}
+                    >
+                        <div 
+                            className="arrow-popper" 
+                            data-placement={placement}
+                        >
+                            <Typography>Popper with Arrow!</Typography>
+                            <span ref={setArrowRef} />
+                        </div>
+                    </Popper>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Arrows shown: {arrowsShown} (need 4 to pass)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'popper',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-popper"
+                        testName="Test 1: Basic Popper"
+                        description="Verify basic Popper toggle functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicPopperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="placement-options"
+                        testName="Test 2: Placement Options"
+                        description="Test all 12 placement positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <PlacementTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="transitions"
+                        testName="Test 3: Transitions"
+                        description="Test Popper with fade transitions"
+                        onComplete={handleTestComplete}
+                    >
+                        <TransitionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="flip-behavior"
+                        testName="Test 4: Flip Behavior"
+                        description="Test automatic flip when near boundaries"
+                        onComplete={handleTestComplete}
+                    >
+                        <FlipBehaviorTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="click-away"
+                        testName="Test 5: Click Away Integration"
+                        description="Test Popper with ClickAwayListener"
+                        onComplete={handleTestComplete}
+                    >
+                        <ClickAwayTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="arrow-popper"
+                        testName="Test 6: Arrow Popper"
+                        description="Test Popper with arrow indicator"
+                        onComplete={handleTestComplete}
+                    >
+                        <ArrowPopperTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

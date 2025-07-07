@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI TextField Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .validation-info {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .input-value {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: TextField</h1>
+            <p>Test the functionality and behavior of the Material UI TextField component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            TextField,
+            Box,
+            Typography,
+            Stack,
+            Button,
+            InputAdornment,
+            IconButton
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Input Functionality
+        const BasicInputTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const targetText = 'Hello World';
+            
+            const handleChange = (event) => {
+                const newValue = event.target.value;
+                setValue(newValue);
+                
+                if (newValue === targetText) {
+                    completeTest(true, `Successfully typed "${targetText}"!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Type exactly "{targetText}" in the text field below:
+                    </Typography>
+                    <TextField
+                        id="basic-textfield"
+                        label="Type here"
+                        variant="outlined"
+                        value={value}
+                        onChange={handleChange}
+                        fullWidth
+                        helperText={`Current value: "${value}"`}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 2: TextField Variants
+        const VariantTest = ({ completeTest }) => {
+            const [filledVariants, setFilledVariants] = React.useState(new Set());
+            const variants = ['standard', 'filled', 'outlined'];
+            
+            const handleVariantChange = (variant) => {
+                const newFilled = new Set(filledVariants);
+                newFilled.add(variant);
+                setFilledVariants(newFilled);
+                
+                if (newFilled.size === variants.length) {
+                    completeTest(true, 'All TextField variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Type something in each TextField variant:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {variants.map((variant) => (
+                            <TextField
+                                key={variant}
+                                id={`${variant}-textfield`}
+                                label={`${variant.charAt(0).toUpperCase() + variant.slice(1)} variant`}
+                                variant={variant}
+                                onChange={(e) => {
+                                    if (e.target.value.length > 0) {
+                                        handleVariantChange(variant);
+                                    }
+                                }}
+                                helperText={filledVariants.has(variant) ? '✓ Filled' : 'Type something here'}
+                            />
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Validation States
+        const ValidationTest = ({ completeTest }) => {
+            const [email, setEmail] = React.useState('');
+            const [error, setError] = React.useState(false);
+            const [helperText, setHelperText] = React.useState('Enter a valid email address');
+            
+            const validateEmail = (email) => {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            };
+            
+            const handleEmailChange = (event) => {
+                const newEmail = event.target.value;
+                setEmail(newEmail);
+                
+                if (newEmail.length === 0) {
+                    setError(false);
+                    setHelperText('Enter a valid email address');
+                } else if (validateEmail(newEmail)) {
+                    setError(false);
+                    setHelperText('Valid email format!');
+                    completeTest(true, 'Email validation working correctly!');
+                } else {
+                    setError(true);
+                    setHelperText('Invalid email format');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enter a valid email address to test validation:
+                    </Typography>
+                    <TextField
+                        id="email-validation"
+                        label="Email"
+                        type="email"
+                        variant="outlined"
+                        value={email}
+                        onChange={handleEmailChange}
+                        error={error}
+                        helperText={helperText}
+                        fullWidth
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 4: Password Field with Visibility Toggle
+        const PasswordTest = ({ completeTest }) => {
+            const [password, setPassword] = React.useState('');
+            const [showPassword, setShowPassword] = React.useState(false);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleToggleVisibility = () => {
+                setShowPassword(!showPassword);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 2 && password.length >= 8) {
+                    completeTest(true, 'Password field tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Type a password (min 8 characters) and toggle visibility twice:
+                    </Typography>
+                    <TextField
+                        id="password-field"
+                        label="Password"
+                        type={showPassword ? 'text' : 'password'}
+                        variant="outlined"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        fullWidth
+                        helperText={`Length: ${password.length}/8, Toggle count: ${toggleCount}/2`}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={handleToggleVisibility}
+                                        edge="end"
+                                    >
+                                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 5: Multiline TextField
+        const MultilineTest = ({ completeTest }) => {
+            const [text, setText] = React.useState('');
+            const minLines = 3;
+            
+            const handleTextChange = (event) => {
+                const newText = event.target.value;
+                setText(newText);
+                
+                const lineCount = newText.split('\n').length;
+                if (lineCount >= minLines) {
+                    completeTest(true, `Successfully entered ${lineCount} lines of text!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enter at least {minLines} lines of text (press Enter for new lines):
+                    </Typography>
+                    <TextField
+                        id="multiline-textfield"
+                        label="Multiline Text"
+                        multiline
+                        rows={4}
+                        variant="outlined"
+                        value={text}
+                        onChange={handleTextChange}
+                        fullWidth
+                        helperText={`Current lines: ${text.split('\n').length}`}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 6: Disabled and Read-only States
+        const DisabledReadOnlyTest = ({ completeTest }) => {
+            const [attempted, setAttempted] = React.useState({ disabled: false, readOnly: false });
+            
+            React.useEffect(() => {
+                if (attempted.disabled && attempted.readOnly) {
+                    completeTest(true, 'Disabled and read-only states verified!');
+                }
+            }, [attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Try to interact with both fields below (they should not allow editing):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <TextField
+                            id="disabled-textfield"
+                            label="Disabled TextField"
+                            defaultValue="Cannot edit this"
+                            disabled
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setAttempted(prev => ({ ...prev, disabled: true }))}
+                        />
+                        <TextField
+                            id="readonly-textfield"
+                            label="Read-only TextField"
+                            defaultValue="Read only content"
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setAttempted(prev => ({ ...prev, readOnly: true }))}
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 7: Number Input
+        const NumberInputTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const targetNumber = 42;
+            
+            const handleNumberChange = (event) => {
+                const newValue = event.target.value;
+                setValue(newValue);
+                
+                if (parseInt(newValue) === targetNumber) {
+                    completeTest(true, `Correct number ${targetNumber} entered!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enter the number {targetNumber}:
+                    </Typography>
+                    <TextField
+                        id="number-textfield"
+                        label="Number Input"
+                        type="number"
+                        variant="outlined"
+                        value={value}
+                        onChange={handleNumberChange}
+                        InputProps={{
+                            inputProps: {
+                                min: 0,
+                                max: 100
+                            }
+                        }}
+                        helperText={`Enter ${targetNumber} to complete`}
+                    />
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'textfield',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-input"
+                        testName="Test 1: Basic Input Functionality"
+                        description="Verify that text input and change events work properly"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicInputTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 2: TextField Variants"
+                        description="Test all three TextField variants: standard, filled, and outlined"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="validation"
+                        testName="Test 3: Validation States"
+                        description="Test error states and validation feedback"
+                        onComplete={handleTestComplete}
+                    >
+                        <ValidationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="password"
+                        testName="Test 4: Password Field"
+                        description="Test password input with visibility toggle"
+                        onComplete={handleTestComplete}
+                    >
+                        <PasswordTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiline"
+                        testName="Test 5: Multiline TextField"
+                        description="Test multiline text input functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultilineTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-readonly"
+                        testName="Test 6: Disabled and Read-only States"
+                        description="Verify that disabled and read-only fields cannot be edited"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledReadOnlyTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="number-input"
+                        testName="Test 7: Number Input"
+                        description="Test number type input field"
+                        onComplete={handleTestComplete}
+                    >
+                        <NumberInputTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

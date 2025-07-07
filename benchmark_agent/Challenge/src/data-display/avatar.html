@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Avatar Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .avatar-grid {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .avatar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .avatar-label {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Avatar</h1>
+            <p>Test the functionality and behavior of the Material UI Avatar component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Avatar,
+            AvatarGroup,
+            Box,
+            Typography,
+            Stack,
+            Badge,
+            styled
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Image Avatar with Fallback
+        const ImageAvatarTest = ({ completeTest }) => {
+            const [imageLoaded, setImageLoaded] = React.useState(false);
+            const [fallbackShown, setFallbackShown] = React.useState(false);
+            
+            React.useEffect(() => {
+                // Check if fallback is displayed
+                const timer = setTimeout(() => {
+                    const brokenAvatar = document.querySelector('#broken-avatar');
+                    if (brokenAvatar && brokenAvatar.textContent === 'BU') {
+                        setFallbackShown(true);
+                        completeTest(true, 'Avatar fallback correctly displayed for broken image!');
+                    }
+                }, 1000);
+                
+                return () => clearTimeout(timer);
+            }, []);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test image avatars with valid and broken images:
+                    </Typography>
+                    <div className="avatar-grid">
+                        <div className="avatar-item">
+                            <Avatar 
+                                id="valid-avatar"
+                                alt="Valid User"
+                                src="https://mui.com/static/images/avatar/1.jpg"
+                                sx={{ width: 56, height: 56 }}
+                            />
+                            <span className="avatar-label">Valid Image</span>
+                        </div>
+                        <div className="avatar-item">
+                            <Avatar 
+                                id="broken-avatar"
+                                alt="Broken User"
+                                src="/broken-image-url.jpg"
+                                sx={{ width: 56, height: 56 }}
+                            >
+                                BU
+                            </Avatar>
+                            <span className="avatar-label">Broken Image (Fallback)</span>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Letter Avatars
+        const LetterAvatarTest = ({ completeTest }) => {
+            const [clickedAvatars, setClickedAvatars] = React.useState(new Set());
+            const avatars = [
+                { id: 'single', text: 'A' },
+                { id: 'double', text: 'AB' },
+                { id: 'long', text: 'XYZ' }
+            ];
+            
+            const handleAvatarClick = (id) => {
+                const newClicked = new Set(clickedAvatars);
+                newClicked.add(id);
+                setClickedAvatars(newClicked);
+                
+                if (newClicked.size === avatars.length) {
+                    completeTest(true, 'All letter avatars clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all letter avatars to test interaction:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {avatars.map((avatar) => (
+                            <Avatar
+                                key={avatar.id}
+                                id={`${avatar.id}-letter-avatar`}
+                                onClick={() => handleAvatarClick(avatar.id)}
+                                sx={{ 
+                                    bgcolor: clickedAvatars.has(avatar.id) ? 'success.main' : 'primary.main',
+                                    cursor: 'pointer',
+                                    '&:hover': { opacity: 0.8 }
+                                }}
+                            >
+                                {avatar.text}
+                            </Avatar>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Avatar Variants
+        const VariantTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['circular', 'rounded', 'square'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All avatar variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all avatar variants to complete the test:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {variants.map((variant) => (
+                            <Avatar
+                                key={variant}
+                                id={`${variant}-variant-avatar`}
+                                variant={variant}
+                                onClick={() => handleVariantClick(variant)}
+                                sx={{ 
+                                    bgcolor: clickedVariants.has(variant) ? 'success.main' : 'secondary.main',
+                                    cursor: 'pointer',
+                                    width: 56,
+                                    height: 56
+                                }}
+                            >
+                                {variant.charAt(0).toUpperCase()}
+                            </Avatar>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Avatar Sizes
+        const SizeTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = [
+                { name: 'small', size: 24 },
+                { name: 'medium', size: 40 },
+                { name: 'large', size: 56 },
+                { name: 'xlarge', size: 80 }
+            ];
+            
+            const handleSizeClick = (sizeName) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(sizeName);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All avatar sizes tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click avatars of different sizes:
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        {sizes.map(({ name, size }) => (
+                            <Avatar
+                                key={name}
+                                id={`${name}-size-avatar`}
+                                onClick={() => handleSizeClick(name)}
+                                sx={{ 
+                                    width: size, 
+                                    height: size,
+                                    bgcolor: clickedSizes.has(name) ? 'success.main' : 'info.main',
+                                    cursor: 'pointer',
+                                    fontSize: size * 0.4
+                                }}
+                            >
+                                {name.charAt(0).toUpperCase()}
+                            </Avatar>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Avatar Group
+        const AvatarGroupTest = ({ completeTest }) => {
+            const [groupClicked, setGroupClicked] = React.useState(false);
+            const [plusClicked, setPlusClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (groupClicked && plusClicked) {
+                    completeTest(true, 'Avatar group and overflow indicator tested successfully!');
+                }
+            }, [groupClicked, plusClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on any avatar in the group and the +2 overflow indicator:
+                    </Typography>
+                    <AvatarGroup max={4}>
+                        <Avatar 
+                            id="group-avatar-1"
+                            alt="Remy Sharp" 
+                            src="https://mui.com/static/images/avatar/1.jpg"
+                            onClick={() => setGroupClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                        <Avatar 
+                            id="group-avatar-2"
+                            alt="Travis Howard" 
+                            src="https://mui.com/static/images/avatar/2.jpg"
+                            onClick={() => setGroupClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                        <Avatar 
+                            id="group-avatar-3"
+                            alt="Cindy Baker" 
+                            src="https://mui.com/static/images/avatar/3.jpg"
+                            onClick={() => setGroupClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                        <Avatar 
+                            id="group-avatar-4"
+                            alt="Agnes Walker" 
+                            src="https://mui.com/static/images/avatar/4.jpg"
+                            onClick={() => setGroupClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                        <Avatar 
+                            id="group-avatar-5"
+                            alt="Trevor Henderson" 
+                            src="https://mui.com/static/images/avatar/5.jpg"
+                            onClick={() => setGroupClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                        <Avatar 
+                            id="group-avatar-overflow"
+                            onClick={() => setPlusClicked(true)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                    </AvatarGroup>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        {groupClicked && 'Avatar clicked! '}
+                        {plusClicked && 'Overflow clicked!'}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Avatar with Badge
+        const BadgeAvatarTest = ({ completeTest }) => {
+            const [online, setOnline] = React.useState(true);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleClick = () => {
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                setOnline(!online);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Avatar badge interaction tested successfully!');
+                }
+            };
+            
+            const StyledBadge = styled(Badge)(({ theme }) => ({
+                '& .MuiBadge-badge': {
+                    backgroundColor: online ? '#44b700' : '#757575',
+                    color: online ? '#44b700' : '#757575',
+                    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+                    '&::after': {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        animation: online ? 'ripple 1.2s infinite ease-in-out' : 'none',
+                        border: '1px solid currentColor',
+                        content: '""',
+                    },
+                },
+                '@keyframes ripple': {
+                    '0%': {
+                        transform: 'scale(.8)',
+                        opacity: 1,
+                    },
+                    '100%': {
+                        transform: 'scale(2.4)',
+                        opacity: 0,
+                    },
+                },
+            }));
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the avatar 3 times to toggle online status:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <StyledBadge
+                            overlap="circular"
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            variant="dot"
+                        >
+                            <Avatar 
+                                id="badge-avatar"
+                                alt="User Status"
+                                onClick={handleClick}
+                                sx={{ 
+                                    width: 56, 
+                                    height: 56,
+                                    cursor: 'pointer',
+                                    bgcolor: 'primary.main'
+                                }}
+                            >
+                                US
+                            </Avatar>
+                        </StyledBadge>
+                        <Typography variant="body2">
+                            Status: {online ? 'Online' : 'Offline'} (Clicks: {clickCount}/3)
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'avatar',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="image-fallback"
+                        testName="Test 1: Image Avatar with Fallback"
+                        description="Test avatar image loading and fallback to initials"
+                        onComplete={handleTestComplete}
+                    >
+                        <ImageAvatarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="letter-avatars"
+                        testName="Test 2: Letter Avatars"
+                        description="Test avatars with text content and click interactions"
+                        onComplete={handleTestComplete}
+                    >
+                        <LetterAvatarTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 3: Avatar Variants"
+                        description="Test all avatar shape variants: circular, rounded, and square"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="sizes"
+                        testName="Test 4: Avatar Sizes"
+                        description="Test avatars with different custom sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="avatar-group"
+                        testName="Test 5: Avatar Group"
+                        description="Test avatar group with max display and overflow"
+                        onComplete={handleTestComplete}
+                    >
+                        <AvatarGroupTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="badge-avatar"
+                        testName="Test 6: Avatar with Badge"
+                        description="Test avatar with status badge indicator"
+                        onComplete={handleTestComplete}
+                    >
+                        <BadgeAvatarTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Modal Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2);
+            padding: 24px;
+            min-width: 400px;
+            max-width: 600px;
+        }
+        
+        .nested-modal-content {
+            background-color: #f5f5f5;
+            border: 2px solid #1976d2;
+        }
+        
+        .action-log {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .action-log-entry {
+            padding: 2px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Modal</h1>
+            <p>Test the functionality and behavior of the Material UI Modal component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Modal,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            TextField,
+            Fade,
+            Backdrop
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Modal Open/Close
+        const BasicModalTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [openCount, setOpenCount] = React.useState(0);
+            const [closeCount, setCloseCount] = React.useState(0);
+            
+            React.useEffect(() => {
+                if (openCount > 0 && closeCount > 0) {
+                    completeTest(true, 'Modal opened and closed successfully!');
+                }
+            }, [openCount, closeCount]);
+            
+            const handleOpen = () => {
+                setOpen(true);
+                setOpenCount(prev => prev + 1);
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+                setCloseCount(prev => prev + 1);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the modal and then close it using the button inside:
+                    </Typography>
+                    <Button 
+                        id="open-modal-button"
+                        variant="contained" 
+                        onClick={handleOpen}
+                    >
+                        Open Modal
+                    </Button>
+                    
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="basic-modal-title"
+                        aria-describedby="basic-modal-description"
+                    >
+                        <Box className="modal-content">
+                            <Typography id="basic-modal-title" variant="h6" component="h2">
+                                Basic Modal Test
+                            </Typography>
+                            <Typography id="basic-modal-description" sx={{ mt: 2 }}>
+                                This is a basic modal. Click the button below to close it.
+                            </Typography>
+                            <Button 
+                                id="close-modal-button"
+                                variant="outlined" 
+                                onClick={handleClose}
+                                sx={{ mt: 3 }}
+                            >
+                                Close Modal
+                            </Button>
+                        </Box>
+                    </Modal>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Open count: {openCount}, Close count: {closeCount}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Backdrop Click
+        const BackdropClickTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [closeMethod, setCloseMethod] = React.useState('');
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'backdropClick') {
+                    setCloseMethod('backdrop');
+                    completeTest(true, 'Modal closed successfully by clicking the backdrop!');
+                }
+                setOpen(false);
+            };
+            
+            const handleButtonClose = () => {
+                setCloseMethod('button');
+                setOpen(false);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the modal and close it by clicking on the dark backdrop (outside the modal):
+                    </Typography>
+                    <Button 
+                        id="open-backdrop-modal"
+                        variant="contained" 
+                        onClick={() => setOpen(true)}
+                    >
+                        Open Modal with Backdrop
+                    </Button>
+                    
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="backdrop-modal-title"
+                    >
+                        <Box className="modal-content">
+                            <Typography id="backdrop-modal-title" variant="h6" component="h2">
+                                Click Outside to Close
+                            </Typography>
+                            <Typography sx={{ mt: 2 }}>
+                                Click on the dark area outside this modal to close it.
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ mt: 2 }}>
+                                (You can also use this button, but try clicking the backdrop!)
+                            </Typography>
+                            <Button 
+                                variant="text" 
+                                onClick={handleButtonClose}
+                                sx={{ mt: 1 }}
+                            >
+                                Close with Button
+                            </Button>
+                        </Box>
+                    </Modal>
+                    
+                    {closeMethod && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="primary">
+                                Last closed via: {closeMethod}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Escape Key
+        const EscapeKeyTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [closeReason, setCloseReason] = React.useState('');
+            
+            const handleClose = (event, reason) => {
+                if (reason === 'escapeKeyDown') {
+                    setCloseReason('escape');
+                    completeTest(true, 'Modal closed successfully using the Escape key!');
+                }
+                setOpen(false);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the modal and press the Escape key to close it:
+                    </Typography>
+                    <Button 
+                        id="open-escape-modal"
+                        variant="contained" 
+                        onClick={() => setOpen(true)}
+                    >
+                        Open Modal (Press ESC to close)
+                    </Button>
+                    
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="escape-modal-title"
+                    >
+                        <Box className="modal-content">
+                            <Typography id="escape-modal-title" variant="h6" component="h2">
+                                Press ESC to Close
+                            </Typography>
+                            <Typography sx={{ mt: 2 }}>
+                                Press the Escape key on your keyboard to close this modal.
+                            </Typography>
+                            <Box mt={3} p={2} bgcolor="#e3f2fd" borderRadius={1}>
+                                <Typography variant="body2">
+                                    👆 Make sure this modal has focus, then press ESC
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Modal>
+                    
+                    {closeReason && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="success.main">
+                                ✓ Closed via: {closeReason} key
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Nested Modals
+        const NestedModalTest = ({ completeTest }) => {
+            const [parentOpen, setParentOpen] = React.useState(false);
+            const [childOpen, setChildOpen] = React.useState(false);
+            const [actionLog, setActionLog] = React.useState([]);
+            
+            React.useEffect(() => {
+                const hasOpenedBoth = actionLog.includes('parent-opened') && actionLog.includes('child-opened');
+                const hasClosedBoth = actionLog.includes('child-closed') && actionLog.includes('parent-closed');
+                
+                if (hasOpenedBoth && hasClosedBoth) {
+                    completeTest(true, 'Nested modals handled correctly - opened and closed in proper order!');
+                }
+            }, [actionLog]);
+            
+            const logAction = (action) => {
+                setActionLog(prev => [...prev, action]);
+            };
+            
+            const handleParentOpen = () => {
+                setParentOpen(true);
+                logAction('parent-opened');
+            };
+            
+            const handleParentClose = () => {
+                setParentOpen(false);
+                logAction('parent-closed');
+            };
+            
+            const handleChildOpen = () => {
+                setChildOpen(true);
+                logAction('child-opened');
+            };
+            
+            const handleChildClose = () => {
+                setChildOpen(false);
+                logAction('child-closed');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test nested modals - open parent, then child, then close them in order:
+                    </Typography>
+                    <Button 
+                        id="open-parent-modal"
+                        variant="contained" 
+                        onClick={handleParentOpen}
+                    >
+                        Open Parent Modal
+                    </Button>
+                    
+                    <Modal
+                        open={parentOpen}
+                        onClose={handleParentClose}
+                        aria-labelledby="parent-modal-title"
+                    >
+                        <Box className="modal-content">
+                            <Typography id="parent-modal-title" variant="h6" component="h2">
+                                Parent Modal
+                            </Typography>
+                            <Typography sx={{ mt: 2 }}>
+                                This is the parent modal. Click below to open a child modal.
+                            </Typography>
+                            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                                <Button 
+                                    id="open-child-modal"
+                                    variant="contained" 
+                                    color="secondary"
+                                    onClick={handleChildOpen}
+                                >
+                                    Open Child Modal
+                                </Button>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={handleParentClose}
+                                >
+                                    Close Parent
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </Modal>
+                    
+                    <Modal
+                        open={childOpen}
+                        onClose={handleChildClose}
+                        aria-labelledby="child-modal-title"
+                    >
+                        <Box className="modal-content nested-modal-content">
+                            <Typography id="child-modal-title" variant="h6" component="h2">
+                                Child Modal
+                            </Typography>
+                            <Typography sx={{ mt: 2 }}>
+                                This is the nested child modal. Close this first, then the parent.
+                            </Typography>
+                            <Button 
+                                id="close-child-modal"
+                                variant="contained" 
+                                color="secondary"
+                                onClick={handleChildClose}
+                                sx={{ mt: 3 }}
+                            >
+                                Close Child Modal
+                            </Button>
+                        </Box>
+                    </Modal>
+                    
+                    {actionLog.length > 0 && (
+                        <div className="action-log">
+                            <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
+                                Action Log:
+                            </Typography>
+                            {actionLog.map((action, index) => (
+                                <div key={index} className="action-log-entry">
+                                    {index + 1}. {action}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Focus Management
+        const FocusManagementTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [inputValue, setInputValue] = React.useState('');
+            const [focusReturned, setFocusReturned] = React.useState(false);
+            const buttonRef = React.useRef(null);
+            
+            const handleOpen = () => {
+                setOpen(true);
+                setInputValue('');
+            };
+            
+            const handleClose = () => {
+                setOpen(false);
+                // Check if focus returns to the button
+                setTimeout(() => {
+                    if (document.activeElement === buttonRef.current) {
+                        setFocusReturned(true);
+                        completeTest(true, 'Focus management working correctly - focus returned to trigger button!');
+                    }
+                }, 100);
+            };
+            
+            const handleSubmit = () => {
+                if (inputValue.trim()) {
+                    handleClose();
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test focus management - open modal, interact with input, then close:
+                    </Typography>
+                    <Button 
+                        ref={buttonRef}
+                        id="open-focus-modal"
+                        variant="contained" 
+                        onClick={handleOpen}
+                    >
+                        Open Modal with Focus Test
+                    </Button>
+                    
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="focus-modal-title"
+                    >
+                        <Box className="modal-content">
+                            <Typography id="focus-modal-title" variant="h6" component="h2">
+                                Focus Management Test
+                            </Typography>
+                            <Typography sx={{ mt: 2, mb: 3 }}>
+                                Type something in the input below and submit:
+                            </Typography>
+                            <TextField
+                                autoFocus
+                                fullWidth
+                                label="Test Input"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleSubmit();
+                                    }
+                                }}
+                                sx={{ mb: 3 }}
+                            />
+                            <Stack direction="row" spacing={2}>
+                                <Button 
+                                    id="submit-focus-test"
+                                    variant="contained" 
+                                    onClick={handleSubmit}
+                                    disabled={!inputValue.trim()}
+                                >
+                                    Submit & Close
+                                </Button>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={handleClose}
+                                >
+                                    Cancel
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </Modal>
+                    
+                    {focusReturned && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="success.main">
+                                ✓ Focus successfully returned to trigger button
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 6: Custom Backdrop and Transition
+        const CustomBackdropTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [transitionComplete, setTransitionComplete] = React.useState(false);
+            
+            const handleClose = () => {
+                setOpen(false);
+                if (transitionComplete) {
+                    completeTest(true, 'Custom backdrop and transition working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test modal with custom backdrop and fade transition:
+                    </Typography>
+                    <Button 
+                        id="open-custom-modal"
+                        variant="contained" 
+                        onClick={() => setOpen(true)}
+                    >
+                        Open Modal with Custom Styling
+                    </Button>
+                    
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        closeAfterTransition
+                        BackdropComponent={Backdrop}
+                        BackdropProps={{
+                            timeout: 500,
+                            sx: {
+                                backgroundColor: 'rgba(25, 118, 210, 0.5)'
+                            }
+                        }}
+                        onTransitionEnd={() => setTransitionComplete(true)}
+                    >
+                        <Fade in={open}>
+                            <Box className="modal-content">
+                                <Typography variant="h6" component="h2">
+                                    Custom Backdrop Modal
+                                </Typography>
+                                <Typography sx={{ mt: 2 }}>
+                                    Notice the blue-tinted backdrop and fade transition.
+                                </Typography>
+                                <Box mt={3} p={2} bgcolor="#e3f2fd" borderRadius={1}>
+                                    <Typography variant="body2">
+                                        The backdrop has a custom blue color and the modal fades in/out
+                                    </Typography>
+                                </Box>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={handleClose}
+                                    sx={{ mt: 3 }}
+                                >
+                                    Close with Transition
+                                </Button>
+                            </Box>
+                        </Fade>
+                    </Modal>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'modal',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-modal"
+                        testName="Test 1: Basic Modal Open/Close"
+                        description="Verify basic modal open and close functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicModalTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="backdrop-click"
+                        testName="Test 2: Backdrop Click"
+                        description="Test closing modal by clicking the backdrop"
+                        onComplete={handleTestComplete}
+                    >
+                        <BackdropClickTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="escape-key"
+                        testName="Test 3: Escape Key"
+                        description="Test closing modal with the Escape key"
+                        onComplete={handleTestComplete}
+                    >
+                        <EscapeKeyTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-modals"
+                        testName="Test 4: Nested Modals"
+                        description="Test nested modal functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedModalTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="focus-management"
+                        testName="Test 5: Focus Management"
+                        description="Test focus trap and return focus functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <FocusManagementTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-backdrop"
+                        testName="Test 6: Custom Backdrop and Transition"
+                        description="Test custom backdrop styling and transitions"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomBackdropTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

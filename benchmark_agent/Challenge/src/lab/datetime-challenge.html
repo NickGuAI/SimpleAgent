@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Date/Time Pickers Component Challenge</title>
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --secondary-color: #dc004e;
+            --success-color: #4caf50;
+            --background-color: #f5f5f5;
+            --task-bg-color: #ffffff;
+            --text-color: #333;
+            --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 0;
+            margin: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .score-container {
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: inline-block;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+        }
+
+        .score {
+            font-weight: bold;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .task {
+            background-color: var(--task-bg-color);
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task.active {
+            opacity: 1;
+            transform: translateY(-2px);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .task.completed {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .task-badge {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 0 10px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* Date/Time Picker styles */
+        .date-picker-container {
+            margin: 1rem 0;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"],
+        input[type="month"],
+        input[type="week"] {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+            margin: 0.5rem 0;
+        }
+
+        .custom-calendar {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-width: 300px;
+            margin: 1rem 0;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .calendar-day:hover {
+            background-color: #e0e0e0;
+        }
+
+        .calendar-day.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--primary-color);
+        }
+
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .time-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .time-input {
+            width: 60px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .date-range {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .result-display {
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MUI Date/Time Pickers Component Challenge</h1>
+        <div class="score-container">
+            Score: <span class="score">0</span> / 5
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Task 1: Basic Date Picker -->
+        <div class="task active" id="basic-date">
+            <div class="task-badge">date-picker</div>
+            <div class="task-title">Select today's date using the date picker</div>
+            <div class="date-picker-container">
+                <label for="basic-date-input">Choose a date:</label>
+                <input type="date" id="basic-date-input">
+                <div class="result-display" id="date-result"></div>
+            </div>
+            <script>
+                (function() {
+                    const dateInput = document.getElementById('basic-date-input');
+                    const dateResult = document.getElementById('date-result');
+                    
+                    dateInput.addEventListener('change', function() {
+                        const selectedDate = new Date(this.value);
+                        const today = new Date();
+                        
+                        // Compare dates (ignoring time)
+                        if (selectedDate.toDateString() === today.toDateString()) {
+                            dateResult.textContent = 'Perfect! You selected today\'s date.';
+                            completeTask(document.getElementById('basic-date'));
+                        } else {
+                            dateResult.textContent = `Selected: ${this.value}. Please select today's date.`;
+                        }
+                    });
+                })();
+            </script>
+        </div>
+
+        <!-- Task 2: Time Picker -->
+        <div class="task" id="time-picker">
+            <div class="task-badge">time-picker</div>
+            <div class="task-title">Set the time to exactly 3:30 PM (15:30)</div>
+            <div class="date-picker-container">
+                <label for="time-input">Select time:</label>
+                <input type="time" id="time-input">
+                <div class="result-display" id="time-result"></div>
+            </div>
+            <script>
+                (function() {
+                    const timeInput = document.getElementById('time-input');
+                    const timeResult = document.getElementById('time-result');
+                    
+                    timeInput.addEventListener('change', function() {
+                        if (this.value === '15:30') {
+                            timeResult.textContent = 'Excellent! You set the time to 3:30 PM.';
+                            completeTask(document.getElementById('time-picker'));
+                        } else {
+                            timeResult.textContent = `Selected: ${this.value}. Please set to 15:30 (3:30 PM).`;
+                        }
+                    });
+                })();
+            </script>
+        </div>
+
+        <!-- Task 3: Date Range Picker -->
+        <div class="task" id="date-range">
+            <div class="task-badge">date-range</div>
+            <div class="task-title">Select a date range of exactly 7 days (one week)</div>
+            <div class="date-picker-container">
+                <div class="date-range">
+                    <div>
+                        <label for="start-date">Start date:</label>
+                        <input type="date" id="start-date">
+                    </div>
+                    <div>
+                        <label for="end-date">End date:</label>
+                        <input type="date" id="end-date">
+                    </div>
+                </div>
+                <div class="result-display" id="range-result"></div>
+            </div>
+            <script>
+                (function() {
+                    const startDate = document.getElementById('start-date');
+                    const endDate = document.getElementById('end-date');
+                    const rangeResult = document.getElementById('range-result');
+                    
+                    function checkDateRange() {
+                        if (startDate.value && endDate.value) {
+                            const start = new Date(startDate.value);
+                            const end = new Date(endDate.value);
+                            const diffTime = Math.abs(end - start);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays === 7) {
+                                rangeResult.textContent = 'Perfect! You selected a 7-day range.';
+                                completeTask(document.getElementById('date-range'));
+                            } else {
+                                rangeResult.textContent = `Selected range: ${diffDays} days. Please select exactly 7 days.`;
+                            }
+                        }
+                    }
+                    
+                    startDate.addEventListener('change', checkDateRange);
+                    endDate.addEventListener('change', checkDateRange);
+                })();
+            </script>
+        </div>
+
+        <!-- Task 4: Custom Calendar -->
+        <div class="task" id="custom-calendar">
+            <div class="task-badge">calendar</div>
+            <div class="task-title">Click on the 15th day of the current month in this calendar</div>
+            <div class="custom-calendar">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">‹</button>
+                    <span id="calendar-month-year"></span>
+                    <button onclick="changeMonth(1)">›</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Days will be generated by JavaScript -->
+                </div>
+            </div>
+            <div class="result-display" id="calendar-result"></div>
+            <script>
+                let currentMonth = new Date().getMonth();
+                let currentYear = new Date().getFullYear();
+                
+                function generateCalendar() {
+                    const grid = document.getElementById('calendar-grid');
+                    const monthYear = document.getElementById('calendar-month-year');
+                    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                    const today = new Date();
+                    
+                    monthYear.textContent = new Date(currentYear, currentMonth).toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                    
+                    grid.innerHTML = '';
+                    
+                    // Day headers
+                    const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                    dayHeaders.forEach(day => {
+                        const header = document.createElement('div');
+                        header.textContent = day;
+                        header.style.fontWeight = 'bold';
+                        grid.appendChild(header);
+                    });
+                    
+                    // Empty cells for days before month starts
+                    for (let i = 0; i < firstDay; i++) {
+                        const emptyCell = document.createElement('div');
+                        grid.appendChild(emptyCell);
+                    }
+                    
+                    // Days of the month
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayCell = document.createElement('div');
+                        dayCell.className = 'calendar-day';
+                        dayCell.textContent = day;
+                        
+                        if (currentYear === today.getFullYear() && 
+                            currentMonth === today.getMonth() && 
+                            day === today.getDate()) {
+                            dayCell.classList.add('today');
+                        }
+                        
+                        dayCell.addEventListener('click', function() {
+                            if (day === 15 && 
+                                currentMonth === new Date().getMonth() && 
+                                currentYear === new Date().getFullYear()) {
+                                this.classList.add('selected');
+                                document.getElementById('calendar-result').textContent = 
+                                    'Great! You clicked on the 15th of the current month.';
+                                completeTask(document.getElementById('custom-calendar'));
+                            } else {
+                                document.getElementById('calendar-result').textContent = 
+                                    `You clicked on ${day}. Please click on the 15th of the current month.`;
+                            }
+                        });
+                        
+                        grid.appendChild(dayCell);
+                    }
+                }
+                
+                function changeMonth(direction) {
+                    currentMonth += direction;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    } else if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    generateCalendar();
+                }
+                
+                // Initialize calendar
+                generateCalendar();
+            </script>
+        </div>
+
+        <!-- Task 5: DateTime with Constraints -->
+        <div class="task" id="datetime-constraints">
+            <div class="task-badge">constraints</div>
+            <div class="task-title">Select a datetime between 9 AM and 5 PM on a weekday (Mon-Fri)</div>
+            <div class="date-picker-container">
+                <label for="datetime-input">Choose date and time:</label>
+                <input type="datetime-local" id="datetime-input">
+                <div class="result-display" id="datetime-result"></div>
+                <p style="font-size: 0.9rem; color: #666;">
+                    Hint: Select a Monday-Friday date and a time between 9:00 AM and 5:00 PM
+                </p>
+            </div>
+            <script>
+                (function() {
+                    const datetimeInput = document.getElementById('datetime-input');
+                    const datetimeResult = document.getElementById('datetime-result');
+                    
+                    datetimeInput.addEventListener('change', function() {
+                        const selected = new Date(this.value);
+                        const dayOfWeek = selected.getDay();
+                        const hours = selected.getHours();
+                        const minutes = selected.getMinutes();
+                        const timeInMinutes = hours * 60 + minutes;
+                        
+                        const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+                        const isBusinessHours = timeInMinutes >= 540 && timeInMinutes <= 1020; // 9:00 to 17:00
+                        
+                        if (isWeekday && isBusinessHours) {
+                            datetimeResult.textContent = 'Perfect! You selected a weekday during business hours.';
+                            completeTask(document.getElementById('datetime-constraints'));
+                        } else if (!isWeekday) {
+                            datetimeResult.textContent = 'Please select a weekday (Monday-Friday).';
+                        } else if (!isBusinessHours) {
+                            datetimeResult.textContent = 'Please select a time between 9:00 AM and 5:00 PM.';
+                        }
+                    });
+                })();
+            </script>
+        </div>
+    </div>
+
+    <script>
+        // Global completion tracking
+        let score = 0;
+        const totalTasks = 5;
+
+        function completeTask(taskElement) {
+            if (taskElement.classList.contains('completed')) return;
+
+            taskElement.classList.remove('active');
+            taskElement.classList.add('completed');
+            score++;
+            updateScore();
+
+            // Activate next task
+            const tasks = document.querySelectorAll('.task');
+            const currentIndex = Array.from(tasks).indexOf(taskElement);
+            if (currentIndex < tasks.length - 1) {
+                tasks[currentIndex + 1].classList.add('active');
+            }
+        }
+
+        function updateScore() {
+            document.querySelector('.score').textContent = score;
+            document.querySelector('.score').classList.add('pulse');
+            setTimeout(() => {
+                document.querySelector('.score').classList.remove('pulse');
+            }, 500);
+        }
+    </script>
+</body>
+</html>

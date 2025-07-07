@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Box Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Box</h1>
+            <p>Test the functionality and behavior of the Material UI Box component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Box,
+            Button,
+            Typography,
+            TextField,
+            Checkbox,
+            FormControlLabel
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Box with sx styling
+        const BasicBoxTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Box component rendered with correct styling and responded to click!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the blue box below to test sx prop styling and interaction:
+                    </Typography>
+                    <Box
+                        sx={{
+                            width: 200,
+                            height: 100,
+                            backgroundColor: 'primary.main',
+                            '&:hover': {
+                                backgroundColor: 'primary.dark',
+                                cursor: 'pointer'
+                            },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 2,
+                            color: 'white',
+                            transition: 'all 0.3s'
+                        }}
+                        onClick={handleClick}
+                    >
+                        <Typography variant="body1">
+                            {clicked ? 'Clicked!' : 'Click me'}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Box with component prop
+        const ComponentPropTest = ({ completeTest }) => {
+            const [formSubmitted, setFormSubmitted] = React.useState(false);
+            
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setFormSubmitted(true);
+                completeTest(true, 'Box successfully rendered as a form element and handled submission!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        This Box is rendered as a form element. Submit it to test the component prop:
+                    </Typography>
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                            maxWidth: 300
+                        }}
+                    >
+                        <TextField
+                            label="Name"
+                            variant="outlined"
+                            size="small"
+                            required
+                        />
+                        <TextField
+                            label="Email"
+                            type="email"
+                            variant="outlined"
+                            size="small"
+                            required
+                        />
+                        <Button 
+                            type="submit" 
+                            variant="contained"
+                            disabled={formSubmitted}
+                        >
+                            {formSubmitted ? 'Submitted!' : 'Submit Form'}
+                        </Button>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Flexbox layout with Box
+        const FlexboxLayoutTest = ({ completeTest }) => {
+            const [layout, setLayout] = React.useState('row');
+            const [allChecked, setAllChecked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (layout === 'column') {
+                    setAllChecked(true);
+                    completeTest(true, 'Box flexbox properties work correctly! Direction changed successfully.');
+                }
+            }, [layout]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the flex direction to column to complete this test:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Button 
+                            variant={layout === 'row' ? 'contained' : 'outlined'}
+                            onClick={() => setLayout('row')}
+                            sx={{ mr: 1 }}
+                        >
+                            Row
+                        </Button>
+                        <Button 
+                            variant={layout === 'column' ? 'contained' : 'outlined'}
+                            onClick={() => setLayout('column')}
+                        >
+                            Column
+                        </Button>
+                    </Box>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: layout,
+                            gap: 2,
+                            p: 2,
+                            border: '2px dashed',
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                            alignItems: 'center'
+                        }}
+                    >
+                        <Box sx={{ 
+                            width: 60, 
+                            height: 60, 
+                            bgcolor: 'error.main',
+                            borderRadius: 1
+                        }} />
+                        <Box sx={{ 
+                            width: 60, 
+                            height: 60, 
+                            bgcolor: 'warning.main',
+                            borderRadius: 1
+                        }} />
+                        <Box sx={{ 
+                            width: 60, 
+                            height: 60, 
+                            bgcolor: 'success.main',
+                            borderRadius: 1
+                        }} />
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Responsive Box
+        const ResponsiveBoxTest = ({ completeTest }) => {
+            const [resized, setResized] = React.useState(false);
+            
+            React.useEffect(() => {
+                const checkResize = () => {
+                    if (window.innerWidth < 900) {
+                        setResized(true);
+                        completeTest(true, 'Responsive Box properties detected! The box adapts to different screen sizes.');
+                    }
+                };
+                
+                checkResize();
+                window.addEventListener('resize', checkResize);
+                return () => window.removeEventListener('resize', checkResize);
+            }, []);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        This box has responsive properties. Resize your window to less than 900px width or view on mobile to complete:
+                    </Typography>
+                    <Box
+                        sx={{
+                            width: {
+                                xs: '100%',  // 0-600px
+                                sm: 400,     // 600-900px
+                                md: 500,     // 900-1200px
+                                lg: 600      // 1200px+
+                            },
+                            height: 150,
+                            bgcolor: {
+                                xs: 'error.main',
+                                sm: 'warning.main',
+                                md: 'info.main',
+                                lg: 'success.main'
+                            },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 2,
+                            transition: 'all 0.3s'
+                        }}
+                    >
+                        <Typography variant="h6" sx={{ color: 'white' }}>
+                            {resized ? 'Responsive! ✓' : 'Resize Window'}
+                        </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+                        Current breakpoint: xs (&lt;600px) = red, sm (600-900px) = orange, md (900-1200px) = blue, lg (&gt;1200px) = green
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'box',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-styling"
+                        testName="Test 1: Basic Box with sx Styling"
+                        description="Test the Box component's sx prop for styling and interaction"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicBoxTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="component-prop"
+                        testName="Test 2: Box Component Prop"
+                        description="Test the Box component's ability to render as different HTML elements"
+                        onComplete={handleTestComplete}
+                    >
+                        <ComponentPropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="flexbox-layout"
+                        testName="Test 3: Flexbox Layout"
+                        description="Test Box component's flexbox display and layout properties"
+                        onComplete={handleTestComplete}
+                    >
+                        <FlexboxLayoutTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="responsive-design"
+                        testName="Test 4: Responsive Design"
+                        description="Test Box component's responsive breakpoint system"
+                        onComplete={handleTestComplete}
+                    >
+                        <ResponsiveBoxTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
