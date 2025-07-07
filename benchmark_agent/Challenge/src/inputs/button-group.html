@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Button Group Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .action-display {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .action-text {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+        
+        .calculator-display {
+            padding: 16px;
+            background-color: #263238;
+            color: white;
+            font-size: 24px;
+            text-align: right;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            font-family: monospace;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Button Group</h1>
+            <p>Test the functionality and behavior of the Material UI Button Group component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Button,
+            ButtonGroup,
+            Box,
+            Typography,
+            Stack,
+            Divider
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Button Group
+        const BasicButtonGroupTest = ({ completeTest }) => {
+            const [clickedButtons, setClickedButtons] = React.useState(new Set());
+            const buttons = ['One', 'Two', 'Three'];
+            
+            const handleClick = (button) => {
+                const newClicked = new Set(clickedButtons);
+                newClicked.add(button);
+                setClickedButtons(newClicked);
+                
+                if (newClicked.size === buttons.length) {
+                    completeTest(true, 'All buttons in the group clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three buttons in the group:
+                    </Typography>
+                    <ButtonGroup variant="contained" aria-label="basic button group">
+                        {buttons.map((button) => (
+                            <Button
+                                key={button}
+                                onClick={() => handleClick(button)}
+                                color={clickedButtons.has(button) ? "success" : "primary"}
+                            >
+                                {button}
+                                {clickedButtons.has(button) && ' ✓'}
+                            </Button>
+                        ))}
+                    </ButtonGroup>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                        Progress: {clickedButtons.size}/{buttons.length} buttons clicked
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 2: Variants
+        const VariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['text', 'contained', 'outlined'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All button group variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click one button from each variant group:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {variants.map((variant) => (
+                            <Box key={variant}>
+                                <Typography variant="caption">{variant.charAt(0).toUpperCase() + variant.slice(1)} variant:</Typography>
+                                <ButtonGroup variant={variant}>
+                                    <Button onClick={() => handleVariantClick(variant)}>
+                                        Button 1
+                                    </Button>
+                                    <Button onClick={() => handleVariantClick(variant)}>
+                                        Button 2
+                                    </Button>
+                                    <Button onClick={() => handleVariantClick(variant)}>
+                                        Button 3
+                                    </Button>
+                                </ButtonGroup>
+                                {clickedVariants.has(variant) && (
+                                    <Typography variant="caption" color="success.main">✓ Tested</Typography>
+                                )}
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Vertical Orientation
+        const VerticalOrientationTest = ({ completeTest }) => {
+            const [selectedAction, setSelectedAction] = React.useState('');
+            const targetAction = 'download';
+            
+            const handleActionClick = (action) => {
+                setSelectedAction(action);
+                if (action === targetAction) {
+                    completeTest(true, 'Download action selected!');
+                }
+            };
+            
+            const actions = [
+                { id: 'upload', label: '⬆️ Upload' },
+                { id: 'download', label: '⬇️ Download' },
+                { id: 'sync', label: '🔄 Sync' },
+                { id: 'delete', label: '🗑️ Delete' }
+            ];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the "Download" button in the vertical group:
+                    </Typography>
+                    <ButtonGroup orientation="vertical" variant="outlined">
+                        {actions.map((action) => (
+                            <Button
+                                key={action.id}
+                                onClick={() => handleActionClick(action.id)}
+                                color={selectedAction === action.id ? "primary" : "inherit"}
+                            >
+                                {action.label}
+                            </Button>
+                        ))}
+                    </ButtonGroup>
+                    {selectedAction && (
+                        <div className="action-display">
+                            <Typography variant="body2">Selected Action:</Typography>
+                            <div className="action-text">{selectedAction}</div>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Size Options
+        const SizeOptionsTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = ['small', 'medium', 'large'];
+            
+            const handleSizeClick = (size) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All size variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click one button from each size group:
+                    </Typography>
+                    <Stack spacing={2} alignItems="flex-start">
+                        {sizes.map((size) => (
+                            <Box key={size}>
+                                <Typography variant="caption">{size.charAt(0).toUpperCase() + size.slice(1)} size:</Typography>
+                                <ButtonGroup size={size} variant="contained">
+                                    <Button onClick={() => handleSizeClick(size)}>Small</Button>
+                                    <Button onClick={() => handleSizeClick(size)}>Medium</Button>
+                                    <Button onClick={() => handleSizeClick(size)}>Large</Button>
+                                </ButtonGroup>
+                                {clickedSizes.has(size) && (
+                                    <Typography variant="caption" color="success.main" ml={1}>✓</Typography>
+                                )}
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Color Variants
+        const ColorVariantsTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error'];
+            const targetColors = ['primary', 'error'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                const hasTargetColors = targetColors.every(c => newClicked.has(c));
+                if (hasTargetColors) {
+                    completeTest(true, 'Primary and Error colors selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click buttons from the Primary and Error color groups:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {colors.map((color) => (
+                            <ButtonGroup key={color} variant="contained" color={color}>
+                                <Button onClick={() => handleColorClick(color)}>
+                                    {color} 1
+                                </Button>
+                                <Button onClick={() => handleColorClick(color)}>
+                                    {color} 2
+                                </Button>
+                                <Button onClick={() => handleColorClick(color)}>
+                                    {color} 3
+                                </Button>
+                            </ButtonGroup>
+                        ))}
+                    </Stack>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                        Target: Primary and Error colors
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Disabled State
+        const DisabledStateTest = ({ completeTest }) => {
+            const [enabledClicked, setEnabledClicked] = React.useState(false);
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledClicked && attempted) {
+                    completeTest(true, 'Disabled button group correctly prevented interaction!');
+                }
+            }, [enabledClicked, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click a button in the enabled group (disabled group should not respond):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Box>
+                            <Typography variant="caption">Enabled Button Group:</Typography>
+                            <ButtonGroup variant="contained">
+                                <Button onClick={() => setEnabledClicked(true)}>
+                                    {enabledClicked ? '✓ Clicked' : 'Click Me'}
+                                </Button>
+                                <Button>Button 2</Button>
+                                <Button>Button 3</Button>
+                            </ButtonGroup>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Disabled Button Group:</Typography>
+                            <ButtonGroup variant="contained" disabled>
+                                <Button onClick={() => setAttempted(true)}>Disabled 1</Button>
+                                <Button onClick={() => setAttempted(true)}>Disabled 2</Button>
+                                <Button onClick={() => setAttempted(true)}>Disabled 3</Button>
+                            </ButtonGroup>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 7: Split Button
+        const SplitButtonTest = ({ completeTest }) => {
+            const [selectedOption, setSelectedOption] = React.useState(0);
+            const [dropdownClicked, setDropdownClicked] = React.useState(false);
+            const options = ['Save', 'Save as', 'Save and exit'];
+            
+            const handleMainClick = () => {
+                if (selectedOption === 2) { // "Save and exit"
+                    completeTest(true, 'Save and exit action executed!');
+                }
+            };
+            
+            const handleDropdownClick = () => {
+                setDropdownClicked(true);
+                // Cycle through options
+                setSelectedOption((prev) => (prev + 1) % options.length);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Use the dropdown to select "Save and exit", then click the main button:
+                    </Typography>
+                    <ButtonGroup variant="contained">
+                        <Button onClick={handleMainClick}>
+                            {options[selectedOption]}
+                        </Button>
+                        <Button
+                            size="small"
+                            onClick={handleDropdownClick}
+                            sx={{ px: 1 }}
+                        >
+                            ▼
+                        </Button>
+                    </ButtonGroup>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                        Current option: {options[selectedOption]}
+                        {!dropdownClicked && ' (Click dropdown to change)'}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 8: Calculator Style
+        const CalculatorStyleTest = ({ completeTest }) => {
+            const [display, setDisplay] = React.useState('0');
+            const [equation, setEquation] = React.useState('');
+            const targetResult = '15'; // 7 + 8
+            
+            const handleNumber = (num) => {
+                if (equation.includes('=')) {
+                    setEquation(num);
+                    setDisplay(num);
+                } else {
+                    setEquation(equation + num);
+                    setDisplay(display === '0' ? num : display + num);
+                }
+            };
+            
+            const handleOperator = (op) => {
+                if (op === '=') {
+                    try {
+                        const result = eval(equation).toString();
+                        setDisplay(result);
+                        setEquation(equation + '=' + result);
+                        
+                        if (result === targetResult) {
+                            completeTest(true, 'Correct calculation: 7 + 8 = 15!');
+                        }
+                    } catch {
+                        setDisplay('Error');
+                    }
+                } else if (op === 'C') {
+                    setDisplay('0');
+                    setEquation('');
+                } else {
+                    setEquation(equation + op);
+                    setDisplay('0');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Calculate 7 + 8 using the calculator:
+                    </Typography>
+                    <Box sx={{ maxWidth: 300 }}>
+                        <div className="calculator-display">
+                            {display}
+                        </div>
+                        <Stack spacing={1}>
+                            <ButtonGroup fullWidth>
+                                <Button onClick={() => handleNumber('7')}>7</Button>
+                                <Button onClick={() => handleNumber('8')}>8</Button>
+                                <Button onClick={() => handleNumber('9')}>9</Button>
+                                <Button onClick={() => handleOperator('/')}>/</Button>
+                            </ButtonGroup>
+                            <ButtonGroup fullWidth>
+                                <Button onClick={() => handleNumber('4')}>4</Button>
+                                <Button onClick={() => handleNumber('5')}>5</Button>
+                                <Button onClick={() => handleNumber('6')}>6</Button>
+                                <Button onClick={() => handleOperator('*')}>×</Button>
+                            </ButtonGroup>
+                            <ButtonGroup fullWidth>
+                                <Button onClick={() => handleNumber('1')}>1</Button>
+                                <Button onClick={() => handleNumber('2')}>2</Button>
+                                <Button onClick={() => handleNumber('3')}>3</Button>
+                                <Button onClick={() => handleOperator('-')}>-</Button>
+                            </ButtonGroup>
+                            <ButtonGroup fullWidth>
+                                <Button onClick={() => handleOperator('C')}>C</Button>
+                                <Button onClick={() => handleNumber('0')}>0</Button>
+                                <Button onClick={() => handleOperator('=')}>=</Button>
+                                <Button onClick={() => handleOperator('+')}>+</Button>
+                            </ButtonGroup>
+                        </Stack>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'button-group',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-group"
+                        testName="Test 1: Basic Button Group"
+                        description="Click all buttons in a basic button group"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicButtonGroupTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 2: Button Group Variants"
+                        description="Test all button group variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="vertical"
+                        testName="Test 3: Vertical Orientation"
+                        description="Use a vertically oriented button group"
+                        onComplete={handleTestComplete}
+                    >
+                        <VerticalOrientationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="sizes"
+                        testName="Test 4: Size Options"
+                        description="Test different button group sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeOptionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="colors"
+                        testName="Test 5: Color Variants"
+                        description="Test button groups with different colors"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled"
+                        testName="Test 6: Disabled State"
+                        description="Verify disabled button group behavior"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="split-button"
+                        testName="Test 7: Split Button"
+                        description="Use a split button with dropdown functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <SplitButtonTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="calculator"
+                        testName="Test 8: Calculator Style"
+                        description="Use button groups to perform a calculation"
+                        onComplete={handleTestComplete}
+                    >
+                        <CalculatorStyleTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

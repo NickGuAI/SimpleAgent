@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Checkbox Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .state-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Checkbox</h1>
+            <p>Test the functionality and behavior of the Material UI Checkbox component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Checkbox,
+            FormControlLabel,
+            FormGroup,
+            FormControl,
+            FormLabel,
+            Box,
+            Typography,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Toggle
+        const BasicToggleTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState(false);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleChange = (event) => {
+                setChecked(event.target.checked);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 2) {
+                    completeTest(true, 'Checkbox toggled successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the checkbox at least twice:
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                id="basic-checkbox"
+                                checked={checked}
+                                onChange={handleChange}
+                            />
+                        }
+                        label="Toggle me"
+                    />
+                    <div className="state-info">
+                        Current state: {checked ? 'Checked' : 'Unchecked'}<br />
+                        Toggle count: {toggleCount}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Multiple Checkboxes
+        const MultipleCheckboxTest = ({ completeTest }) => {
+            const [state, setState] = React.useState({
+                option1: false,
+                option2: false,
+                option3: false,
+                option4: false
+            });
+            
+            const requiredChecked = ['option1', 'option3'];
+            
+            const handleChange = (name) => (event) => {
+                const newState = { ...state, [name]: event.target.checked };
+                setState(newState);
+                
+                const correctlyChecked = requiredChecked.every(opt => newState[opt]) &&
+                    Object.keys(newState).filter(key => newState[key]).length === requiredChecked.length;
+                
+                if (correctlyChecked) {
+                    completeTest(true, 'Correct checkboxes selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check only Option 1 and Option 3:
+                    </Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="checkbox-option1"
+                                    checked={state.option1}
+                                    onChange={handleChange('option1')}
+                                    color="primary"
+                                />
+                            }
+                            label="Option 1"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="checkbox-option2"
+                                    checked={state.option2}
+                                    onChange={handleChange('option2')}
+                                    color="primary"
+                                />
+                            }
+                            label="Option 2"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="checkbox-option3"
+                                    checked={state.option3}
+                                    onChange={handleChange('option3')}
+                                    color="primary"
+                                />
+                            }
+                            label="Option 3"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="checkbox-option4"
+                                    checked={state.option4}
+                                    onChange={handleChange('option4')}
+                                    color="primary"
+                                />
+                            }
+                            label="Option 4"
+                        />
+                    </FormGroup>
+                </Box>
+            );
+        };
+        
+        // Test 3: Indeterminate State
+        const IndeterminateTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState([false, false, false]);
+            
+            const handleParentChange = (event) => {
+                const newChecked = [event.target.checked, event.target.checked, event.target.checked];
+                setChecked(newChecked);
+                
+                if (newChecked.every(c => c === true)) {
+                    completeTest(true, 'Parent checkbox successfully controls all children!');
+                }
+            };
+            
+            const handleChildChange = (index) => (event) => {
+                const newChecked = [...checked];
+                newChecked[index] = event.target.checked;
+                setChecked(newChecked);
+            };
+            
+            const isIndeterminate = checked.some(c => c) && !checked.every(c => c);
+            const isParentChecked = checked.every(c => c);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Use the parent checkbox to check all children:
+                    </Typography>
+                    <FormControl component="fieldset">
+                        <FormLabel component="legend">Parent</FormLabel>
+                        <FormControlLabel
+                            label="Select All"
+                            control={
+                                <Checkbox
+                                    id="parent-checkbox"
+                                    checked={isParentChecked}
+                                    indeterminate={isIndeterminate}
+                                    onChange={handleParentChange}
+                                />
+                            }
+                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
+                            <FormControlLabel
+                                label="Child 1"
+                                control={
+                                    <Checkbox
+                                        id="child-checkbox-1"
+                                        checked={checked[0]}
+                                        onChange={handleChildChange(0)}
+                                    />
+                                }
+                            />
+                            <FormControlLabel
+                                label="Child 2"
+                                control={
+                                    <Checkbox
+                                        id="child-checkbox-2"
+                                        checked={checked[1]}
+                                        onChange={handleChildChange(1)}
+                                    />
+                                }
+                            />
+                            <FormControlLabel
+                                label="Child 3"
+                                control={
+                                    <Checkbox
+                                        id="child-checkbox-3"
+                                        checked={checked[2]}
+                                        onChange={handleChildChange(2)}
+                                    />
+                                }
+                            />
+                        </Box>
+                    </FormControl>
+                </Box>
+            );
+        };
+        
+        // Test 4: Color Variants
+        const ColorVariantsTest = ({ completeTest }) => {
+            const [checkedColors, setCheckedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error', 'warning', 'info'];
+            
+            const handleColorChange = (color) => (event) => {
+                const newChecked = new Set(checkedColors);
+                if (event.target.checked) {
+                    newChecked.add(color);
+                } else {
+                    newChecked.delete(color);
+                }
+                setCheckedColors(newChecked);
+                
+                if (newChecked.size === colors.length) {
+                    completeTest(true, 'All color variants checked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check all color variants:
+                    </Typography>
+                    <div className="checkbox-grid">
+                        {colors.map((color) => (
+                            <FormControlLabel
+                                key={color}
+                                control={
+                                    <Checkbox
+                                        id={`${color}-checkbox`}
+                                        color={color}
+                                        checked={checkedColors.has(color)}
+                                        onChange={handleColorChange(color)}
+                                    />
+                                }
+                                label={color.charAt(0).toUpperCase() + color.slice(1)}
+                            />
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Disabled State
+        const DisabledStateTest = ({ completeTest }) => {
+            const [enabledChecked, setEnabledChecked] = React.useState(false);
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledChecked && attempted) {
+                    completeTest(true, 'Disabled checkbox correctly prevented interaction!');
+                }
+            }, [enabledChecked, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check the enabled checkbox (disabled checkbox should not respond):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="enabled-checkbox"
+                                    checked={enabledChecked}
+                                    onChange={(e) => setEnabledChecked(e.target.checked)}
+                                />
+                            }
+                            label="Enabled Checkbox"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="disabled-checkbox"
+                                    disabled
+                                    onClick={() => setAttempted(true)}
+                                />
+                            }
+                            label="Disabled Checkbox"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="disabled-checked-checkbox"
+                                    disabled
+                                    checked
+                                    onClick={() => setAttempted(true)}
+                                />
+                            }
+                            label="Disabled Checked Checkbox"
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Size Variants
+        const SizeVariantsTest = ({ completeTest }) => {
+            const [checkedSizes, setCheckedSizes] = React.useState(new Set());
+            const sizes = ['small', 'medium', 'large'];
+            
+            const handleSizeChange = (size) => (event) => {
+                const newChecked = new Set(checkedSizes);
+                if (event.target.checked) {
+                    newChecked.add(size);
+                } else {
+                    newChecked.delete(size);
+                }
+                setCheckedSizes(newChecked);
+                
+                if (newChecked.size === sizes.length) {
+                    completeTest(true, 'All size variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check all size variants:
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="small-checkbox"
+                                    size="small"
+                                    checked={checkedSizes.has('small')}
+                                    onChange={handleSizeChange('small')}
+                                />
+                            }
+                            label="Small"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="medium-checkbox"
+                                    size="medium"
+                                    checked={checkedSizes.has('medium')}
+                                    onChange={handleSizeChange('medium')}
+                                />
+                            }
+                            label="Medium (default)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="large-checkbox"
+                                    size="large"
+                                    checked={checkedSizes.has('large')}
+                                    onChange={handleSizeChange('large')}
+                                />
+                            }
+                            label="Large"
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 7: Required Validation
+        const RequiredValidationTest = ({ completeTest }) => {
+            const [agreed, setAgreed] = React.useState(false);
+            const [submitted, setSubmitted] = React.useState(false);
+            
+            const handleSubmit = () => {
+                setSubmitted(true);
+                if (agreed) {
+                    completeTest(true, 'Form validation passed!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check the required checkbox and submit:
+                    </Typography>
+                    <FormControl error={submitted && !agreed} component="fieldset">
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    id="required-checkbox"
+                                    required
+                                    checked={agreed}
+                                    onChange={(e) => setAgreed(e.target.checked)}
+                                    color={submitted && !agreed ? "error" : "primary"}
+                                />
+                            }
+                            label="I agree to the terms and conditions *"
+                        />
+                        {submitted && !agreed && (
+                            <Typography variant="caption" color="error">
+                                This field is required
+                            </Typography>
+                        )}
+                    </FormControl>
+                    <Box mt={2}>
+                        <button onClick={handleSubmit}>Submit</button>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'checkbox',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-toggle"
+                        testName="Test 1: Basic Toggle"
+                        description="Toggle checkbox state on and off"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicToggleTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-checkboxes"
+                        testName="Test 2: Multiple Checkboxes"
+                        description="Select specific checkboxes from a group"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleCheckboxTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="indeterminate-state"
+                        testName="Test 3: Indeterminate State"
+                        description="Test parent-child checkbox relationship with indeterminate state"
+                        onComplete={handleTestComplete}
+                    >
+                        <IndeterminateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-variants"
+                        testName="Test 4: Color Variants"
+                        description="Test all checkbox color options"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-state"
+                        testName="Test 5: Disabled State"
+                        description="Verify disabled checkboxes cannot be toggled"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="size-variants"
+                        testName="Test 6: Size Variants"
+                        description="Test different checkbox sizes"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="required-validation"
+                        testName="Test 7: Required Validation"
+                        description="Test checkbox form validation"
+                        onComplete={handleTestComplete}
+                    >
+                        <RequiredValidationTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

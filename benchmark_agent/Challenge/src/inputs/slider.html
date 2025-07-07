@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Slider Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .value-display {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .value-text {
+            font-size: 32px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+        
+        .slider-container {
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+        
+        .vertical-slider-container {
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .range-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        
+        .color-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 4px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Slider</h1>
+            <p>Test the functionality and behavior of the Material UI Slider component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Slider,
+            Box,
+            Typography,
+            Stack,
+            Paper,
+            Grid
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Value Selection
+        const BasicValueTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(30);
+            const targetValue = 75;
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue === targetValue) {
+                    completeTest(true, `Successfully set slider to ${targetValue}!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Move the slider to exactly {targetValue}:
+                    </Typography>
+                    <div className="slider-container">
+                        <Slider
+                            id="basic-slider"
+                            value={value}
+                            onChange={handleChange}
+                            valueLabelDisplay="on"
+                            min={0}
+                            max={100}
+                        />
+                    </div>
+                    <div className="value-display">
+                        <Typography variant="body2">Current Value:</Typography>
+                        <div className="value-text">{value}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Discrete Steps
+        const DiscreteStepsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const marks = [
+                { value: 0, label: '0°C' },
+                { value: 20, label: '20°C' },
+                { value: 37, label: '37°C' },
+                { value: 100, label: '100°C' }
+            ];
+            const targetValue = 37;
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue === targetValue) {
+                    completeTest(true, 'Body temperature (37°C) selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select body temperature (37°C) on the temperature scale:
+                    </Typography>
+                    <div className="slider-container">
+                        <Slider
+                            id="discrete-slider"
+                            value={value}
+                            onChange={handleChange}
+                            step={null}
+                            valueLabelDisplay="auto"
+                            marks={marks}
+                            min={0}
+                            max={100}
+                        />
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Range Slider
+        const RangeSliderTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState([20, 40]);
+            const targetRange = [25, 75];
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue[0] === targetRange[0] && newValue[1] === targetRange[1]) {
+                    completeTest(true, 'Perfect range selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the range to exactly [{targetRange[0]}, {targetRange[1]}]:
+                    </Typography>
+                    <div className="slider-container">
+                        <Slider
+                            id="range-slider"
+                            value={value}
+                            onChange={handleChange}
+                            valueLabelDisplay="on"
+                            min={0}
+                            max={100}
+                        />
+                    </div>
+                    <div className="range-display">
+                        <Typography variant="caption">Min: {value[0]}</Typography>
+                        <Typography variant="caption">Max: {value[1]}</Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Vertical Slider
+        const VerticalSliderTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const targetValue = 80;
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue === targetValue) {
+                    completeTest(true, 'Vertical slider set correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the vertical slider to {targetValue}:
+                    </Typography>
+                    <div className="vertical-slider-container">
+                        <Slider
+                            id="vertical-slider"
+                            orientation="vertical"
+                            value={value}
+                            onChange={handleChange}
+                            valueLabelDisplay="on"
+                            min={0}
+                            max={100}
+                        />
+                        <Box ml={4}>
+                            <Typography variant="h4">{value}</Typography>
+                        </Box>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Small Steps
+        const SmallStepsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(1);
+            const targetValue = 3.5;
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue === targetValue) {
+                    completeTest(true, 'Precise value selected!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the rating to exactly {targetValue} stars:
+                    </Typography>
+                    <div className="slider-container">
+                        <Slider
+                            id="small-step-slider"
+                            value={value}
+                            onChange={handleChange}
+                            step={0.5}
+                            marks
+                            min={1}
+                            max={5}
+                            valueLabelDisplay="on"
+                        />
+                    </div>
+                    <Typography variant="body1" align="center" mt={2}>
+                        Rating: {value} ⭐
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Disabled State
+        const DisabledStateTest = ({ completeTest }) => {
+            const [enabledValue, setEnabledValue] = React.useState(50);
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledValue !== 50 && attempted) {
+                    completeTest(true, 'Disabled slider correctly prevented interaction!');
+                }
+            }, [enabledValue, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the enabled slider (disabled slider should not move):
+                    </Typography>
+                    <Stack spacing={3}>
+                        <Box>
+                            <Typography variant="caption">Enabled Slider:</Typography>
+                            <Slider
+                                id="enabled-slider"
+                                value={enabledValue}
+                                onChange={(e, v) => setEnabledValue(v)}
+                                valueLabelDisplay="auto"
+                            />
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Disabled Slider:</Typography>
+                            <Slider
+                                id="disabled-slider"
+                                defaultValue={50}
+                                disabled
+                                valueLabelDisplay="auto"
+                                onClick={() => setAttempted(true)}
+                            />
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 7: Color Mixer
+        const ColorMixerTest = ({ completeTest }) => {
+            const [rgb, setRgb] = React.useState({ r: 0, g: 0, b: 0 });
+            const targetColor = { r: 76, g: 175, b: 80 }; // Material UI success color
+            
+            React.useEffect(() => {
+                if (
+                    Math.abs(rgb.r - targetColor.r) <= 5 &&
+                    Math.abs(rgb.g - targetColor.g) <= 5 &&
+                    Math.abs(rgb.b - targetColor.b) <= 5
+                ) {
+                    completeTest(true, 'Color matched successfully!');
+                }
+            }, [rgb]);
+            
+            const handleColorChange = (color) => (event, value) => {
+                setRgb(prev => ({ ...prev, [color]: value }));
+            };
+            
+            const currentColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Match the target color (Material Green ~rgb(76, 175, 80)):
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Box>
+                            <Typography variant="caption">Red: {rgb.r}</Typography>
+                            <Slider
+                                id="red-slider"
+                                value={rgb.r}
+                                onChange={handleColorChange('r')}
+                                max={255}
+                                valueLabelDisplay="auto"
+                                sx={{ color: 'red' }}
+                            />
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Green: {rgb.g}</Typography>
+                            <Slider
+                                id="green-slider"
+                                value={rgb.g}
+                                onChange={handleColorChange('g')}
+                                max={255}
+                                valueLabelDisplay="auto"
+                                sx={{ color: 'green' }}
+                            />
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">Blue: {rgb.b}</Typography>
+                            <Slider
+                                id="blue-slider"
+                                value={rgb.b}
+                                onChange={handleColorChange('b')}
+                                max={255}
+                                valueLabelDisplay="auto"
+                                sx={{ color: 'blue' }}
+                            />
+                        </Box>
+                    </Stack>
+                    <div 
+                        className="color-preview" 
+                        style={{ backgroundColor: currentColor }}
+                    >
+                        <Typography>
+                            {currentColor}
+                        </Typography>
+                    </div>
+                    <Typography variant="caption" color="text.secondary" mt={1}>
+                        Target: rgb(76, 175, 80) - tolerance: ±5
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 8: Volume Control
+        const VolumeControlTest = ({ completeTest }) => {
+            const [volume, setVolume] = React.useState(30);
+            const [muted, setMuted] = React.useState(false);
+            const targetVolume = 65;
+            
+            const handleChange = (event, newValue) => {
+                setVolume(newValue);
+                setMuted(newValue === 0);
+                
+                if (newValue === targetVolume) {
+                    completeTest(true, 'Perfect volume level set!');
+                }
+            };
+            
+            const getVolumeIcon = () => {
+                if (muted || volume === 0) return '🔇';
+                if (volume < 33) return '🔈';
+                if (volume < 66) return '🔉';
+                return '🔊';
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set the volume to exactly {targetVolume}%:
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography variant="h4">{getVolumeIcon()}</Typography>
+                        <Slider
+                            id="volume-slider"
+                            value={volume}
+                            onChange={handleChange}
+                            aria-label="Volume"
+                            valueLabelDisplay="on"
+                            min={0}
+                            max={100}
+                            sx={{ flex: 1 }}
+                        />
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'slider',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-value"
+                        testName="Test 1: Basic Value Selection"
+                        description="Set the slider to a specific value"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicValueTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="discrete-steps"
+                        testName="Test 2: Discrete Steps"
+                        description="Select a value from marked positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <DiscreteStepsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="range-slider"
+                        testName="Test 3: Range Slider"
+                        description="Set a range between two values"
+                        onComplete={handleTestComplete}
+                    >
+                        <RangeSliderTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="vertical-slider"
+                        testName="Test 4: Vertical Slider"
+                        description="Use a vertical orientation slider"
+                        onComplete={handleTestComplete}
+                    >
+                        <VerticalSliderTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="small-steps"
+                        testName="Test 5: Small Steps"
+                        description="Select a precise value with small increments"
+                        onComplete={handleTestComplete}
+                    >
+                        <SmallStepsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-state"
+                        testName="Test 6: Disabled State"
+                        description="Verify disabled slider cannot be changed"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledStateTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="color-mixer"
+                        testName="Test 7: Color Mixer"
+                        description="Mix RGB values to match a target color"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorMixerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="volume-control"
+                        testName="Test 8: Volume Control"
+                        description="Set volume to a specific level"
+                        onComplete={handleTestComplete}
+                    >
+                        <VolumeControlTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

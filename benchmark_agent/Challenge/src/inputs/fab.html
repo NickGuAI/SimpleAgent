@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Floating Action Button (FAB) Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 200px;
+            position: relative;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .fab-container {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+        }
+        
+        .message-list {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .message-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            background-color: white;
+            border-radius: 4px;
+        }
+        
+        .action-counter {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 8px 16px;
+            background-color: #e3f2fd;
+            border-radius: 16px;
+            font-weight: 500;
+        }
+        
+        .fab-row {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Floating Action Button (FAB)</h1>
+            <p>Test the functionality and behavior of the Material UI FAB component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Fab,
+            Box,
+            Typography,
+            Stack,
+            Zoom
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic FAB Click
+        const BasicFABTest = ({ completeTest }) => {
+            const [clickCount, setClickCount] = React.useState(0);
+            const targetClicks = 3;
+            
+            const handleClick = () => {
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount === targetClicks) {
+                    completeTest(true, `FAB clicked ${targetClicks} times successfully!`);
+                }
+            };
+            
+            return (
+                <Box position="relative" height={150}>
+                    <Typography variant="body2" gutterBottom>
+                        Click the floating action button {targetClicks} times:
+                    </Typography>
+                    <div className="fab-container">
+                        <Fab 
+                            color="primary" 
+                            aria-label="add"
+                            onClick={handleClick}
+                        >
+                            ➕
+                        </Fab>
+                    </div>
+                    <div className="action-counter">
+                        Clicks: {clickCount}/{targetClicks}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: FAB Variants
+        const FABVariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['circular', 'extended'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'Both FAB variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both FAB variants:
+                    </Typography>
+                    <div className="fab-row">
+                        <Fab 
+                            color="primary"
+                            onClick={() => handleVariantClick('circular')}
+                        >
+                            {clickedVariants.has('circular') ? '✓' : '📝'}
+                        </Fab>
+                        <Fab 
+                            variant="extended"
+                            color="primary"
+                            onClick={() => handleVariantClick('extended')}
+                        >
+                            {clickedVariants.has('extended') ? '✓ Done' : '🚀 Navigate'}
+                        </Fab>
+                    </div>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block" textAlign="center">
+                        Progress: {clickedVariants.size}/{variants.length} variants clicked
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 3: FAB Sizes
+        const FABSizesTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = ['small', 'medium', 'large'];
+            
+            const handleSizeClick = (size) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All FAB sizes tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three FAB sizes:
+                    </Typography>
+                    <div className="fab-row">
+                        <Fab 
+                            size="small"
+                            color="secondary"
+                            onClick={() => handleSizeClick('small')}
+                        >
+                            {clickedSizes.has('small') ? '✓' : 'S'}
+                        </Fab>
+                        <Fab 
+                            size="medium"
+                            color="secondary"
+                            onClick={() => handleSizeClick('medium')}
+                        >
+                            {clickedSizes.has('medium') ? '✓' : 'M'}
+                        </Fab>
+                        <Fab 
+                            size="large"
+                            color="secondary"
+                            onClick={() => handleSizeClick('large')}
+                        >
+                            {clickedSizes.has('large') ? '✓' : 'L'}
+                        </Fab>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Color Variants
+        const FABColorsTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error'];
+            const targetColors = ['success', 'error'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                const hasTargetColors = targetColors.every(c => newClicked.has(c));
+                if (hasTargetColors) {
+                    completeTest(true, 'Success and Error FABs clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the Success (green) and Error (red) FABs:
+                    </Typography>
+                    <div className="fab-row">
+                        {colors.map((color) => (
+                            <Fab 
+                                key={color}
+                                color={color}
+                                size="small"
+                                onClick={() => handleColorClick(color)}
+                            >
+                                {clickedColors.has(color) ? '✓' : color.charAt(0).toUpperCase()}
+                            </Fab>
+                        ))}
+                    </div>
+                    <Typography variant="caption" color="text.secondary" mt={2} display="block" textAlign="center">
+                        Target: Success and Error colors
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 5: Disabled State
+        const DisabledFABTest = ({ completeTest }) => {
+            const [enabledClicked, setEnabledClicked] = React.useState(false);
+            const [attempted, setAttempted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enabledClicked && attempted) {
+                    completeTest(true, 'Disabled FAB correctly prevented interaction!');
+                }
+            }, [enabledClicked, attempted]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the enabled FAB (disabled FAB should not respond):
+                    </Typography>
+                    <Stack direction="row" spacing={3} justifyContent="center" mt={4}>
+                        <Box textAlign="center">
+                            <Fab 
+                                color="primary"
+                                onClick={() => setEnabledClicked(true)}
+                            >
+                                {enabledClicked ? '✓' : '✨'}
+                            </Fab>
+                            <Typography variant="caption" display="block" mt={1}>
+                                Enabled
+                            </Typography>
+                        </Box>
+                        <Box textAlign="center">
+                            <Fab 
+                                disabled
+                                onClick={() => setAttempted(true)}
+                            >
+                                🚫
+                            </Fab>
+                            <Typography variant="caption" display="block" mt={1}>
+                                Disabled
+                            </Typography>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: FAB with Animation
+        const AnimatedFABTest = ({ completeTest }) => {
+            const [visible, setVisible] = React.useState(true);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleToggle = () => {
+                setVisible(!visible);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 4) {
+                    completeTest(true, 'FAB animation tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the FAB visibility 4 times using the button:
+                    </Typography>
+                    <Box textAlign="center">
+                        <button onClick={handleToggle}>
+                            {visible ? 'Hide FAB' : 'Show FAB'}
+                        </button>
+                        <Typography variant="caption" display="block" mt={1}>
+                            Toggle count: {toggleCount}/4
+                        </Typography>
+                    </Box>
+                    <Box position="relative" height={100} mt={2}>
+                        <Zoom in={visible}>
+                            <Fab 
+                                color="primary"
+                                sx={{
+                                    position: 'absolute',
+                                    bottom: 16,
+                                    right: 16,
+                                }}
+                            >
+                                🎯
+                            </Fab>
+                        </Zoom>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 7: Multiple Actions
+        const MultipleActionsFABTest = ({ completeTest }) => {
+            const [messages, setMessages] = React.useState([]);
+            const requiredActions = ['edit', 'delete', 'share'];
+            const [completedActions, setCompletedActions] = React.useState(new Set());
+            
+            const handleAction = (action) => {
+                const newCompleted = new Set(completedActions);
+                newCompleted.add(action);
+                setCompletedActions(newCompleted);
+                
+                setMessages(prev => [...prev, `${action} action performed`]);
+                
+                if (newCompleted.size === requiredActions.length) {
+                    completeTest(true, 'All actions completed!');
+                }
+            };
+            
+            return (
+                <Box position="relative" minHeight={200}>
+                    <Typography variant="body2" gutterBottom>
+                        Perform all three actions: Edit, Delete, and Share
+                    </Typography>
+                    <Stack 
+                        direction="row" 
+                        spacing={2} 
+                        sx={{
+                            position: 'absolute',
+                            bottom: 16,
+                            right: 16,
+                        }}
+                    >
+                        <Fab 
+                            color="primary"
+                            size="small"
+                            onClick={() => handleAction('edit')}
+                        >
+                            ✏️
+                        </Fab>
+                        <Fab 
+                            color="error"
+                            size="small"
+                            onClick={() => handleAction('delete')}
+                        >
+                            🗑️
+                        </Fab>
+                        <Fab 
+                            color="success"
+                            size="small"
+                            onClick={() => handleAction('share')}
+                        >
+                            📤
+                        </Fab>
+                    </Stack>
+                    {messages.length > 0 && (
+                        <div className="message-list">
+                            {messages.map((msg, index) => (
+                                <div key={index} className="message-item">
+                                    {msg}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 8: Extended FAB with Icon
+        const ExtendedFABTest = ({ completeTest }) => {
+            const [selectedOption, setSelectedOption] = React.useState('');
+            const targetOption = 'download';
+            
+            const handleOptionClick = (option) => {
+                setSelectedOption(option);
+                if (option === targetOption) {
+                    completeTest(true, 'Download option selected!');
+                }
+            };
+            
+            const options = [
+                { id: 'upload', icon: '⬆️', label: 'Upload File' },
+                { id: 'download', icon: '⬇️', label: 'Download File' },
+                { id: 'sync', icon: '🔄', label: 'Sync Files' }
+            ];
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the "Download File" FAB:
+                    </Typography>
+                    <Stack spacing={2} mt={4}>
+                        {options.map((option) => (
+                            <Box key={option.id} display="flex" justifyContent="center">
+                                <Fab
+                                    variant="extended"
+                                    color={selectedOption === option.id ? "primary" : "default"}
+                                    onClick={() => handleOptionClick(option.id)}
+                                >
+                                    <Box component="span" mr={1}>{option.icon}</Box>
+                                    {option.label}
+                                </Fab>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'fab',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-fab"
+                        testName="Test 1: Basic FAB Click"
+                        description="Click the floating action button multiple times"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicFABTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fab-variants"
+                        testName="Test 2: FAB Variants"
+                        description="Test circular and extended FAB variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <FABVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fab-sizes"
+                        testName="Test 3: FAB Sizes"
+                        description="Test all FAB size options"
+                        onComplete={handleTestComplete}
+                    >
+                        <FABSizesTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fab-colors"
+                        testName="Test 4: FAB Colors"
+                        description="Test FAB color variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <FABColorsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-fab"
+                        testName="Test 5: Disabled State"
+                        description="Verify disabled FAB cannot be clicked"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledFABTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="animated-fab"
+                        testName="Test 6: FAB Animation"
+                        description="Test FAB with show/hide animation"
+                        onComplete={handleTestComplete}
+                    >
+                        <AnimatedFABTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-actions"
+                        testName="Test 7: Multiple Action FABs"
+                        description="Use multiple FABs for different actions"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleActionsFABTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="extended-fab"
+                        testName="Test 8: Extended FAB with Icon"
+                        description="Use extended FABs with icons and labels"
+                        onComplete={handleTestComplete}
+                    >
+                        <ExtendedFABTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

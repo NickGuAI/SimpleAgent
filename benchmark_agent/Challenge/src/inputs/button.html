@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Button Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .click-counter {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .counter-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Button</h1>
+            <p>Test the functionality and behavior of the Material UI Button component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Button,
+            Box,
+            Typography,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Click Functionality
+        const BasicClickTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Button click event successfully triggered!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button below to test basic click functionality:
+                    </Typography>
+                    <Button 
+                        id="basic-button"
+                        variant="contained" 
+                        onClick={handleClick}
+                        color={clicked ? "success" : "primary"}
+                    >
+                        {clicked ? 'Clicked!' : 'Click Me'}
+                    </Button>
+                </Box>
+            );
+        };
+        
+        // Test 2: Button Variants
+        const VariantTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['text', 'contained', 'outlined'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All button variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three button variants to complete the test:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {variants.map((variant) => (
+                            <Button
+                                key={variant}
+                                id={`${variant}-button`}
+                                variant={variant}
+                                onClick={() => handleVariantClick(variant)}
+                                color={clickedVariants.has(variant) ? "success" : "primary"}
+                            >
+                                {variant.charAt(0).toUpperCase() + variant.slice(1)}
+                                {clickedVariants.has(variant) && ' ✓'}
+                            </Button>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Disabled State
+        const DisabledTest = ({ completeTest }) => {
+            const [enableClicked, setEnableClicked] = React.useState(false);
+            const [disabledClicked, setDisabledClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (enableClicked && !disabledClicked) {
+                    completeTest(true, 'Disabled state working correctly - disabled button did not trigger click!');
+                }
+            }, [enableClicked, disabledClicked]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Try clicking both buttons. The disabled button should not respond:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        <Button
+                            id="enabled-button"
+                            variant="contained"
+                            onClick={() => setEnableClicked(true)}
+                            color={enableClicked ? "success" : "primary"}
+                        >
+                            Enabled Button
+                        </Button>
+                        <Button
+                            id="disabled-button"
+                            variant="contained"
+                            disabled
+                            onClick={() => setDisabledClicked(true)}
+                        >
+                            Disabled Button
+                        </Button>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Multiple Colors
+        const ColorTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'success', 'error', 'warning', 'info'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size === colors.length) {
+                    completeTest(true, 'All button colors tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all color variants to complete the test:
+                    </Typography>
+                    <div className="button-grid">
+                        {colors.map((color) => (
+                            <Button
+                                key={color}
+                                id={`${color}-color-button`}
+                                variant="contained"
+                                color={color}
+                                onClick={() => handleColorClick(color)}
+                            >
+                                {color.charAt(0).toUpperCase() + color.slice(1)}
+                                {clickedColors.has(color) && ' ✓'}
+                            </Button>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Button Sizes
+        const SizeTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = ['small', 'medium', 'large'];
+            
+            const handleSizeClick = (size) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(size);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All button sizes tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all button sizes to complete the test:
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        {sizes.map((size) => (
+                            <Button
+                                key={size}
+                                id={`${size}-size-button`}
+                                variant="contained"
+                                size={size}
+                                onClick={() => handleSizeClick(size)}
+                                color={clickedSizes.has(size) ? "success" : "primary"}
+                            >
+                                {size.charAt(0).toUpperCase() + size.slice(1)}
+                                {clickedSizes.has(size) && ' ✓'}
+                            </Button>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Click Counter
+        const ClickCounterTest = ({ completeTest }) => {
+            const [clickCount, setClickCount] = React.useState(0);
+            const targetClicks = 5;
+            
+            const handleClick = () => {
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount === targetClicks) {
+                    completeTest(true, `Target of ${targetClicks} clicks reached!`);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button {targetClicks} times to complete the test:
+                    </Typography>
+                    <Button
+                        id="counter-button"
+                        variant="contained"
+                        onClick={handleClick}
+                        size="large"
+                        color={clickCount >= targetClicks ? "success" : "primary"}
+                    >
+                        Click Me ({clickCount}/{targetClicks})
+                    </Button>
+                    <div className="click-counter">
+                        <Typography variant="body2">Click Count:</Typography>
+                        <div className="counter-value">{clickCount}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'button',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-click"
+                        testName="Test 1: Basic Click Functionality"
+                        description="Verify that button click events are properly triggered"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicClickTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 2: Button Variants"
+                        description="Test all three button variants: text, contained, and outlined"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled"
+                        testName="Test 3: Disabled State"
+                        description="Verify that disabled buttons do not trigger click events"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="colors"
+                        testName="Test 4: Color Variants"
+                        description="Test all available button colors"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="sizes"
+                        testName="Test 5: Button Sizes"
+                        description="Test all button size options: small, medium, and large"
+                        onComplete={handleTestComplete}
+                    >
+                        <SizeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="click-counter"
+                        testName="Test 6: Multiple Clicks"
+                        description="Test multiple click handling and state updates"
+                        onComplete={handleTestComplete}
+                    >
+                        <ClickCounterTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
