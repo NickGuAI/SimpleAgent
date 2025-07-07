@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Accordion Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .expand-status {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .expand-status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Accordion</h1>
+            <p>Test the functionality and behavior of the Material UI Accordion component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Accordion,
+            AccordionSummary,
+            AccordionDetails,
+            Typography,
+            Box,
+            Button,
+            Checkbox,
+            FormControlLabel
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Expand/Collapse
+        const BasicExpandTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState(false);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleChange = (event, isExpanded) => {
+                setExpanded(isExpanded);
+                setClickCount(clickCount + 1);
+                
+                if (clickCount === 1) {
+                    completeTest(true, 'Accordion expand/collapse functionality working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the accordion to expand it, then click again to collapse:
+                    </Typography>
+                    <Accordion 
+                        id="basic-accordion"
+                        expanded={expanded} 
+                        onChange={handleChange}
+                    >
+                        <AccordionSummary>
+                            <Typography>Accordion 1 - Click to {expanded ? 'collapse' : 'expand'}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>
+                                This is the accordion content. It should be visible when expanded.
+                            </Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                    <div className="expand-status">
+                        <div className="expand-status-item">
+                            <span>Status:</span>
+                            <strong>{expanded ? 'Expanded' : 'Collapsed'}</strong>
+                        </div>
+                        <div className="expand-status-item">
+                            <span>Clicks:</span>
+                            <strong>{clickCount}</strong>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Multiple Accordions
+        const MultipleAccordionsTest = ({ completeTest }) => {
+            const [expandedPanels, setExpandedPanels] = React.useState(new Set());
+            const panels = ['panel1', 'panel2', 'panel3'];
+            
+            const handleChange = (panel) => (event, isExpanded) => {
+                const newExpanded = new Set(expandedPanels);
+                if (isExpanded) {
+                    newExpanded.add(panel);
+                } else {
+                    newExpanded.delete(panel);
+                }
+                setExpandedPanels(newExpanded);
+                
+                if (newExpanded.size === panels.length) {
+                    completeTest(true, 'All accordions have been expanded!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand all three accordions to complete the test:
+                    </Typography>
+                    {panels.map((panel, index) => (
+                        <Accordion 
+                            key={panel}
+                            id={`accordion-${panel}`}
+                            onChange={handleChange(panel)}
+                        >
+                            <AccordionSummary>
+                                <Typography>
+                                    Accordion {index + 1} 
+                                    {expandedPanels.has(panel) && ' ✓'}
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography>
+                                    Content for accordion {index + 1}
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    ))}
+                    <div className="expand-status">
+                        <div className="expand-status-item">
+                            <span>Expanded panels:</span>
+                            <strong>{expandedPanels.size} / {panels.length}</strong>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Controlled Accordion
+        const ControlledAccordionTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState('panel1');
+            const [allExpanded, setAllExpanded] = React.useState(new Set());
+            
+            const handleChange = (panel) => (event, isExpanded) => {
+                setExpanded(isExpanded ? panel : false);
+                
+                if (isExpanded) {
+                    const newExpanded = new Set(allExpanded);
+                    newExpanded.add(panel);
+                    setAllExpanded(newExpanded);
+                    
+                    if (newExpanded.size === 3) {
+                        completeTest(true, 'All exclusive accordions have been opened!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        These accordions are controlled - only one can be open at a time. Open each one:
+                    </Typography>
+                    <Accordion 
+                        id="controlled-panel1"
+                        expanded={expanded === 'panel1'} 
+                        onChange={handleChange('panel1')}
+                    >
+                        <AccordionSummary>
+                            <Typography>Panel 1 {allExpanded.has('panel1') && '✓'}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>Content for panel 1</Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                    <Accordion 
+                        id="controlled-panel2"
+                        expanded={expanded === 'panel2'} 
+                        onChange={handleChange('panel2')}
+                    >
+                        <AccordionSummary>
+                            <Typography>Panel 2 {allExpanded.has('panel2') && '✓'}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>Content for panel 2</Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                    <Accordion 
+                        id="controlled-panel3"
+                        expanded={expanded === 'panel3'} 
+                        onChange={handleChange('panel3')}
+                    >
+                        <AccordionSummary>
+                            <Typography>Panel 3 {allExpanded.has('panel3') && '✓'}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>Content for panel 3</Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                    <div className="expand-status">
+                        <div className="expand-status-item">
+                            <span>Currently expanded:</span>
+                            <strong>{expanded || 'None'}</strong>
+                        </div>
+                        <div className="expand-status-item">
+                            <span>Panels opened:</span>
+                            <strong>{allExpanded.size} / 3</strong>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Disabled Accordion
+        const DisabledAccordionTest = ({ completeTest }) => {
+            const [enabledClicked, setEnabledClicked] = React.useState(false);
+            const [attempts, setAttempts] = React.useState(0);
+            
+            const handleEnabledClick = () => {
+                setEnabledClicked(true);
+                completeTest(true, 'Disabled accordion correctly prevented interaction!');
+            };
+            
+            const handleDisabledClick = () => {
+                setAttempts(attempts + 1);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Try to expand both accordions. The disabled one should not respond:
+                    </Typography>
+                    <Accordion 
+                        id="enabled-accordion"
+                        onChange={handleEnabledClick}
+                    >
+                        <AccordionSummary>
+                            <Typography color={enabledClicked ? "success.main" : "text.primary"}>
+                                Enabled Accordion {enabledClicked && '✓'}
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>This accordion is enabled</Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                    <Accordion 
+                        id="disabled-accordion"
+                        disabled
+                        onChange={handleDisabledClick}
+                    >
+                        <AccordionSummary>
+                            <Typography>Disabled Accordion</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>This content should not be visible</Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
+            );
+        };
+        
+        // Test 5: Accordion with Actions
+        const AccordionActionsTest = ({ completeTest }) => {
+            const [checkboxes, setCheckboxes] = React.useState({
+                check1: false,
+                check2: false,
+                check3: false
+            });
+            
+            const handleCheckboxChange = (name) => (event) => {
+                const newCheckboxes = {
+                    ...checkboxes,
+                    [name]: event.target.checked
+                };
+                setCheckboxes(newCheckboxes);
+                
+                if (Object.values(newCheckboxes).every(v => v === true)) {
+                    completeTest(true, 'All checkboxes in accordion checked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand the accordion and check all three checkboxes:
+                    </Typography>
+                    <Accordion id="actions-accordion">
+                        <AccordionSummary>
+                            <Typography>Accordion with Interactive Content</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Box>
+                                <Typography gutterBottom>
+                                    Check all boxes to complete the test:
+                                </Typography>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox 
+                                            id="checkbox1"
+                                            checked={checkboxes.check1}
+                                            onChange={handleCheckboxChange('check1')}
+                                        />
+                                    }
+                                    label="Option 1"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox 
+                                            id="checkbox2"
+                                            checked={checkboxes.check2}
+                                            onChange={handleCheckboxChange('check2')}
+                                        />
+                                    }
+                                    label="Option 2"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox 
+                                            id="checkbox3"
+                                            checked={checkboxes.check3}
+                                            onChange={handleCheckboxChange('check3')}
+                                        />
+                                    }
+                                    label="Option 3"
+                                />
+                            </Box>
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
+            );
+        };
+        
+        // Test 6: Nested Content
+        const NestedContentTest = ({ completeTest }) => {
+            const [buttonClicked, setButtonClicked] = React.useState(false);
+            const [expanded, setExpanded] = React.useState(false);
+            
+            const handleExpand = () => {
+                setExpanded(true);
+            };
+            
+            const handleButtonClick = () => {
+                if (expanded) {
+                    setButtonClicked(true);
+                    completeTest(true, 'Button inside accordion successfully clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand the accordion and click the button inside:
+                    </Typography>
+                    <Accordion 
+                        id="nested-accordion"
+                        onChange={(e, isExpanded) => isExpanded && handleExpand()}
+                    >
+                        <AccordionSummary>
+                            <Typography>Accordion with Button</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Box>
+                                <Typography gutterBottom>
+                                    Click the button below to complete the test:
+                                </Typography>
+                                <Button
+                                    id="nested-button"
+                                    variant="contained"
+                                    color={buttonClicked ? "success" : "primary"}
+                                    onClick={handleButtonClick}
+                                >
+                                    {buttonClicked ? 'Clicked!' : 'Click Me'}
+                                </Button>
+                            </Box>
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'accordion',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-expand"
+                        testName="Test 1: Basic Expand/Collapse"
+                        description="Verify that accordion can be expanded and collapsed"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicExpandTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-accordions"
+                        testName="Test 2: Multiple Accordions"
+                        description="Test multiple independent accordions"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleAccordionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="controlled-accordion"
+                        testName="Test 3: Controlled Accordion"
+                        description="Test controlled accordion behavior (only one open at a time)"
+                        onComplete={handleTestComplete}
+                    >
+                        <ControlledAccordionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-accordion"
+                        testName="Test 4: Disabled State"
+                        description="Verify that disabled accordions cannot be interacted with"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledAccordionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="accordion-actions"
+                        testName="Test 5: Interactive Content"
+                        description="Test interaction with content inside accordions"
+                        onComplete={handleTestComplete}
+                    >
+                        <AccordionActionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-content"
+                        testName="Test 6: Nested Components"
+                        description="Test nested components within accordion content"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedContentTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

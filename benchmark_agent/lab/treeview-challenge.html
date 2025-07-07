@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Tree View Component Challenge</title>
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --secondary-color: #dc004e;
+            --success-color: #4caf50;
+            --background-color: #f5f5f5;
+            --task-bg-color: #ffffff;
+            --text-color: #333;
+            --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 0;
+            margin: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .score-container {
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: inline-block;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+        }
+
+        .score {
+            font-weight: bold;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .task {
+            background-color: var(--task-bg-color);
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task.active {
+            opacity: 1;
+            transform: translateY(-2px);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .task.completed {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .task-badge {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 0 10px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* Tree View styles */
+        .tree-view {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tree-node {
+            user-select: none;
+        }
+
+        .tree-node-content {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .tree-node-content:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        .tree-node-content.selected {
+            background-color: rgba(25, 118, 210, 0.12);
+            color: var(--primary-color);
+        }
+
+        .tree-node-arrow {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 4px;
+            transition: transform 0.2s;
+        }
+
+        .tree-node-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-node-arrow.leaf {
+            visibility: hidden;
+        }
+
+        .tree-node-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .tree-node-label {
+            flex: 1;
+        }
+
+        .tree-node-children {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .tree-node-children.expanded {
+            display: block;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        input[type="text"], input[type="checkbox"] {
+            margin: 0.5rem;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MUI Tree View Component Challenge</h1>
+        <div class="score-container">
+            Score: <span class="score">0</span> / 5
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Task 1: Expand Tree Nodes -->
+        <div class="task active" id="expand-nodes">
+            <div class="task-badge">expand</div>
+            <div class="task-title">Expand all folders to find and click on "target.txt"</div>
+            <div class="tree-view">
+                <div class="tree-node">
+                    <div class="tree-node-content" onclick="toggleNode(this)">
+                        <span class="tree-node-arrow">▶</span>
+                        <span class="tree-node-icon">📁</span>
+                        <span class="tree-node-label">Documents</span>
+                    </div>
+                    <div class="tree-node-children">
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">Projects</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content" onclick="selectFile(this, 'readme.md')">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">readme.md</span>
+                                    </div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="tree-node-content" onclick="selectFile(this, 'target.txt')">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">target.txt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">Images</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content" onclick="selectFile(this, 'photo.jpg')">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">🖼️</span>
+                                        <span class="tree-node-label">photo.jpg</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function toggleNode(element) {
+                    const arrow = element.querySelector('.tree-node-arrow');
+                    const children = element.nextElementSibling;
+                    
+                    if (children && children.classList.contains('tree-node-children')) {
+                        children.classList.toggle('expanded');
+                        arrow.classList.toggle('expanded');
+                    }
+                }
+
+                function selectFile(element, filename) {
+                    if (filename === 'target.txt') {
+                        element.classList.add('selected');
+                        completeTask(document.getElementById('expand-nodes'));
+                    }
+                }
+            </script>
+        </div>
+
+        <!-- Task 2: Multi-Select Tree -->
+        <div class="task" id="multi-select-tree">
+            <div class="task-badge">multi-select</div>
+            <div class="task-title">Select exactly 3 files using checkboxes</div>
+            <div class="tree-view">
+                <div class="tree-node">
+                    <div class="tree-node-content">
+                        <input type="checkbox" class="file-checkbox" data-file="document1.pdf">
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">document1.pdf</span>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="tree-node-content">
+                        <input type="checkbox" class="file-checkbox" data-file="document2.pdf">
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">document2.pdf</span>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="tree-node-content">
+                        <input type="checkbox" class="file-checkbox" data-file="spreadsheet.xlsx">
+                        <span class="tree-node-icon">📊</span>
+                        <span class="tree-node-label">spreadsheet.xlsx</span>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="tree-node-content">
+                        <input type="checkbox" class="file-checkbox" data-file="presentation.pptx">
+                        <span class="tree-node-icon">📑</span>
+                        <span class="tree-node-label">presentation.pptx</span>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="tree-node-content">
+                        <input type="checkbox" class="file-checkbox" data-file="image.png">
+                        <span class="tree-node-icon">🖼️</span>
+                        <span class="tree-node-label">image.png</span>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function() {
+                    const checkboxes = document.querySelectorAll('#multi-select-tree .file-checkbox');
+                    
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const checkedCount = document.querySelectorAll('#multi-select-tree .file-checkbox:checked').length;
+                            
+                            if (checkedCount === 3) {
+                                completeTask(document.getElementById('multi-select-tree'));
+                            }
+                        });
+                    });
+                })();
+            </script>
+        </div>
+
+        <!-- Task 3: Navigate and Find -->
+        <div class="task" id="navigate-find">
+            <div class="task-badge">navigate</div>
+            <div class="task-title">Navigate to "src/components/Button.js" and type the path in the input</div>
+            <div class="tree-view">
+                <div class="tree-node">
+                    <div class="tree-node-content" onclick="toggleNode(this)">
+                        <span class="tree-node-arrow">▶</span>
+                        <span class="tree-node-icon">📁</span>
+                        <span class="tree-node-label">src</span>
+                    </div>
+                    <div class="tree-node-children">
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">components</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">Button.js</span>
+                                    </div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">Input.js</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">utils</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">helpers.js</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="tree-node-content" onclick="toggleNode(this)">
+                        <span class="tree-node-arrow">▶</span>
+                        <span class="tree-node-icon">📁</span>
+                        <span class="tree-node-label">public</span>
+                    </div>
+                    <div class="tree-node-children">
+                        <div class="tree-node">
+                            <div class="tree-node-content">
+                                <span class="tree-node-arrow leaf"></span>
+                                <span class="tree-node-icon">📄</span>
+                                <span class="tree-node-label">index.html</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="text" id="path-input" placeholder="Enter the path to Button.js">
+            <script>
+                (function() {
+                    const pathInput = document.getElementById('path-input');
+                    
+                    pathInput.addEventListener('input', function() {
+                        if (this.value.trim() === 'src/components/Button.js') {
+                            completeTask(document.getElementById('navigate-find'));
+                        }
+                    });
+                })();
+            </script>
+        </div>
+
+        <!-- Task 4: Tree Operations -->
+        <div class="task" id="tree-operations">
+            <div class="task-badge">operations</div>
+            <div class="task-title">Perform these operations: Expand All, then Collapse All, then Expand All again</div>
+            <div class="tree-view" id="operations-tree">
+                <div class="tree-node">
+                    <div class="tree-node-content" onclick="toggleNode(this)">
+                        <span class="tree-node-arrow">▶</span>
+                        <span class="tree-node-icon">📁</span>
+                        <span class="tree-node-label">Root</span>
+                    </div>
+                    <div class="tree-node-children">
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">Folder A</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">file1.txt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="tree-node-content" onclick="toggleNode(this)">
+                                <span class="tree-node-arrow">▶</span>
+                                <span class="tree-node-icon">📁</span>
+                                <span class="tree-node-label">Folder B</span>
+                            </div>
+                            <div class="tree-node-children">
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <span class="tree-node-arrow leaf"></span>
+                                        <span class="tree-node-icon">📄</span>
+                                        <span class="tree-node-label">file2.txt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <button onclick="expandAll()">Expand All</button>
+                <button onclick="collapseAll()">Collapse All</button>
+            </div>
+            <script>
+                let operationSequence = [];
+                const expectedSequence = ['expand', 'collapse', 'expand'];
+
+                function expandAll() {
+                    const treeRoot = document.getElementById('operations-tree');
+                    const arrows = treeRoot.querySelectorAll('.tree-node-arrow:not(.leaf)');
+                    const children = treeRoot.querySelectorAll('.tree-node-children');
+                    
+                    arrows.forEach(arrow => arrow.classList.add('expanded'));
+                    children.forEach(child => child.classList.add('expanded'));
+                    
+                    operationSequence.push('expand');
+                    checkOperations();
+                }
+
+                function collapseAll() {
+                    const treeRoot = document.getElementById('operations-tree');
+                    const arrows = treeRoot.querySelectorAll('.tree-node-arrow:not(.leaf)');
+                    const children = treeRoot.querySelectorAll('.tree-node-children');
+                    
+                    arrows.forEach(arrow => arrow.classList.remove('expanded'));
+                    children.forEach(child => child.classList.remove('expanded'));
+                    
+                    operationSequence.push('collapse');
+                    checkOperations();
+                }
+
+                function checkOperations() {
+                    if (operationSequence.length >= expectedSequence.length) {
+                        const recent = operationSequence.slice(-3);
+                        if (JSON.stringify(recent) === JSON.stringify(expectedSequence)) {
+                            completeTask(document.getElementById('tree-operations'));
+                        }
+                    }
+                }
+            </script>
+        </div>
+
+        <!-- Task 5: Search Tree -->
+        <div class="task" id="search-tree">
+            <div class="task-badge">search</div>
+            <div class="task-title">Type "config" in the search box to filter the tree, then click on "config.json"</div>
+            <input type="text" id="tree-search" placeholder="Search files..." style="margin-bottom: 10px;">
+            <div class="tree-view">
+                <div class="tree-node" data-name="package.json">
+                    <div class="tree-node-content" onclick="selectSearchFile(this, 'package.json')">
+                        <span class="tree-node-arrow leaf"></span>
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">package.json</span>
+                    </div>
+                </div>
+                <div class="tree-node" data-name="config.json">
+                    <div class="tree-node-content" onclick="selectSearchFile(this, 'config.json')">
+                        <span class="tree-node-arrow leaf"></span>
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">config.json</span>
+                    </div>
+                </div>
+                <div class="tree-node" data-name="README.md">
+                    <div class="tree-node-content" onclick="selectSearchFile(this, 'README.md')">
+                        <span class="tree-node-arrow leaf"></span>
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">README.md</span>
+                    </div>
+                </div>
+                <div class="tree-node" data-name="settings.config">
+                    <div class="tree-node-content" onclick="selectSearchFile(this, 'settings.config')">
+                        <span class="tree-node-arrow leaf"></span>
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">settings.config</span>
+                    </div>
+                </div>
+                <div class="tree-node" data-name="index.js">
+                    <div class="tree-node-content" onclick="selectSearchFile(this, 'index.js')">
+                        <span class="tree-node-arrow leaf"></span>
+                        <span class="tree-node-icon">📄</span>
+                        <span class="tree-node-label">index.js</span>
+                    </div>
+                </div>
+            </div>
+            <script>
+                let searchActive = false;
+
+                document.getElementById('tree-search').addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const nodes = document.querySelectorAll('#search-tree .tree-node');
+                    
+                    nodes.forEach(node => {
+                        const name = node.getAttribute('data-name').toLowerCase();
+                        if (searchTerm && !name.includes(searchTerm)) {
+                            node.style.display = 'none';
+                        } else {
+                            node.style.display = 'block';
+                        }
+                    });
+                    
+                    searchActive = searchTerm === 'config';
+                });
+
+                function selectSearchFile(element, filename) {
+                    if (searchActive && filename === 'config.json') {
+                        element.classList.add('selected');
+                        completeTask(document.getElementById('search-tree'));
+                    }
+                }
+            </script>
+        </div>
+    </div>
+
+    <script>
+        // Global completion tracking
+        let score = 0;
+        const totalTasks = 5;
+
+        function completeTask(taskElement) {
+            if (taskElement.classList.contains('completed')) return;
+
+            taskElement.classList.remove('active');
+            taskElement.classList.add('completed');
+            score++;
+            updateScore();
+
+            // Activate next task
+            const tasks = document.querySelectorAll('.task');
+            const currentIndex = Array.from(tasks).indexOf(taskElement);
+            if (currentIndex < tasks.length - 1) {
+                tasks[currentIndex + 1].classList.add('active');
+            }
+        }
+
+        function updateScore() {
+            document.querySelector('.score').textContent = score;
+            document.querySelector('.score').classList.add('pulse');
+            setTimeout(() => {
+                document.querySelector('.score').classList.remove('pulse');
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Tree View Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI X Tree View -->
+    <script src="https://unpkg.com/@mui/x-tree-view@6.0.0/umd/x-tree-view.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .selected-info {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .expanded-info {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #fff3e0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI X Challenge: Tree View</h1>
+            <p>Test the functionality and behavior of the Material UI Tree View component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Box,
+            Typography,
+            Stack,
+            Button,
+            Checkbox,
+            FormControlLabel
+        } = window['MaterialUI'];
+        
+        const {
+            TreeView,
+            TreeItem
+        } = window['MaterialUIXTreeView'];
+        
+        // Icons
+        const ExpandMoreIcon = () => <span className="material-icons">expand_more</span>;
+        const ChevronRightIcon = () => <span className="material-icons">chevron_right</span>;
+        const FolderIcon = () => <span className="material-icons">folder</span>;
+        const FolderOpenIcon = () => <span className="material-icons">folder_open</span>;
+        const FileIcon = () => <span className="material-icons">description</span>;
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Tree Navigation
+        const BasicTreeTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState([]);
+            const [selected, setSelected] = React.useState([]);
+            
+            const handleToggle = (event, nodeIds) => {
+                setExpanded(nodeIds);
+                if (nodeIds.includes('1') && nodeIds.includes('5')) {
+                    completeTest(true, 'Successfully expanded multiple tree nodes!');
+                }
+            };
+            
+            const handleSelect = (event, nodeIds) => {
+                setSelected(nodeIds);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Expand the "Documents" and "Images" folders to complete the test:
+                    </Typography>
+                    <TreeView
+                        aria-label="file system navigator"
+                        defaultCollapseIcon={<ExpandMoreIcon />}
+                        defaultExpandIcon={<ChevronRightIcon />}
+                        expanded={expanded}
+                        selected={selected}
+                        onNodeToggle={handleToggle}
+                        onNodeSelect={handleSelect}
+                        sx={{ height: 240, flexGrow: 1, maxWidth: 400 }}
+                    >
+                        <TreeItem nodeId="1" label="Documents" id="documents-node">
+                            <TreeItem nodeId="2" label="Resume.pdf" />
+                            <TreeItem nodeId="3" label="Cover Letter.docx" />
+                            <TreeItem nodeId="4" label="References.txt" />
+                        </TreeItem>
+                        <TreeItem nodeId="5" label="Images" id="images-node">
+                            <TreeItem nodeId="6" label="photo1.jpg" />
+                            <TreeItem nodeId="7" label="photo2.png" />
+                        </TreeItem>
+                        <TreeItem nodeId="8" label="Videos">
+                            <TreeItem nodeId="9" label="tutorial.mp4" />
+                        </TreeItem>
+                    </TreeView>
+                    {expanded.length > 0 && (
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            Expanded nodes: {expanded.join(', ')}
+                        </Typography>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: Tree Selection
+        const TreeSelectionTest = ({ completeTest }) => {
+            const [selected, setSelected] = React.useState([]);
+            const requiredSelections = ['node-2', 'node-4', 'node-6'];
+            
+            const handleSelect = (event, nodeIds) => {
+                setSelected(nodeIds);
+                
+                // Check if all required nodes are selected
+                const allSelected = requiredSelections.every(nodeId => 
+                    nodeIds.includes(nodeId)
+                );
+                
+                if (allSelected) {
+                    completeTest(true, 'All required nodes selected successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select the following files: Project.js, styles.css, and README.md
+                    </Typography>
+                    <TreeView
+                        aria-label="multi-select"
+                        defaultCollapseIcon={<ExpandMoreIcon />}
+                        defaultExpandIcon={<ChevronRightIcon />}
+                        multiSelect
+                        selected={selected}
+                        onNodeSelect={handleSelect}
+                        sx={{ height: 264, flexGrow: 1, maxWidth: 400 }}
+                    >
+                        <TreeItem nodeId="node-1" label="src">
+                            <TreeItem nodeId="node-2" label="Project.js" id="project-js" />
+                            <TreeItem nodeId="node-3" label="App.js" />
+                            <TreeItem nodeId="node-4" label="styles.css" id="styles-css" />
+                        </TreeItem>
+                        <TreeItem nodeId="node-5" label="public">
+                            <TreeItem nodeId="node-6" label="README.md" id="readme-md" />
+                            <TreeItem nodeId="node-7" label="index.html" />
+                        </TreeItem>
+                    </TreeView>
+                    {selected.length > 0 && (
+                        <div className="selected-info">
+                            <Typography variant="body2">
+                                Selected files ({selected.length}): {selected.join(', ')}
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Controlled Tree View
+        const ControlledTreeTest = ({ completeTest }) => {
+            const [expanded, setExpanded] = React.useState(['root']);
+            const [expandCount, setExpandCount] = React.useState(0);
+            
+            const handleToggle = (event, nodeIds) => {
+                setExpanded(nodeIds);
+                setExpandCount(prev => prev + 1);
+            };
+            
+            const handleExpandAll = () => {
+                setExpanded(['root', 'child-1', 'child-2', 'grandchild-1']);
+                setExpandCount(prev => prev + 1);
+            };
+            
+            const handleCollapseAll = () => {
+                setExpanded([]);
+                setExpandCount(prev => prev + 1);
+                if (expandCount >= 2) {
+                    completeTest(true, 'Tree view controlled successfully with expand/collapse all!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Use the buttons to control the tree expansion:
+                    </Typography>
+                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                        <Button
+                            id="expand-all-button"
+                            variant="contained"
+                            size="small"
+                            onClick={handleExpandAll}
+                        >
+                            Expand All
+                        </Button>
+                        <Button
+                            id="collapse-all-button"
+                            variant="outlined"
+                            size="small"
+                            onClick={handleCollapseAll}
+                        >
+                            Collapse All
+                        </Button>
+                    </Stack>
+                    <TreeView
+                        aria-label="controlled"
+                        defaultCollapseIcon={<ExpandMoreIcon />}
+                        defaultExpandIcon={<ChevronRightIcon />}
+                        expanded={expanded}
+                        onNodeToggle={handleToggle}
+                        sx={{ height: 240, flexGrow: 1, maxWidth: 400 }}
+                    >
+                        <TreeItem nodeId="root" label="Root">
+                            <TreeItem nodeId="child-1" label="Child 1">
+                                <TreeItem nodeId="grandchild-1" label="Grandchild 1" />
+                                <TreeItem nodeId="grandchild-2" label="Grandchild 2" />
+                            </TreeItem>
+                            <TreeItem nodeId="child-2" label="Child 2">
+                                <TreeItem nodeId="grandchild-3" label="Grandchild 3" />
+                            </TreeItem>
+                        </TreeItem>
+                    </TreeView>
+                    <div className="expanded-info">
+                        <Typography variant="body2">
+                            Expanded nodes: {expanded.length > 0 ? expanded.join(', ') : 'None'}
+                        </Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Tree with Icons
+        const TreeWithIconsTest = ({ completeTest }) => {
+            const [clickedNodes, setClickedNodes] = React.useState(new Set());
+            const targetNodes = ['folder-1', 'folder-2', 'file-1'];
+            
+            const handleNodeClick = (nodeId) => {
+                const newClicked = new Set(clickedNodes);
+                newClicked.add(nodeId);
+                setClickedNodes(newClicked);
+                
+                const allClicked = targetNodes.every(node => newClicked.has(node));
+                if (allClicked) {
+                    completeTest(true, 'All folders and files clicked successfully!');
+                }
+            };
+            
+            const renderTree = (nodes) => (
+                <TreeItem
+                    key={nodes.id}
+                    nodeId={nodes.id}
+                    label={
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 0.5 }}>
+                            {nodes.children ? <FolderIcon /> : <FileIcon />}
+                            <Typography sx={{ ml: 1 }}>{nodes.name}</Typography>
+                        </Box>
+                    }
+                    onClick={() => handleNodeClick(nodes.id)}
+                >
+                    {Array.isArray(nodes.children)
+                        ? nodes.children.map((node) => renderTree(node))
+                        : null}
+                </TreeItem>
+            );
+            
+            const data = {
+                id: 'root',
+                name: 'Project Files',
+                children: [
+                    {
+                        id: 'folder-1',
+                        name: 'src',
+                        children: [
+                            { id: 'file-1', name: 'index.js' },
+                            { id: 'file-2', name: 'App.js' },
+                        ],
+                    },
+                    {
+                        id: 'folder-2',
+                        name: 'public',
+                        children: [
+                            { id: 'file-3', name: 'index.html' },
+                        ],
+                    },
+                ],
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on both folders (src, public) and the index.js file:
+                    </Typography>
+                    <TreeView
+                        aria-label="rich object"
+                        defaultCollapseIcon={<ExpandMoreIcon />}
+                        defaultExpandIcon={<ChevronRightIcon />}
+                        defaultExpanded={['root']}
+                        sx={{ height: 264, flexGrow: 1, maxWidth: 400 }}
+                    >
+                        {renderTree(data)}
+                    </TreeView>
+                    {clickedNodes.size > 0 && (
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            Clicked: {Array.from(clickedNodes).join(', ')} ({clickedNodes.size}/{targetNodes.length})
+                        </Typography>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Checkbox Tree
+        const CheckboxTreeTest = ({ completeTest }) => {
+            const [checked, setChecked] = React.useState([]);
+            const [expanded, setExpanded] = React.useState(['1']);
+            
+            const handleToggle = (value) => () => {
+                const currentIndex = checked.indexOf(value);
+                const newChecked = [...checked];
+                
+                if (currentIndex === -1) {
+                    newChecked.push(value);
+                } else {
+                    newChecked.splice(currentIndex, 1);
+                }
+                
+                setChecked(newChecked);
+                
+                // Check if specific items are checked
+                if (newChecked.includes('2') && newChecked.includes('4') && newChecked.includes('6')) {
+                    completeTest(true, 'Required items checked successfully!');
+                }
+            };
+            
+            const renderTree = (nodes) => (
+                <TreeItem
+                    key={nodes.id}
+                    nodeId={nodes.id}
+                    label={
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={checked.indexOf(nodes.id) !== -1}
+                                    onChange={handleToggle(nodes.id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    id={`checkbox-${nodes.id}`}
+                                />
+                            }
+                            label={nodes.name}
+                            key={nodes.id}
+                        />
+                    }
+                >
+                    {Array.isArray(nodes.children)
+                        ? nodes.children.map((node) => renderTree(node))
+                        : null}
+                </TreeItem>
+            );
+            
+            const data = {
+                id: '1',
+                name: 'Applications',
+                children: [
+                    {
+                        id: '2',
+                        name: 'Calendar',
+                    },
+                    {
+                        id: '3',
+                        name: 'Chrome',
+                    },
+                    {
+                        id: '4',
+                        name: 'Webstorm',
+                    },
+                    {
+                        id: '5',
+                        name: 'Documents',
+                        children: [
+                            {
+                                id: '6',
+                                name: 'MUI',
+                            },
+                            {
+                                id: '7',
+                                name: 'React',
+                            },
+                        ],
+                    },
+                ],
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Check the following items: Calendar, Webstorm, and MUI
+                    </Typography>
+                    <TreeView
+                        aria-label="checkbox tree"
+                        defaultCollapseIcon={<ExpandMoreIcon />}
+                        defaultExpandIcon={<ChevronRightIcon />}
+                        expanded={expanded}
+                        onNodeToggle={(event, nodeIds) => setExpanded(nodeIds)}
+                        sx={{ height: 264, flexGrow: 1, maxWidth: 400 }}
+                    >
+                        {renderTree(data)}
+                    </TreeView>
+                    {checked.length > 0 && (
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            Checked items: {checked.length}
+                        </Typography>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'tree-view',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-tree"
+                        testName="Test 1: Basic Tree Navigation"
+                        description="Expand specific folders in the tree to complete the test"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicTreeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="tree-selection"
+                        testName="Test 2: Multi-Selection"
+                        description="Select multiple specific items in the tree"
+                        onComplete={handleTestComplete}
+                    >
+                        <TreeSelectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="controlled-tree"
+                        testName="Test 3: Controlled Tree View"
+                        description="Use expand/collapse all buttons to control the tree"
+                        onComplete={handleTestComplete}
+                    >
+                        <ControlledTreeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="tree-icons"
+                        testName="Test 4: Tree with Custom Icons"
+                        description="Interact with a tree that has custom folder and file icons"
+                        onComplete={handleTestComplete}
+                    >
+                        <TreeWithIconsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="checkbox-tree"
+                        testName="Test 5: Checkbox Tree"
+                        description="Check specific items in a tree with checkboxes"
+                        onComplete={handleTestComplete}
+                    >
+                        <CheckboxTreeTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

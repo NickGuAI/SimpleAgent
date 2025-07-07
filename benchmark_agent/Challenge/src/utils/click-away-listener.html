@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Click Away Listener Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 200px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .click-box {
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .click-box:hover {
+            background-color: #bbdefb;
+        }
+        
+        .click-box.active {
+            background-color: #1976d2;
+            color: white;
+        }
+        
+        .menu-demo {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .menu-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 5px 10px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            min-width: 200px;
+            z-index: 1000;
+        }
+        
+        .menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .click-instruction {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #fff3e0;
+            border-radius: 4px;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Click Away Listener</h1>
+            <p>Test the functionality and behavior of the Material UI Click Away Listener component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            ClickAwayListener,
+            Box,
+            Button,
+            Typography,
+            Paper,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Click Away Detection
+        const BasicClickAwayTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [clickedAway, setClickedAway] = React.useState(false);
+            
+            const handleClickAway = () => {
+                if (open) {
+                    setOpen(false);
+                    setClickedAway(true);
+                    completeTest(true, 'Click away detected successfully! The box closed when clicking outside.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to open a box, then click anywhere outside the box to test click away:
+                    </Typography>
+                    <Button 
+                        id="open-box-button"
+                        variant="contained" 
+                        onClick={() => setOpen(true)}
+                        disabled={open}
+                    >
+                        {open ? 'Box is Open' : 'Open Box'}
+                    </Button>
+                    
+                    {open && (
+                        <ClickAwayListener onClickAway={handleClickAway}>
+                            <Box mt={2}>
+                                <div className="click-box active">
+                                    <Typography variant="h6">Click Outside Me!</Typography>
+                                    <Typography variant="body2">
+                                        This box will close when you click anywhere outside of it.
+                                    </Typography>
+                                </div>
+                            </Box>
+                        </ClickAwayListener>
+                    )}
+                    
+                    {clickedAway && (
+                        <div className="click-instruction">
+                            <Typography variant="body2">
+                                Great! The click away listener detected the outside click.
+                            </Typography>
+                        </div>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 2: Menu-like Behavior
+        const MenuBehaviorTest = ({ completeTest }) => {
+            const [menuOpen, setMenuOpen] = React.useState(false);
+            const [selectedItem, setSelectedItem] = React.useState(null);
+            const menuItems = ['Option 1', 'Option 2', 'Option 3'];
+            
+            const handleClickAway = () => {
+                if (menuOpen) {
+                    setMenuOpen(false);
+                    if (selectedItem) {
+                        completeTest(true, `Menu closed after selecting "${selectedItem}" and clicking away!`);
+                    }
+                }
+            };
+            
+            const handleMenuItemClick = (item) => {
+                setSelectedItem(item);
+                // Don't close immediately to test click away
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the menu, select an item, then click outside to close it:
+                    </Typography>
+                    
+                    <div className="menu-demo">
+                        <Button 
+                            id="menu-button"
+                            variant="outlined" 
+                            onClick={() => setMenuOpen(!menuOpen)}
+                        >
+                            {menuOpen ? 'Menu Open' : 'Open Menu'}
+                        </Button>
+                        
+                        {menuOpen && (
+                            <ClickAwayListener onClickAway={handleClickAway}>
+                                <div className="menu-list">
+                                    {menuItems.map((item) => (
+                                        <div 
+                                            key={item}
+                                            className="menu-item"
+                                            onClick={() => handleMenuItemClick(item)}
+                                            style={{ 
+                                                backgroundColor: selectedItem === item ? '#e3f2fd' : 'transparent',
+                                                fontWeight: selectedItem === item ? 500 : 400
+                                            }}
+                                        >
+                                            {item} {selectedItem === item && '✓'}
+                                        </div>
+                                    ))}
+                                </div>
+                            </ClickAwayListener>
+                        )}
+                    </div>
+                    
+                    {selectedItem && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="primary">
+                                Selected: {selectedItem}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Nested Click Away Listeners
+        const NestedClickAwayTest = ({ completeTest }) => {
+            const [outerOpen, setOuterOpen] = React.useState(false);
+            const [innerOpen, setInnerOpen] = React.useState(false);
+            const [clickSequence, setClickSequence] = React.useState([]);
+            
+            const handleOuterClickAway = () => {
+                if (outerOpen && !innerOpen) {
+                    setOuterOpen(false);
+                    const newSequence = [...clickSequence, 'outer-closed'];
+                    setClickSequence(newSequence);
+                    
+                    if (newSequence.includes('inner-closed')) {
+                        completeTest(true, 'Nested click away listeners working correctly!');
+                    }
+                }
+            };
+            
+            const handleInnerClickAway = () => {
+                if (innerOpen) {
+                    setInnerOpen(false);
+                    const newSequence = [...clickSequence, 'inner-closed'];
+                    setClickSequence(newSequence);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test nested click away listeners - open both boxes, then click outside:
+                    </Typography>
+                    
+                    <Button 
+                        id="outer-button"
+                        variant="contained" 
+                        onClick={() => setOuterOpen(true)}
+                        disabled={outerOpen}
+                    >
+                        Open Outer Box
+                    </Button>
+                    
+                    {outerOpen && (
+                        <ClickAwayListener onClickAway={handleOuterClickAway}>
+                            <Box mt={2} p={3} bgcolor="#e3f2fd" borderRadius={1}>
+                                <Typography variant="h6">Outer Box</Typography>
+                                <Typography variant="body2" gutterBottom>
+                                    This is the outer click away area.
+                                </Typography>
+                                
+                                <Button 
+                                    id="inner-button"
+                                    variant="contained" 
+                                    color="secondary"
+                                    onClick={() => setInnerOpen(true)}
+                                    disabled={innerOpen}
+                                    size="small"
+                                >
+                                    Open Inner Box
+                                </Button>
+                                
+                                {innerOpen && (
+                                    <ClickAwayListener onClickAway={handleInnerClickAway}>
+                                        <Box mt={2} p={2} bgcolor="#f3e5f5" borderRadius={1}>
+                                            <Typography variant="subtitle1">Inner Box</Typography>
+                                            <Typography variant="body2">
+                                                Click outside this inner box first.
+                                            </Typography>
+                                        </Box>
+                                    </ClickAwayListener>
+                                )}
+                            </Box>
+                        </ClickAwayListener>
+                    )}
+                    
+                    {clickSequence.length > 0 && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="textSecondary">
+                                Click sequence: {clickSequence.join(' → ')}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Mouse Events Configuration
+        const MouseEventsTest = ({ completeTest }) => {
+            const [boxOpen, setBoxOpen] = React.useState(false);
+            const [eventLog, setEventLog] = React.useState([]);
+            const [testPassed, setTestPassed] = React.useState(false);
+            
+            const handleClickAway = (event) => {
+                const eventType = event.type;
+                const newLog = [...eventLog, eventType];
+                setEventLog(newLog);
+                
+                if (eventType === 'mouseup' || eventType === 'touchend') {
+                    setBoxOpen(false);
+                    if (!testPassed) {
+                        setTestPassed(true);
+                        completeTest(true, `Click away triggered by ${eventType} event!`);
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test mouse event configuration - click and hold outside the box:
+                    </Typography>
+                    
+                    <Button 
+                        id="mouse-events-button"
+                        variant="contained" 
+                        onClick={() => {
+                            setBoxOpen(true);
+                            setEventLog([]);
+                        }}
+                        disabled={boxOpen}
+                    >
+                        Open Box with Mouse Event Tracking
+                    </Button>
+                    
+                    {boxOpen && (
+                        <ClickAwayListener 
+                            onClickAway={handleClickAway}
+                            mouseEvent="onMouseUp"
+                            touchEvent="onTouchEnd"
+                        >
+                            <Box mt={2} p={3} bgcolor="#fff3e0" borderRadius={1}>
+                                <Typography variant="h6">Mouse Event Test Box</Typography>
+                                <Typography variant="body2">
+                                    Click and hold outside, then release to trigger click away.
+                                </Typography>
+                                <Typography variant="caption" display="block" mt={1}>
+                                    This uses onMouseUp instead of onClick
+                                </Typography>
+                            </Box>
+                        </ClickAwayListener>
+                    )}
+                    
+                    {eventLog.length > 0 && (
+                        <Box mt={2}>
+                            <Typography variant="caption" color="textSecondary">
+                                Events detected: {eventLog.join(', ')}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Disabled Click Away
+        const DisabledClickAwayTest = ({ completeTest }) => {
+            const [enabled, setEnabled] = React.useState(true);
+            const [boxOpen, setBoxOpen] = React.useState(false);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            React.useEffect(() => {
+                if (!enabled && clickCount >= 3) {
+                    completeTest(true, 'Click away successfully disabled - box stayed open after multiple outside clicks!');
+                }
+            }, [enabled, clickCount]);
+            
+            const handleClickAway = () => {
+                if (enabled) {
+                    setBoxOpen(false);
+                }
+            };
+            
+            const handleDisableTest = () => {
+                setEnabled(false);
+                setBoxOpen(true);
+                setClickCount(0);
+                
+                // Add click counter for test area
+                const testArea = document.querySelector('.test-area');
+                const clickHandler = () => {
+                    setClickCount(prev => prev + 1);
+                };
+                testArea.addEventListener('click', clickHandler);
+                
+                // Cleanup
+                setTimeout(() => {
+                    testArea.removeEventListener('click', clickHandler);
+                }, 5000);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test disabling click away functionality:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={2}>
+                        <Button 
+                            id="enable-clickaway-button"
+                            variant="contained" 
+                            onClick={() => {
+                                setEnabled(true);
+                                setBoxOpen(true);
+                            }}
+                            disabled={!enabled || boxOpen}
+                        >
+                            Open with Click Away Enabled
+                        </Button>
+                        
+                        <Button 
+                            id="disable-clickaway-button"
+                            variant="outlined" 
+                            onClick={handleDisableTest}
+                            disabled={!enabled || boxOpen}
+                        >
+                            Open with Click Away Disabled
+                        </Button>
+                    </Stack>
+                    
+                    {boxOpen && (
+                        <ClickAwayListener 
+                            onClickAway={handleClickAway}
+                            disableReactTree={!enabled}
+                        >
+                            <Box mt={2} p={3} bgcolor={enabled ? "#e8f5e9" : "#ffebee"} borderRadius={1}>
+                                <Typography variant="h6">
+                                    Click Away is {enabled ? 'Enabled' : 'Disabled'}
+                                </Typography>
+                                <Typography variant="body2">
+                                    {enabled 
+                                        ? 'Click outside to close this box.' 
+                                        : 'Click outside multiple times - this box should stay open!'}
+                                </Typography>
+                                {!enabled && (
+                                    <Typography variant="caption" display="block" mt={1}>
+                                        Outside clicks: {clickCount}
+                                    </Typography>
+                                )}
+                                <Button 
+                                    size="small" 
+                                    onClick={() => setBoxOpen(false)}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Close Manually
+                                </Button>
+                            </Box>
+                        </ClickAwayListener>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'click-away-listener',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-click-away"
+                        testName="Test 1: Basic Click Away Detection"
+                        description="Verify that click away events are properly detected"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicClickAwayTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="menu-behavior"
+                        testName="Test 2: Menu-like Behavior"
+                        description="Test click away listener with menu-like UI patterns"
+                        onComplete={handleTestComplete}
+                    >
+                        <MenuBehaviorTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-listeners"
+                        testName="Test 3: Nested Click Away Listeners"
+                        description="Test nested click away listeners work independently"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedClickAwayTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="mouse-events"
+                        testName="Test 4: Mouse Events Configuration"
+                        description="Test different mouse event configurations"
+                        onComplete={handleTestComplete}
+                    >
+                        <MouseEventsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-clickaway"
+                        testName="Test 5: Disabled Click Away"
+                        description="Test disabling click away functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledClickAwayTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

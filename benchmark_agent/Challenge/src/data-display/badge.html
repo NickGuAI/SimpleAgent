@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Badge Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .badge-grid {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .counter-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Badge</h1>
+            <p>Test the functionality and behavior of the Material UI Badge component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Badge,
+            Box,
+            Typography,
+            Stack,
+            IconButton,
+            Button,
+            ButtonGroup,
+            Icon
+        } = window['MaterialUI'];
+        
+        // Create material icons as React components
+        const MailIcon = () => <Icon>mail</Icon>;
+        const NotificationsIcon = () => <Icon>notifications</Icon>;
+        const ShoppingCartIcon = () => <Icon>shopping_cart</Icon>;
+        const AddIcon = () => <Icon>add</Icon>;
+        const RemoveIcon = () => <Icon>remove</Icon>;
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Badge Content
+        const BasicBadgeTest = ({ completeTest }) => {
+            const [clickedBadges, setClickedBadges] = React.useState(new Set());
+            const badges = [
+                { id: 'mail', content: 4, icon: MailIcon },
+                { id: 'notifications', content: 10, icon: NotificationsIcon },
+                { id: 'cart', content: 2, icon: ShoppingCartIcon }
+            ];
+            
+            const handleBadgeClick = (id) => {
+                const newClicked = new Set(clickedBadges);
+                newClicked.add(id);
+                setClickedBadges(newClicked);
+                
+                if (newClicked.size === badges.length) {
+                    completeTest(true, 'All badges clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all badges to complete the test:
+                    </Typography>
+                    <div className="badge-grid">
+                        {badges.map(({ id, content, icon: IconComponent }) => (
+                            <Badge
+                                key={id}
+                                id={`${id}-badge`}
+                                badgeContent={content}
+                                color={clickedBadges.has(id) ? "success" : "primary"}
+                            >
+                                <IconButton onClick={() => handleBadgeClick(id)}>
+                                    <IconComponent />
+                                </IconButton>
+                            </Badge>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Badge Colors
+        const ColorBadgeTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = ['primary', 'secondary', 'error', 'warning', 'info', 'success'];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size === colors.length) {
+                    completeTest(true, 'All badge colors tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click badges of all colors:
+                    </Typography>
+                    <Stack direction="row" spacing={3} flexWrap="wrap">
+                        {colors.map((color) => (
+                            <Badge
+                                key={color}
+                                id={`${color}-color-badge`}
+                                badgeContent={4}
+                                color={color}
+                            >
+                                <IconButton 
+                                    onClick={() => handleColorClick(color)}
+                                    sx={{ opacity: clickedColors.has(color) ? 0.5 : 1 }}
+                                >
+                                    <MailIcon />
+                                </IconButton>
+                            </Badge>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Badge Max Value
+        const MaxValueTest = ({ completeTest }) => {
+            const [count, setCount] = React.useState(95);
+            const maxValue = 99;
+            
+            React.useEffect(() => {
+                if (count > 100) {
+                    completeTest(true, 'Badge max value behavior tested successfully!');
+                }
+            }, [count]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Increment the counter above 99 to see max value behavior:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Badge
+                            id="max-value-badge"
+                            badgeContent={count}
+                            max={maxValue}
+                            color="primary"
+                        >
+                            <NotificationsIcon />
+                        </Badge>
+                        <div className="counter-controls">
+                            <ButtonGroup size="small" aria-label="small outlined button group">
+                                <Button 
+                                    id="decrement-button"
+                                    onClick={() => setCount(Math.max(0, count - 1))}
+                                >
+                                    <RemoveIcon />
+                                </Button>
+                                <Button disabled>{count}</Button>
+                                <Button 
+                                    id="increment-button"
+                                    onClick={() => setCount(count + 1)}
+                                >
+                                    <AddIcon />
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    </Box>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Current value: {count}, Display: {count > maxValue ? `${maxValue}+` : count}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 4: Dot Variant
+        const DotVariantTest = ({ completeTest }) => {
+            const [showDot, setShowDot] = React.useState(true);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleToggle = () => {
+                setShowDot(!showDot);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Dot variant visibility toggled successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the dot badge visibility 3 times:
+                    </Typography>
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        <Badge
+                            id="dot-badge"
+                            color="secondary"
+                            variant="dot"
+                            invisible={!showDot}
+                        >
+                            <MailIcon />
+                        </Badge>
+                        <Button 
+                            id="toggle-dot-button"
+                            variant="outlined"
+                            onClick={handleToggle}
+                        >
+                            {showDot ? 'Hide' : 'Show'} Dot ({toggleCount}/3)
+                        </Button>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Show Zero
+        const ShowZeroTest = ({ completeTest }) => {
+            const [count, setCount] = React.useState(2);
+            const [reachedZero, setReachedZero] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (count === 0 && !reachedZero) {
+                    setReachedZero(true);
+                    setTimeout(() => {
+                        completeTest(true, 'Show zero behavior tested successfully!');
+                    }, 500);
+                }
+            }, [count, reachedZero]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Decrement the counter to 0 to test showZero prop:
+                    </Typography>
+                    <Stack direction="row" spacing={4} alignItems="center">
+                        <Badge
+                            id="show-zero-badge"
+                            badgeContent={count}
+                            showZero
+                            color="primary"
+                        >
+                            <ShoppingCartIcon />
+                        </Badge>
+                        <Badge
+                            id="hide-zero-badge"
+                            badgeContent={count}
+                            showZero={false}
+                            color="secondary"
+                        >
+                            <ShoppingCartIcon />
+                        </Badge>
+                        <ButtonGroup size="small">
+                            <Button 
+                                id="zero-decrement"
+                                onClick={() => setCount(Math.max(0, count - 1))}
+                                disabled={count === 0}
+                            >
+                                <RemoveIcon />
+                            </Button>
+                            <Button disabled>{count}</Button>
+                            <Button 
+                                id="zero-increment"
+                                onClick={() => setCount(count + 1)}
+                            >
+                                <AddIcon />
+                            </Button>
+                        </ButtonGroup>
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Left: showZero=true, Right: showZero=false
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 6: Badge Positioning
+        const PositioningTest = ({ completeTest }) => {
+            const [clickedPositions, setClickedPositions] = React.useState(new Set());
+            const positions = [
+                { vertical: 'top', horizontal: 'right' },
+                { vertical: 'top', horizontal: 'left' },
+                { vertical: 'bottom', horizontal: 'right' },
+                { vertical: 'bottom', horizontal: 'left' }
+            ];
+            
+            const handlePositionClick = (index) => {
+                const newClicked = new Set(clickedPositions);
+                newClicked.add(index);
+                setClickedPositions(newClicked);
+                
+                if (newClicked.size === positions.length) {
+                    completeTest(true, 'All badge positions tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click badges at all four anchor positions:
+                    </Typography>
+                    <Stack direction="row" spacing={3}>
+                        {positions.map((position, index) => (
+                            <Badge
+                                key={index}
+                                id={`position-${index}-badge`}
+                                badgeContent={index + 1}
+                                anchorOrigin={position}
+                                color={clickedPositions.has(index) ? "success" : "primary"}
+                            >
+                                <IconButton onClick={() => handlePositionClick(index)}>
+                                    <MailIcon />
+                                </IconButton>
+                            </Badge>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'badge',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-content"
+                        testName="Test 1: Basic Badge Content"
+                        description="Test badges with different content values"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicBadgeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="colors"
+                        testName="Test 2: Badge Colors"
+                        description="Test all available badge color variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorBadgeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="max-value"
+                        testName="Test 3: Max Value"
+                        description="Test badge behavior when content exceeds max value"
+                        onComplete={handleTestComplete}
+                    >
+                        <MaxValueTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="dot-variant"
+                        testName="Test 4: Dot Variant"
+                        description="Test dot variant and invisible property"
+                        onComplete={handleTestComplete}
+                    >
+                        <DotVariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="show-zero"
+                        testName="Test 5: Show Zero"
+                        description="Test showZero property behavior"
+                        onComplete={handleTestComplete}
+                    >
+                        <ShowZeroTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="positioning"
+                        testName="Test 6: Badge Positioning"
+                        description="Test badge anchor positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <PositioningTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Skeleton Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .skeleton-item {
+            padding: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+        }
+        
+        .media-card {
+            max-width: 345px;
+            margin: 0 auto;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Skeleton</h1>
+            <p>Test the functionality and behavior of the Material UI Skeleton component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Skeleton,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            Card,
+            CardHeader,
+            CardContent,
+            CardMedia,
+            Avatar,
+            IconButton,
+            FormControlLabel,
+            Switch
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Skeleton Variants
+        const VariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['text', 'circular', 'rectangular', 'rounded'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All skeleton variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all skeleton variants:
+                    </Typography>
+                    <div className="skeleton-grid">
+                        {variants.map((variant) => (
+                            <div 
+                                key={variant} 
+                                className="skeleton-item"
+                                onClick={() => handleVariantClick(variant)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <Typography variant="caption" gutterBottom>
+                                    {variant} {clickedVariants.has(variant) && '✓'}
+                                </Typography>
+                                <Skeleton
+                                    id={`skeleton-${variant}`}
+                                    variant={variant}
+                                    width={variant === 'circular' ? 40 : '100%'}
+                                    height={variant === 'circular' ? 40 : variant === 'text' ? 20 : 60}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Skeleton Animation
+        const AnimationTest = ({ completeTest }) => {
+            const [clickedAnimations, setClickedAnimations] = React.useState(new Set());
+            const animations = [
+                { type: 'pulse', label: 'Pulse (default)' },
+                { type: 'wave', label: 'Wave' },
+                { type: false, label: 'No animation' }
+            ];
+            
+            const handleAnimationClick = (type) => {
+                const key = type === false ? 'none' : type;
+                const newClicked = new Set(clickedAnimations);
+                newClicked.add(key);
+                setClickedAnimations(newClicked);
+                
+                if (newClicked.size === animations.length) {
+                    completeTest(true, 'All skeleton animations tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all animation types:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {animations.map(({ type, label }) => {
+                            const key = type === false ? 'none' : type;
+                            return (
+                                <Box
+                                    key={key}
+                                    onClick={() => handleAnimationClick(type)}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <Typography variant="caption" gutterBottom>
+                                        {label} {clickedAnimations.has(key) && '✓'}
+                                    </Typography>
+                                    <Skeleton
+                                        id={`skeleton-animation-${key}`}
+                                        animation={type}
+                                        variant="rectangular"
+                                        width="100%"
+                                        height={60}
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Loading State Toggle
+        const LoadingToggleTest = ({ completeTest }) => {
+            const [loading, setLoading] = React.useState(true);
+            const [toggleCount, setToggleCount] = React.useState(0);
+            
+            const handleToggle = () => {
+                setLoading(!loading);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 4) {
+                    completeTest(true, 'Loading state toggle tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle loading state 4 times to see skeleton/content switch:
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                id="loading-toggle"
+                                checked={loading}
+                                onChange={handleToggle}
+                            />
+                        }
+                        label={`Loading (toggled ${toggleCount}/4 times)`}
+                    />
+                    <Box sx={{ mt: 2 }}>
+                        {loading ? (
+                            <Stack spacing={1}>
+                                <Skeleton variant="text" sx={{ fontSize: '2rem' }} />
+                                <Skeleton variant="text" />
+                                <Skeleton variant="text" />
+                                <Skeleton variant="rectangular" height={60} />
+                            </Stack>
+                        ) : (
+                            <Box>
+                                <Typography variant="h5" gutterBottom>
+                                    Content Loaded!
+                                </Typography>
+                                <Typography variant="body1" paragraph>
+                                    This is the actual content that appears when loading is complete.
+                                </Typography>
+                                <Typography variant="body2">
+                                    Toggle the switch to see the skeleton again.
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Media Card Skeleton
+        const MediaCardTest = ({ completeTest }) => {
+            const [loading, setLoading] = React.useState(true);
+            const [loadClicked, setLoadClicked] = React.useState(false);
+            
+            const handleLoad = () => {
+                setLoading(false);
+                setLoadClicked(true);
+                setTimeout(() => {
+                    completeTest(true, 'Media card skeleton tested successfully!');
+                }, 1000);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to load the media card:
+                    </Typography>
+                    <Button
+                        id="load-media-button"
+                        variant="contained"
+                        onClick={handleLoad}
+                        disabled={loadClicked}
+                        sx={{ mb: 2 }}
+                    >
+                        Load Media Card
+                    </Button>
+                    <Card className="media-card">
+                        <CardHeader
+                            avatar={
+                                loading ? (
+                                    <Skeleton 
+                                        id="avatar-skeleton"
+                                        animation="wave" 
+                                        variant="circular" 
+                                        width={40} 
+                                        height={40} 
+                                    />
+                                ) : (
+                                    <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                        R
+                                    </Avatar>
+                                )
+                            }
+                            action={
+                                loading ? null : (
+                                    <IconButton aria-label="settings">
+                                        <span className="material-icons">more_vert</span>
+                                    </IconButton>
+                                )
+                            }
+                            title={
+                                loading ? (
+                                    <Skeleton
+                                        id="title-skeleton"
+                                        animation="wave"
+                                        height={10}
+                                        width="80%"
+                                        style={{ marginBottom: 6 }}
+                                    />
+                                ) : (
+                                    "Shrimp and Chorizo Paella"
+                                )
+                            }
+                            subheader={
+                                loading ? (
+                                    <Skeleton 
+                                        id="subheader-skeleton"
+                                        animation="wave" 
+                                        height={10} 
+                                        width="40%" 
+                                    />
+                                ) : (
+                                    "September 14, 2016"
+                                )
+                            }
+                        />
+                        {loading ? (
+                            <Skeleton 
+                                id="media-skeleton"
+                                sx={{ height: 190 }} 
+                                animation="wave" 
+                                variant="rectangular" 
+                            />
+                        ) : (
+                            <CardMedia
+                                component="img"
+                                height="190"
+                                image="https://mui.com/static/images/cards/paella.jpg"
+                                alt="Paella dish"
+                            />
+                        )}
+                        <CardContent>
+                            {loading ? (
+                                <React.Fragment>
+                                    <Skeleton 
+                                        id="content-skeleton-1"
+                                        animation="wave" 
+                                        height={10} 
+                                        style={{ marginBottom: 6 }} 
+                                    />
+                                    <Skeleton 
+                                        id="content-skeleton-2"
+                                        animation="wave" 
+                                        height={10} 
+                                        width="80%" 
+                                    />
+                                </React.Fragment>
+                            ) : (
+                                <Typography variant="body2" color="text.secondary" component="p">
+                                    This impressive paella is a perfect party dish and a fun meal to cook
+                                    together with your guests. Add 1 cup of frozen peas along with the mussels,
+                                    if you like.
+                                </Typography>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Box>
+            );
+        };
+        
+        // Test 5: Custom Dimensions
+        const CustomDimensionsTest = ({ completeTest }) => {
+            const [clickedSizes, setClickedSizes] = React.useState(new Set());
+            const sizes = [
+                { id: 'small', width: 100, height: 20 },
+                { id: 'medium', width: 200, height: 40 },
+                { id: 'large', width: '100%', height: 60 },
+                { id: 'square', width: 100, height: 100 }
+            ];
+            
+            const handleSizeClick = (id) => {
+                const newClicked = new Set(clickedSizes);
+                newClicked.add(id);
+                setClickedSizes(newClicked);
+                
+                if (newClicked.size === sizes.length) {
+                    completeTest(true, 'All custom skeleton dimensions tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all skeleton sizes:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {sizes.map(({ id, width, height }) => (
+                            <Box
+                                key={id}
+                                onClick={() => handleSizeClick(id)}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <Typography variant="caption" gutterBottom>
+                                    {id} ({width} × {height}) {clickedSizes.has(id) && '✓'}
+                                </Typography>
+                                <Skeleton
+                                    id={`skeleton-size-${id}`}
+                                    variant="rectangular"
+                                    width={width}
+                                    height={height}
+                                />
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Typography Skeleton
+        const TypographySkeletonTest = ({ completeTest }) => {
+            const [loading, setLoading] = React.useState(true);
+            const [showContent, setShowContent] = React.useState(false);
+            
+            const handleLoadContent = () => {
+                setLoading(false);
+                setTimeout(() => {
+                    setShowContent(true);
+                    completeTest(true, 'Typography skeleton tested successfully!');
+                }, 500);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Load content to see typography skeleton in action:
+                    </Typography>
+                    <Button
+                        id="load-typography-button"
+                        variant="contained"
+                        onClick={handleLoadContent}
+                        disabled={!loading}
+                        sx={{ mb: 2 }}
+                    >
+                        Load Typography
+                    </Button>
+                    <Box sx={{ width: '100%' }}>
+                        <Typography variant="h1">
+                            {loading ? <Skeleton id="h1-skeleton" /> : showContent && "h1. Heading"}
+                        </Typography>
+                        <Typography variant="h3">
+                            {loading ? <Skeleton id="h3-skeleton" /> : showContent && "h3. Heading"}
+                        </Typography>
+                        <Typography variant="body1">
+                            {loading ? <Skeleton id="body1-skeleton" /> : showContent && "body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit."}
+                        </Typography>
+                        <Typography variant="caption">
+                            {loading ? (
+                                <Skeleton id="caption-skeleton" width="60%" />
+                            ) : (
+                                showContent && "caption text"
+                            )}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'skeleton',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 1: Skeleton Variants"
+                        description="Test all skeleton variants: text, circular, rectangular, and rounded"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="animations"
+                        testName="Test 2: Skeleton Animation"
+                        description="Test different animation types: pulse, wave, and no animation"
+                        onComplete={handleTestComplete}
+                    >
+                        <AnimationTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="loading-toggle"
+                        testName="Test 3: Loading State Toggle"
+                        description="Test skeleton to content transition"
+                        onComplete={handleTestComplete}
+                    >
+                        <LoadingToggleTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="media-card"
+                        testName="Test 4: Media Card Skeleton"
+                        description="Test complex skeleton layout for a media card"
+                        onComplete={handleTestComplete}
+                    >
+                        <MediaCardTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-dimensions"
+                        testName="Test 5: Custom Dimensions"
+                        description="Test skeletons with custom width and height"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomDimensionsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="typography"
+                        testName="Test 6: Typography Skeleton"
+                        description="Test skeleton as children of Typography components"
+                        onComplete={handleTestComplete}
+                    >
+                        <TypographySkeletonTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

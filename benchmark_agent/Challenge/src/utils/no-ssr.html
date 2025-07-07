@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI No SSR Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .client-only-content {
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+        
+        .loading-skeleton {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            height: 60px;
+            margin: 16px 0;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .browser-info {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        
+        .defer-test-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .defer-box {
+            padding: 16px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .with-ssr {
+            background-color: #ffebee;
+            border: 2px solid #ef5350;
+        }
+        
+        .without-ssr {
+            background-color: #e8f5e9;
+            border: 2px solid #66bb6a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: No SSR</h1>
+            <p>Test the functionality and behavior of the Material UI No SSR component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            NoSsr,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            CircularProgress,
+            Alert
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic NoSsr Functionality
+        const BasicNoSsrTest = ({ completeTest }) => {
+            const [mounted, setMounted] = React.useState(false);
+            const [noSsrRendered, setNoSsrRendered] = React.useState(false);
+            
+            React.useEffect(() => {
+                setMounted(true);
+                
+                // Check if NoSsr content is rendered after mount
+                const timer = setTimeout(() => {
+                    if (noSsrRendered) {
+                        completeTest(true, 'NoSsr component rendered content only on client side!');
+                    }
+                }, 500);
+                
+                return () => clearTimeout(timer);
+            }, [noSsrRendered]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        The content below should only render on the client side:
+                    </Typography>
+                    
+                    <Box mt={2}>
+                        <Typography variant="subtitle2" gutterBottom>
+                            Always Rendered:
+                        </Typography>
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            This content is always rendered (mounted: {mounted ? 'true' : 'false'})
+                        </Alert>
+                    </Box>
+                    
+                    <Box mt={2}>
+                        <Typography variant="subtitle2" gutterBottom>
+                            Client-Only Content:
+                        </Typography>
+                        <NoSsr>
+                            <div 
+                                className="client-only-content"
+                                ref={() => setNoSsrRendered(true)}
+                            >
+                                <Typography variant="h6">Client-Side Only!</Typography>
+                                <Typography variant="body2">
+                                    This content is wrapped in NoSsr and only renders after hydration.
+                                </Typography>
+                                <Typography variant="caption" display="block" mt={1}>
+                                    Timestamp: {new Date().toLocaleTimeString()}
+                                </Typography>
+                            </div>
+                        </NoSsr>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Fallback Content
+        const FallbackContentTest = ({ completeTest }) => {
+            const [showContent, setShowContent] = React.useState(false);
+            const [fallbackShown, setFallbackShown] = React.useState(false);
+            const [contentShown, setContentShown] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (fallbackShown && contentShown) {
+                    completeTest(true, 'Fallback content shown initially, then replaced with actual content!');
+                }
+            }, [fallbackShown, contentShown]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to see NoSsr with fallback content:
+                    </Typography>
+                    
+                    <Button 
+                        id="show-fallback-button"
+                        variant="contained" 
+                        onClick={() => setShowContent(true)}
+                        disabled={showContent}
+                    >
+                        Show NoSsr with Fallback
+                    </Button>
+                    
+                    {showContent && (
+                        <Box mt={2}>
+                            <NoSsr 
+                                fallback={
+                                    <div 
+                                        className="loading-skeleton"
+                                        ref={() => setFallbackShown(true)}
+                                    />
+                                }
+                            >
+                                <Box 
+                                    p={2} 
+                                    bgcolor="#e8f5e9" 
+                                    borderRadius={1}
+                                    ref={() => setContentShown(true)}
+                                >
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Typography variant="h6">Content Loaded!</Typography>
+                                        <CircularProgress size={20} color="success" />
+                                    </Stack>
+                                    <Typography variant="body2" mt={1}>
+                                        This replaced the loading skeleton fallback.
+                                    </Typography>
+                                </Box>
+                            </NoSsr>
+                        </Box>
+                    )}
+                    
+                    {fallbackShown && (
+                        <Typography variant="caption" color="textSecondary" display="block" mt={1}>
+                            ✓ Fallback was displayed
+                        </Typography>
+                    )}
+                    {contentShown && (
+                        <Typography variant="caption" color="textSecondary" display="block">
+                            ✓ Content replaced fallback
+                        </Typography>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Browser-Specific Content
+        const BrowserSpecificTest = ({ completeTest }) => {
+            const [browserInfo, setBrowserInfo] = React.useState(null);
+            
+            React.useEffect(() => {
+                if (browserInfo) {
+                    completeTest(true, 'Browser-specific content rendered successfully on client!');
+                }
+            }, [browserInfo]);
+            
+            const getBrowserInfo = () => {
+                return {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height
+                };
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        NoSsr allows access to browser-specific APIs that aren't available during SSR:
+                    </Typography>
+                    
+                    <Typography variant="subtitle2" mt={2} gutterBottom>
+                        Server-Safe Placeholder:
+                    </Typography>
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                        Browser information not available during SSR
+                    </Alert>
+                    
+                    <Typography variant="subtitle2" gutterBottom>
+                        Client-Side Browser Info:
+                    </Typography>
+                    <NoSsr>
+                        <div 
+                            className="browser-info"
+                            ref={() => setBrowserInfo(getBrowserInfo())}
+                        >
+                            <Typography variant="body2">
+                                <strong>User Agent:</strong> {navigator.userAgent.substring(0, 50)}...
+                            </Typography>
+                            <Typography variant="body2">
+                                <strong>Language:</strong> {navigator.language}
+                            </Typography>
+                            <Typography variant="body2">
+                                <strong>Platform:</strong> {navigator.platform}
+                            </Typography>
+                            <Typography variant="body2">
+                                <strong>Screen:</strong> {window.screen.width} x {window.screen.height}
+                            </Typography>
+                        </div>
+                    </NoSsr>
+                </Box>
+            );
+        };
+        
+        // Test 4: Defer Rendering
+        const DeferRenderingTest = ({ completeTest }) => {
+            const [startTest, setStartTest] = React.useState(false);
+            const [withSsrTime, setWithSsrTime] = React.useState(null);
+            const [withoutSsrTime, setWithoutSsrTime] = React.useState(null);
+            
+            React.useEffect(() => {
+                if (withSsrTime && withoutSsrTime && withoutSsrTime > withSsrTime) {
+                    completeTest(true, 'NoSsr successfully deferred rendering - content appeared after regular content!');
+                }
+            }, [withSsrTime, withoutSsrTime]);
+            
+            const handleStartTest = () => {
+                setStartTest(true);
+                setWithSsrTime(Date.now());
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test deferred rendering - NoSsr content should appear after regular content:
+                    </Typography>
+                    
+                    <Button 
+                        id="start-defer-test"
+                        variant="contained" 
+                        onClick={handleStartTest}
+                        disabled={startTest}
+                    >
+                        Start Defer Test
+                    </Button>
+                    
+                    {startTest && (
+                        <div className="defer-test-area">
+                            <div className="defer-box with-ssr">
+                                <Typography variant="h6">Regular Content</Typography>
+                                <Typography variant="body2">
+                                    This renders immediately
+                                </Typography>
+                                <Typography variant="caption" display="block" mt={1}>
+                                    Rendered at: {withSsrTime}ms
+                                </Typography>
+                            </div>
+                            
+                            <NoSsr defer>
+                                <div 
+                                    className="defer-box without-ssr"
+                                    ref={() => !withoutSsrTime && setWithoutSsrTime(Date.now())}
+                                >
+                                    <Typography variant="h6">Deferred Content</Typography>
+                                    <Typography variant="body2">
+                                        This renders after hydration
+                                    </Typography>
+                                    <Typography variant="caption" display="block" mt={1}>
+                                        Rendered at: {withoutSsrTime}ms
+                                    </Typography>
+                                </div>
+                            </NoSsr>
+                        </div>
+                    )}
+                    
+                    {withSsrTime && withoutSsrTime && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="primary">
+                                Delay: {withoutSsrTime - withSsrTime}ms
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 5: Multiple NoSsr Components
+        const MultipleNoSsrTest = ({ completeTest }) => {
+            const [components, setComponents] = React.useState([]);
+            const expectedCount = 3;
+            
+            const handleComponentMount = (id) => {
+                setComponents(prev => {
+                    const updated = [...prev, id];
+                    if (updated.length === expectedCount) {
+                        completeTest(true, `All ${expectedCount} NoSsr components rendered independently!`);
+                    }
+                    return updated;
+                });
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Multiple NoSsr components should work independently:
+                    </Typography>
+                    
+                    <Stack spacing={2} mt={2}>
+                        <NoSsr>
+                            <Alert 
+                                severity="success"
+                                ref={() => handleComponentMount('component-1')}
+                            >
+                                NoSsr Component 1 - Rendered on client
+                            </Alert>
+                        </NoSsr>
+                        
+                        <NoSsr>
+                            <Alert 
+                                severity="info"
+                                ref={() => handleComponentMount('component-2')}
+                            >
+                                NoSsr Component 2 - Also rendered on client
+                            </Alert>
+                        </NoSsr>
+                        
+                        <NoSsr>
+                            <Alert 
+                                severity="warning"
+                                ref={() => handleComponentMount('component-3')}
+                            >
+                                NoSsr Component 3 - Independent client rendering
+                            </Alert>
+                        </NoSsr>
+                    </Stack>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Components rendered: {components.length}/{expectedCount}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'no-ssr',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-no-ssr"
+                        testName="Test 1: Basic NoSsr Functionality"
+                        description="Verify content only renders on client side"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicNoSsrTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fallback-content"
+                        testName="Test 2: Fallback Content"
+                        description="Test fallback content during SSR"
+                        onComplete={handleTestComplete}
+                    >
+                        <FallbackContentTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="browser-specific"
+                        testName="Test 3: Browser-Specific Content"
+                        description="Test rendering browser-specific APIs"
+                        onComplete={handleTestComplete}
+                    >
+                        <BrowserSpecificTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="defer-rendering"
+                        testName="Test 4: Defer Rendering"
+                        description="Test deferred rendering functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <DeferRenderingTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-no-ssr"
+                        testName="Test 5: Multiple NoSsr Components"
+                        description="Test multiple NoSsr components working independently"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultipleNoSsrTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

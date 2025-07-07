@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Container Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        /* Demo container styles */
+        .demo-container {
+            background-color: rgba(25, 118, 210, 0.08);
+            border: 2px dashed rgba(25, 118, 210, 0.5);
+            padding: 16px;
+            margin: 8px 0;
+            position: relative;
+        }
+        
+        .container-label {
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background-color: white;
+            padding: 0 8px;
+            font-size: 12px;
+            color: #1976d2;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Container</h1>
+            <p>Test the functionality and behavior of the Material UI Container component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Container,
+            Box,
+            Button,
+            Typography,
+            Select,
+            MenuItem,
+            FormControl,
+            InputLabel,
+            Switch,
+            FormControlLabel
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Container maxWidth prop
+        const MaxWidthTest = ({ completeTest }) => {
+            const [maxWidth, setMaxWidth] = React.useState('sm');
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleChange = (event) => {
+                setMaxWidth(event.target.value);
+                if (event.target.value === 'lg') {
+                    setCompleted(true);
+                    completeTest(true, 'Container maxWidth prop works correctly! Changed to lg successfully.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the Container's maxWidth to 'lg' to complete this test:
+                    </Typography>
+                    <FormControl variant="outlined" size="small" sx={{ mb: 2, minWidth: 120 }}>
+                        <InputLabel>Max Width</InputLabel>
+                        <Select
+                            value={maxWidth}
+                            onChange={handleChange}
+                            label="Max Width"
+                        >
+                            <MenuItem value="xs">xs</MenuItem>
+                            <MenuItem value="sm">sm</MenuItem>
+                            <MenuItem value="md">md</MenuItem>
+                            <MenuItem value="lg">lg</MenuItem>
+                            <MenuItem value="xl">xl</MenuItem>
+                            <MenuItem value={false}>false</MenuItem>
+                        </Select>
+                    </FormControl>
+                    
+                    <Box sx={{ position: 'relative' }}>
+                        <Container maxWidth={maxWidth} className="demo-container">
+                            <span className="container-label">maxWidth: {maxWidth}</span>
+                            <Typography variant="body1">
+                                This Container has maxWidth set to '{maxWidth}'
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                Current width constraint: {
+                                    maxWidth === 'xs' ? '444px' :
+                                    maxWidth === 'sm' ? '600px' :
+                                    maxWidth === 'md' ? '900px' :
+                                    maxWidth === 'lg' ? '1200px' :
+                                    maxWidth === 'xl' ? '1536px' :
+                                    'none'
+                                }
+                            </Typography>
+                        </Container>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Fixed Container
+        const FixedContainerTest = ({ completeTest }) => {
+            const [fixed, setFixed] = React.useState(false);
+            
+            const handleToggle = (event) => {
+                setFixed(event.target.checked);
+                if (event.target.checked) {
+                    completeTest(true, 'Fixed Container enabled! Max-width is now fixed across all breakpoints.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Enable the fixed prop to make the Container use fixed max-widths:
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={fixed}
+                                onChange={handleToggle}
+                                color="primary"
+                            />
+                        }
+                        label="Fixed Container"
+                        sx={{ mb: 2 }}
+                    />
+                    
+                    <Box sx={{ position: 'relative' }}>
+                        <Container fixed={fixed} className="demo-container">
+                            <span className="container-label">fixed: {fixed.toString()}</span>
+                            <Typography variant="body1">
+                                This Container is {fixed ? 'using fixed max-widths' : 'using fluid max-widths'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {fixed 
+                                    ? 'Max-width matches the min-width of the current breakpoint'
+                                    : 'Max-width scales with viewport size'
+                                }
+                            </Typography>
+                        </Container>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 3: Disable Gutters
+        const DisableGuttersTest = ({ completeTest }) => {
+            const [disableGutters, setDisableGutters] = React.useState(false);
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                if (disableGutters) {
+                    setClicked(true);
+                    completeTest(true, 'Container gutters successfully disabled! No horizontal padding applied.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Disable the gutters (horizontal padding) and then click the container:
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={disableGutters}
+                                onChange={(e) => setDisableGutters(e.target.checked)}
+                                color="primary"
+                            />
+                        }
+                        label="Disable Gutters"
+                        sx={{ mb: 2 }}
+                    />
+                    
+                    <Box sx={{ position: 'relative' }}>
+                        <Container 
+                            disableGutters={disableGutters} 
+                            className="demo-container"
+                            onClick={handleClick}
+                            sx={{ cursor: 'pointer' }}
+                        >
+                            <span className="container-label">
+                                disableGutters: {disableGutters.toString()}
+                            </span>
+                            <Typography variant="body1">
+                                {disableGutters 
+                                    ? 'Click this Container (gutters disabled)' 
+                                    : 'This Container has default gutters'
+                                }
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {disableGutters 
+                                    ? 'No horizontal padding (0px)' 
+                                    : 'Default horizontal padding (24px on desktop)'
+                                }
+                            </Typography>
+                        </Container>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Nested Containers
+        const NestedContainersTest = ({ completeTest }) => {
+            const [innerMaxWidth, setInnerMaxWidth] = React.useState('sm');
+            const [testComplete, setTestComplete] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (innerMaxWidth === 'xs') {
+                    setTestComplete(true);
+                    completeTest(true, 'Nested containers work correctly! Inner container constrained to xs.');
+                }
+            }, [innerMaxWidth]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Change the inner Container's maxWidth to 'xs' to see nested container behavior:
+                    </Typography>
+                    <FormControl variant="outlined" size="small" sx={{ mb: 2, minWidth: 120 }}>
+                        <InputLabel>Inner Max Width</InputLabel>
+                        <Select
+                            value={innerMaxWidth}
+                            onChange={(e) => setInnerMaxWidth(e.target.value)}
+                            label="Inner Max Width"
+                        >
+                            <MenuItem value="xs">xs</MenuItem>
+                            <MenuItem value="sm">sm</MenuItem>
+                            <MenuItem value="md">md</MenuItem>
+                        </Select>
+                    </FormControl>
+                    
+                    <Box sx={{ position: 'relative' }}>
+                        <Container maxWidth="lg" className="demo-container">
+                            <span className="container-label">Outer Container (lg)</span>
+                            <Typography variant="body2" gutterBottom>
+                                Outer Container with maxWidth="lg"
+                            </Typography>
+                            
+                            <Container maxWidth={innerMaxWidth} className="demo-container" sx={{ mt: 2 }}>
+                                <span className="container-label">Inner Container ({innerMaxWidth})</span>
+                                <Typography variant="body1">
+                                    Inner Container with maxWidth="{innerMaxWidth}"
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    Nested containers properly constrain content
+                                </Typography>
+                            </Container>
+                        </Container>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'container',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="max-width"
+                        testName="Test 1: Container Max Width"
+                        description="Test the Container's maxWidth prop with different breakpoint values"
+                        onComplete={handleTestComplete}
+                    >
+                        <MaxWidthTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="fixed-container"
+                        testName="Test 2: Fixed Container"
+                        description="Test the Container's fixed prop for consistent max-widths"
+                        onComplete={handleTestComplete}
+                    >
+                        <FixedContainerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disable-gutters"
+                        testName="Test 3: Disable Gutters"
+                        description="Test removing the Container's horizontal padding"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisableGuttersTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-containers"
+                        testName="Test 4: Nested Containers"
+                        description="Test how Containers behave when nested inside each other"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedContainersTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

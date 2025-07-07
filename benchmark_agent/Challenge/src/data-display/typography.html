@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Typography Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .typography-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .typography-item:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+        
+        .typography-item.clicked {
+            background-color: #e8f5e9;
+        }
+        
+        .alignment-demo {
+            background-color: #f5f5f5;
+            padding: 16px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .interactive-text {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .interactive-text:hover {
+            background-color: rgba(25, 118, 210, 0.08);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Typography</h1>
+            <p>Test the functionality and behavior of the Material UI Typography component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Typography,
+            Box,
+            Stack,
+            Paper,
+            Button,
+            Divider,
+            Link
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Typography Variants
+        const VariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = [
+                { variant: 'h1', text: 'Heading 1' },
+                { variant: 'h2', text: 'Heading 2' },
+                { variant: 'h3', text: 'Heading 3' },
+                { variant: 'h4', text: 'Heading 4' },
+                { variant: 'h5', text: 'Heading 5' },
+                { variant: 'h6', text: 'Heading 6' },
+                { variant: 'subtitle1', text: 'Subtitle 1' },
+                { variant: 'subtitle2', text: 'Subtitle 2' },
+                { variant: 'body1', text: 'Body 1 text' },
+                { variant: 'body2', text: 'Body 2 text' },
+                { variant: 'button', text: 'BUTTON TEXT' },
+                { variant: 'caption', text: 'Caption text' },
+                { variant: 'overline', text: 'OVERLINE TEXT' }
+            ];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All typography variants clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on each typography variant:
+                    </Typography>
+                    <Stack spacing={1}>
+                        {variants.map(({ variant, text }) => (
+                            <div
+                                key={variant}
+                                id={`${variant}-typography`}
+                                className={`typography-item ${clickedVariants.has(variant) ? 'clicked' : ''}`}
+                                onClick={() => handleVariantClick(variant)}
+                            >
+                                <Typography variant={variant}>
+                                    {text} {clickedVariants.has(variant) && '✓'}
+                                </Typography>
+                            </div>
+                        ))}
+                    </Stack>
+                    <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
+                        Progress: {clickedVariants.size}/{variants.length}
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 2: Text Alignment
+        const AlignmentTest = ({ completeTest }) => {
+            const [clickedAlignments, setClickedAlignments] = React.useState(new Set());
+            const alignments = ['left', 'center', 'right', 'justify'];
+            
+            const handleAlignmentClick = (alignment) => {
+                const newClicked = new Set(clickedAlignments);
+                newClicked.add(alignment);
+                setClickedAlignments(newClicked);
+                
+                if (newClicked.size === alignments.length) {
+                    completeTest(true, 'All text alignments tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on each text alignment example:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {alignments.map((align) => (
+                            <div
+                                key={align}
+                                id={`${align}-align-text`}
+                                className="alignment-demo"
+                                onClick={() => handleAlignmentClick(align)}
+                                style={{ 
+                                    backgroundColor: clickedAlignments.has(align) ? '#e8f5e9' : '#f5f5f5',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <Typography variant="body1" align={align}>
+                                    This text is {align} aligned. Lorem ipsum dolor sit amet, 
+                                    consectetur adipiscing elit. Sed do eiusmod tempor incididunt 
+                                    ut labore et dolore magna aliqua.
+                                </Typography>
+                            </div>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Typography Colors
+        const ColorTest = ({ completeTest }) => {
+            const [clickedColors, setClickedColors] = React.useState(new Set());
+            const colors = [
+                { color: 'primary', label: 'Primary Color' },
+                { color: 'secondary', label: 'Secondary Color' },
+                { color: 'textPrimary', label: 'Text Primary' },
+                { color: 'textSecondary', label: 'Text Secondary' },
+                { color: 'error', label: 'Error Color' }
+            ];
+            
+            const handleColorClick = (color) => {
+                const newClicked = new Set(clickedColors);
+                newClicked.add(color);
+                setClickedColors(newClicked);
+                
+                if (newClicked.size === colors.length) {
+                    completeTest(true, 'All typography colors tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on each colored text:
+                    </Typography>
+                    <div className="color-grid">
+                        {colors.map(({ color, label }) => (
+                            <Paper
+                                key={color}
+                                id={`${color}-color-text`}
+                                elevation={clickedColors.has(color) ? 3 : 1}
+                                sx={{ 
+                                    p: 2, 
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedColors.has(color) ? 'action.hover' : 'background.paper'
+                                }}
+                                onClick={() => handleColorClick(color)}
+                            >
+                                <Typography variant="h6" color={color}>
+                                    {label}
+                                </Typography>
+                                <Typography variant="body2" color={color}>
+                                    This is sample text in {label.toLowerCase()}
+                                </Typography>
+                            </Paper>
+                        ))}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Typography with Component Prop
+        const ComponentPropTest = ({ completeTest }) => {
+            const [clickedComponents, setClickedComponents] = React.useState(new Set());
+            const components = [
+                { variant: 'h1', component: 'h2', label: 'H1 styled as H2' },
+                { variant: 'body1', component: 'div', label: 'Body text as DIV' },
+                { variant: 'button', component: 'span', label: 'Button text as SPAN' }
+            ];
+            
+            const handleComponentClick = (index) => {
+                const newClicked = new Set(clickedComponents);
+                newClicked.add(index);
+                setClickedComponents(newClicked);
+                
+                if (newClicked.size === components.length) {
+                    completeTest(true, 'All component overrides tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on each typography with custom component:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {components.map(({ variant, component, label }, index) => (
+                            <Box
+                                key={index}
+                                id={`component-${index}`}
+                                onClick={() => handleComponentClick(index)}
+                                sx={{ 
+                                    p: 2,
+                                    backgroundColor: clickedComponents.has(index) ? 'success.light' : 'grey.100',
+                                    borderRadius: 1,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <Typography variant={variant} component={component}>
+                                    {label}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    variant="{variant}" component="{component}"
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Typography with Gutter Bottom
+        const GutterBottomTest = ({ completeTest }) => {
+            const [toggleCount, setToggleCount] = React.useState(0);
+            const [hasGutter, setHasGutter] = React.useState(true);
+            
+            const handleToggle = () => {
+                setHasGutter(!hasGutter);
+                const newCount = toggleCount + 1;
+                setToggleCount(newCount);
+                
+                if (newCount >= 4) {
+                    completeTest(true, 'Gutter bottom behavior tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle gutterBottom property to see spacing changes:
+                    </Typography>
+                    <Button
+                        id="toggle-gutter-button"
+                        variant="contained"
+                        onClick={handleToggle}
+                        sx={{ mb: 2 }}
+                    >
+                        Toggle Gutter ({toggleCount}/4)
+                    </Button>
+                    <Paper sx={{ p: 2 }}>
+                        <Typography 
+                            variant="h6" 
+                            gutterBottom={hasGutter}
+                            sx={{ backgroundColor: 'primary.light', p: 1 }}
+                        >
+                            This heading {hasGutter ? 'has' : 'has no'} bottom margin
+                        </Typography>
+                        <Typography variant="body1" sx={{ backgroundColor: 'grey.200', p: 1 }}>
+                            This is the next element. Notice the spacing above.
+                        </Typography>
+                    </Paper>
+                </Box>
+            );
+        };
+        
+        // Test 6: Interactive Typography
+        const InteractiveTypographyTest = ({ completeTest }) => {
+            const [interactions, setInteractions] = React.useState({
+                link: false,
+                hover: 0,
+                truncate: false
+            });
+            
+            React.useEffect(() => {
+                if (interactions.link && interactions.hover >= 3 && interactions.truncate) {
+                    completeTest(true, 'All interactive typography features tested!');
+                }
+            }, [interactions]);
+            
+            const handleLinkClick = (e) => {
+                e.preventDefault();
+                setInteractions(prev => ({ ...prev, link: true }));
+            };
+            
+            const handleHover = () => {
+                setInteractions(prev => ({ ...prev, hover: prev.hover + 1 }));
+            };
+            
+            const handleTruncateClick = () => {
+                setInteractions(prev => ({ ...prev, truncate: true }));
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Interact with different typography features:
+                    </Typography>
+                    <Stack spacing={3}>
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                1. Click the link:
+                            </Typography>
+                            <Typography variant="body1">
+                                Visit our{' '}
+                                <Link
+                                    id="typography-link"
+                                    href="#"
+                                    onClick={handleLinkClick}
+                                    color={interactions.link ? 'success.main' : 'primary'}
+                                >
+                                    documentation
+                                </Link>
+                                {' '}for more information.
+                            </Typography>
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                2. Hover over this text 3 times:
+                            </Typography>
+                            <Typography
+                                id="hover-typography"
+                                variant="h5"
+                                className="interactive-text"
+                                onMouseEnter={handleHover}
+                                color={interactions.hover >= 3 ? 'success.main' : 'primary'}
+                            >
+                                Hover Me! ({interactions.hover}/3)
+                            </Typography>
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                3. Click to expand truncated text:
+                            </Typography>
+                            <Typography
+                                id="truncate-typography"
+                                variant="body1"
+                                onClick={handleTruncateClick}
+                                sx={{
+                                    cursor: 'pointer',
+                                    overflow: interactions.truncate ? 'visible' : 'hidden',
+                                    textOverflow: interactions.truncate ? 'clip' : 'ellipsis',
+                                    whiteSpace: interactions.truncate ? 'normal' : 'nowrap',
+                                    maxWidth: 300,
+                                    backgroundColor: interactions.truncate ? 'success.light' : 'grey.100',
+                                    p: 1,
+                                    borderRadius: 1
+                                }}
+                            >
+                                This is a very long text that will be truncated with ellipsis when it overflows the container width
+                            </Typography>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'typography',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 1: Typography Variants"
+                        description="Click on all typography variants"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="alignment"
+                        testName="Test 2: Text Alignment"
+                        description="Test different text alignment options"
+                        onComplete={handleTestComplete}
+                    >
+                        <AlignmentTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="colors"
+                        testName="Test 3: Typography Colors"
+                        description="Test different color options for typography"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColorTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="component-prop"
+                        testName="Test 4: Component Property"
+                        description="Test typography with custom component rendering"
+                        onComplete={handleTestComplete}
+                    >
+                        <ComponentPropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="gutter-bottom"
+                        testName="Test 5: Gutter Bottom"
+                        description="Test bottom margin behavior with gutterBottom"
+                        onComplete={handleTestComplete}
+                    >
+                        <GutterBottomTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="interactive"
+                        testName="Test 6: Interactive Typography"
+                        description="Test interactive typography features"
+                        onComplete={handleTestComplete}
+                    >
+                        <InteractiveTypographyTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

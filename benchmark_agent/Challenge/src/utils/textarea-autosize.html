@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Textarea Autosize Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .height-indicator {
+            position: absolute;
+            right: -60px;
+            top: 0;
+            padding: 4px 8px;
+            background-color: #1976d2;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .styled-textarea {
+            width: 100%;
+            padding: 12px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+        
+        .styled-textarea:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        
+        .char-counter {
+            margin-top: 8px;
+            text-align: right;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Textarea Autosize</h1>
+            <p>Test the functionality and behavior of the Material UI Textarea Autosize component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            TextareaAutosize,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            Chip,
+            Paper,
+            TextField
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Auto-resize
+        const BasicAutoresizeTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const [initialHeight, setInitialHeight] = React.useState(null);
+            const [currentHeight, setCurrentHeight] = React.useState(null);
+            const textareaRef = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (textareaRef.current && !initialHeight) {
+                    setInitialHeight(textareaRef.current.clientHeight);
+                    setCurrentHeight(textareaRef.current.clientHeight);
+                }
+            }, []);
+            
+            const handleChange = (event) => {
+                setValue(event.target.value);
+                
+                if (textareaRef.current) {
+                    const newHeight = textareaRef.current.clientHeight;
+                    setCurrentHeight(newHeight);
+                    
+                    // Check if height increased after adding multiple lines
+                    const lines = event.target.value.split('\n').length;
+                    if (lines >= 3 && newHeight > initialHeight) {
+                        completeTest(true, 'Textarea automatically resized based on content!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Type multiple lines to see the textarea grow automatically:
+                    </Typography>
+                    
+                    <Box position="relative" display="inline-block" width="100%">
+                        <TextareaAutosize
+                            ref={textareaRef}
+                            id="basic-autosize"
+                            className="styled-textarea"
+                            placeholder="Start typing and press Enter to add new lines..."
+                            value={value}
+                            onChange={handleChange}
+                            minRows={2}
+                        />
+                        {currentHeight && (
+                            <div className="height-indicator">
+                                Height: {currentHeight}px
+                            </div>
+                        )}
+                    </Box>
+                    
+                    <div className="char-counter">
+                        Lines: {value.split('\n').length} | Characters: {value.length}
+                    </div>
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Initial height: {initialHeight}px | Current: {currentHeight}px
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Min/Max Rows
+        const MinMaxRowsTest = ({ completeTest }) => {
+            const [minValue, setMinValue] = React.useState('');
+            const [maxValue, setMaxValue] = React.useState('');
+            const [testSteps, setTestSteps] = React.useState({ min: false, max: false });
+            
+            React.useEffect(() => {
+                if (testSteps.min && testSteps.max) {
+                    completeTest(true, 'Min and max rows constraints working correctly!');
+                }
+            }, [testSteps]);
+            
+            const handleMinChange = (event) => {
+                setMinValue(event.target.value);
+                // Check if textarea maintains minimum height even with no content
+                if (event.target.value === '' && !testSteps.min) {
+                    setTestSteps(prev => ({ ...prev, min: true }));
+                }
+            };
+            
+            const handleMaxChange = (event) => {
+                setMaxValue(event.target.value);
+                const lines = event.target.value.split('\n').length;
+                // Check if textarea stops growing after max rows
+                if (lines > 5 && !testSteps.max) {
+                    setTestSteps(prev => ({ ...prev, max: true }));
+                }
+            };
+            
+            const longText = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10";
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test minimum and maximum row constraints:
+                    </Typography>
+                    
+                    <Stack spacing={3}>
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Min Rows = 3 (stays tall even when empty)
+                            </Typography>
+                            <TextareaAutosize
+                                id="min-rows-textarea"
+                                className="styled-textarea"
+                                placeholder="This has a minimum of 3 rows..."
+                                value={minValue}
+                                onChange={handleMinChange}
+                                minRows={3}
+                            />
+                            <Chip 
+                                label={testSteps.min ? "✓ Min rows verified" : "Clear to test min rows"} 
+                                color={testSteps.min ? "success" : "default"}
+                                size="small"
+                                sx={{ mt: 1 }}
+                            />
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Max Rows = 5 (stops growing and scrolls)
+                            </Typography>
+                            <TextareaAutosize
+                                id="max-rows-textarea"
+                                className="styled-textarea"
+                                placeholder="This has a maximum of 5 rows..."
+                                value={maxValue}
+                                onChange={handleMaxChange}
+                                minRows={2}
+                                maxRows={5}
+                            />
+                            <Stack direction="row" spacing={1} mt={1}>
+                                <Button 
+                                    size="small" 
+                                    variant="outlined"
+                                    onClick={() => setMaxValue(longText)}
+                                >
+                                    Add 10 lines
+                                </Button>
+                                <Chip 
+                                    label={testSteps.max ? "✓ Max rows verified" : "Add lines to test max"} 
+                                    color={testSteps.max ? "success" : "default"}
+                                    size="small"
+                                />
+                            </Stack>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 3: Different Content Types
+        const ContentTypesTest = ({ completeTest }) => {
+            const [codeValue, setCodeValue] = React.useState('');
+            const [proseValue, setProseValue] = React.useState('');
+            const [emojiValue, setEmojiValue] = React.useState('');
+            const contentTests = React.useRef({ code: false, prose: false, emoji: false });
+            
+            const checkCompletion = () => {
+                const tests = contentTests.current;
+                if (tests.code && tests.prose && tests.emoji) {
+                    completeTest(true, 'All content types handled correctly with proper resizing!');
+                }
+            };
+            
+            const sampleCode = `function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10));`;
+            
+            const sampleProse = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.`;
+            
+            const sampleEmoji = `Hello World! 👋
+This is a test with emojis 😊
+Multiple lines with different characters 🚀
+Special symbols: ©️ ®️ ™️ 💯`;
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test auto-sizing with different content types:
+                    </Typography>
+                    
+                    <Stack spacing={3}>
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Code Content
+                            </Typography>
+                            <TextareaAutosize
+                                id="code-content"
+                                className="styled-textarea"
+                                placeholder="Paste code here..."
+                                value={codeValue}
+                                onChange={(e) => {
+                                    setCodeValue(e.target.value);
+                                    if (e.target.value.includes('function')) {
+                                        contentTests.current.code = true;
+                                        checkCompletion();
+                                    }
+                                }}
+                                minRows={3}
+                                style={{ fontFamily: 'monospace' }}
+                            />
+                            <Button 
+                                size="small" 
+                                onClick={() => setCodeValue(sampleCode)}
+                                sx={{ mt: 1 }}
+                            >
+                                Insert Sample Code
+                            </Button>
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Prose Content
+                            </Typography>
+                            <TextareaAutosize
+                                id="prose-content"
+                                className="styled-textarea"
+                                placeholder="Write some text..."
+                                value={proseValue}
+                                onChange={(e) => {
+                                    setProseValue(e.target.value);
+                                    if (e.target.value.length > 50) {
+                                        contentTests.current.prose = true;
+                                        checkCompletion();
+                                    }
+                                }}
+                                minRows={2}
+                            />
+                            <Button 
+                                size="small" 
+                                onClick={() => setProseValue(sampleProse)}
+                                sx={{ mt: 1 }}
+                            >
+                                Insert Sample Text
+                            </Button>
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Emoji & Special Characters
+                            </Typography>
+                            <TextareaAutosize
+                                id="emoji-content"
+                                className="styled-textarea"
+                                placeholder="Add emojis and special characters..."
+                                value={emojiValue}
+                                onChange={(e) => {
+                                    setEmojiValue(e.target.value);
+                                    if (e.target.value.includes('😊') || e.target.value.includes('🚀')) {
+                                        contentTests.current.emoji = true;
+                                        checkCompletion();
+                                    }
+                                }}
+                                minRows={2}
+                            />
+                            <Button 
+                                size="small" 
+                                onClick={() => setEmojiValue(sampleEmoji)}
+                                sx={{ mt: 1 }}
+                            >
+                                Insert Emojis
+                            </Button>
+                        </Box>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Dynamic Resize
+        const DynamicResizeTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState('');
+            const [fontSize, setFontSize] = React.useState(16);
+            const [resizeCount, setResizeCount] = React.useState(0);
+            const previousHeight = React.useRef(null);
+            const textareaRef = React.useRef(null);
+            
+            const handleFontSizeChange = (newSize) => {
+                setFontSize(newSize);
+                
+                // Check if textarea resizes with font change
+                setTimeout(() => {
+                    if (textareaRef.current && previousHeight.current) {
+                        const currentHeight = textareaRef.current.clientHeight;
+                        if (currentHeight !== previousHeight.current) {
+                            setResizeCount(prev => prev + 1);
+                            previousHeight.current = currentHeight;
+                            
+                            if (resizeCount >= 2) {
+                                completeTest(true, 'Textarea dynamically resizes with style changes!');
+                            }
+                        }
+                    }
+                }, 100);
+            };
+            
+            React.useEffect(() => {
+                if (textareaRef.current) {
+                    previousHeight.current = textareaRef.current.clientHeight;
+                }
+            }, [value]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test dynamic resizing with font size changes:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={1} mb={2}>
+                        <Typography variant="subtitle2">Font Size:</Typography>
+                        {[12, 16, 20, 24].map((size) => (
+                            <Button
+                                key={size}
+                                size="small"
+                                variant={fontSize === size ? "contained" : "outlined"}
+                                onClick={() => handleFontSizeChange(size)}
+                            >
+                                {size}px
+                            </Button>
+                        ))}
+                    </Stack>
+                    
+                    <TextareaAutosize
+                        ref={textareaRef}
+                        id="dynamic-resize"
+                        className="styled-textarea"
+                        placeholder="Type some text, then change the font size..."
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
+                        minRows={3}
+                        style={{ fontSize: `${fontSize}px` }}
+                    />
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Font size: {fontSize}px | Resize events: {resizeCount}
+                        </Typography>
+                    </Box>
+                    
+                    <Box mt={2}>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => setValue("This is line 1\nThis is line 2\nThis is line 3")}
+                        >
+                            Add Sample Text
+                        </Button>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 5: Comparison with Regular Textarea
+        const ComparisonTest = ({ completeTest }) => {
+            const [autoValue, setAutoValue] = React.useState('');
+            const [regularValue, setRegularValue] = React.useState('');
+            const [comparisonMade, setComparisonMade] = React.useState(false);
+            
+            const sampleText = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6";
+            
+            const fillBoth = () => {
+                setAutoValue(sampleText);
+                setRegularValue(sampleText);
+                setComparisonMade(true);
+                
+                setTimeout(() => {
+                    completeTest(true, 'Comparison complete - autosize textarea adjusts height while regular stays fixed!');
+                }, 500);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Compare TextareaAutosize with regular textarea:
+                    </Typography>
+                    
+                    <Button 
+                        id="fill-comparison"
+                        variant="contained" 
+                        onClick={fillBoth}
+                        sx={{ mb: 2 }}
+                    >
+                        Fill Both with 6 Lines
+                    </Button>
+                    
+                    <div className="comparison-grid">
+                        <Paper elevation={2} sx={{ p: 2 }}>
+                            <Typography variant="subtitle1" gutterBottom color="primary">
+                                TextareaAutosize
+                            </Typography>
+                            <TextareaAutosize
+                                id="autosize-comparison"
+                                className="styled-textarea"
+                                placeholder="This grows automatically..."
+                                value={autoValue}
+                                onChange={(e) => setAutoValue(e.target.value)}
+                                minRows={2}
+                            />
+                            <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
+                                ✓ Height adjusts to content
+                            </Typography>
+                        </Paper>
+                        
+                        <Paper elevation={2} sx={{ p: 2 }}>
+                            <Typography variant="subtitle1" gutterBottom color="secondary">
+                                Regular Textarea
+                            </Typography>
+                            <textarea
+                                id="regular-comparison"
+                                className="styled-textarea"
+                                placeholder="This has fixed height..."
+                                value={regularValue}
+                                onChange={(e) => setRegularValue(e.target.value)}
+                                rows={2}
+                            />
+                            <Typography variant="caption" color="error.main" sx={{ mt: 1, display: 'block' }}>
+                                ✗ Fixed height with scrollbar
+                            </Typography>
+                        </Paper>
+                    </div>
+                    
+                    {comparisonMade && (
+                        <Box mt={2} p={2} bgcolor="info.light" borderRadius={1}>
+                            <Typography variant="body2">
+                                Notice: The autosize textarea expanded to show all content, 
+                                while the regular textarea shows a scrollbar.
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'textarea-autosize',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-autoresize"
+                        testName="Test 1: Basic Auto-resize"
+                        description="Verify textarea automatically grows with content"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicAutoresizeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="min-max-rows"
+                        testName="Test 2: Min/Max Rows"
+                        description="Test minimum and maximum row constraints"
+                        onComplete={handleTestComplete}
+                    >
+                        <MinMaxRowsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="content-types"
+                        testName="Test 3: Different Content Types"
+                        description="Test auto-sizing with various content types"
+                        onComplete={handleTestComplete}
+                    >
+                        <ContentTypesTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="dynamic-resize"
+                        testName="Test 4: Dynamic Resize"
+                        description="Test resizing with style changes"
+                        onComplete={handleTestComplete}
+                    >
+                        <DynamicResizeTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="comparison"
+                        testName="Test 5: Comparison with Regular Textarea"
+                        description="Compare behavior with standard textarea element"
+                        onComplete={handleTestComplete}
+                    >
+                        <ComparisonTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

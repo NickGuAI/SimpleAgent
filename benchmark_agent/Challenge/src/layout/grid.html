@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Grid Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        /* Grid demo styles */
+        .grid-item {
+            background-color: rgba(25, 118, 210, 0.12);
+            border: 1px solid rgba(25, 118, 210, 0.5);
+            padding: 16px;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        .grid-item-clickable {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .grid-item-clickable:hover {
+            background-color: rgba(25, 118, 210, 0.2);
+        }
+        
+        .grid-item-clicked {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Grid</h1>
+            <p>Test the functionality and behavior of the Material UI Grid component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Grid,
+            Box,
+            Button,
+            Typography,
+            Select,
+            MenuItem,
+            FormControl,
+            InputLabel,
+            Slider
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Grid Layout
+        const BasicGridTest = ({ completeTest }) => {
+            const [clickedItems, setClickedItems] = React.useState(new Set());
+            
+            const handleItemClick = (index) => {
+                const newClicked = new Set(clickedItems);
+                newClicked.add(index);
+                setClickedItems(newClicked);
+                
+                if (newClicked.size === 4) {
+                    completeTest(true, 'Grid layout works correctly! All 4 items clicked.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all 4 grid items to test the basic 12-column grid system:
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <div 
+                                className={`grid-item grid-item-clickable ${clickedItems.has(0) ? 'grid-item-clicked' : ''}`}
+                                onClick={() => handleItemClick(0)}
+                            >
+                                <Typography variant="body2">
+                                    xs=12 sm=6 md=3
+                                </Typography>
+                                <Typography variant="caption">
+                                    {clickedItems.has(0) ? '✓' : 'Click me'}
+                                </Typography>
+                            </div>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <div 
+                                className={`grid-item grid-item-clickable ${clickedItems.has(1) ? 'grid-item-clicked' : ''}`}
+                                onClick={() => handleItemClick(1)}
+                            >
+                                <Typography variant="body2">
+                                    xs=12 sm=6 md=3
+                                </Typography>
+                                <Typography variant="caption">
+                                    {clickedItems.has(1) ? '✓' : 'Click me'}
+                                </Typography>
+                            </div>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <div 
+                                className={`grid-item grid-item-clickable ${clickedItems.has(2) ? 'grid-item-clicked' : ''}`}
+                                onClick={() => handleItemClick(2)}
+                            >
+                                <Typography variant="body2">
+                                    xs=12 sm=6 md=3
+                                </Typography>
+                                <Typography variant="caption">
+                                    {clickedItems.has(2) ? '✓' : 'Click me'}
+                                </Typography>
+                            </div>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <div 
+                                className={`grid-item grid-item-clickable ${clickedItems.has(3) ? 'grid-item-clicked' : ''}`}
+                                onClick={() => handleItemClick(3)}
+                            >
+                                <Typography variant="body2">
+                                    xs=12 sm=6 md=3
+                                </Typography>
+                                <Typography variant="caption">
+                                    {clickedItems.has(3) ? '✓' : 'Click me'}
+                                </Typography>
+                            </div>
+                        </Grid>
+                    </Grid>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        On mobile (xs): 1 column, tablet (sm): 2 columns, desktop (md+): 4 columns
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Test 2: Grid Spacing
+        const GridSpacingTest = ({ completeTest }) => {
+            const [spacing, setSpacing] = React.useState(2);
+            const [completed, setCompleted] = React.useState(false);
+            
+            const handleSpacingChange = (event, newValue) => {
+                setSpacing(newValue);
+                if (newValue === 4) {
+                    setCompleted(true);
+                    completeTest(true, 'Grid spacing adjusted successfully! Spacing set to 4.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Adjust the grid spacing to 4 to complete this test:
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography gutterBottom>Spacing: {spacing}</Typography>
+                        <Slider
+                            value={spacing}
+                            onChange={handleSpacingChange}
+                            step={1}
+                            marks
+                            min={0}
+                            max={5}
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                    <Grid container spacing={spacing}>
+                        {[0, 1, 2, 3, 4, 5].map((value) => (
+                            <Grid key={value} item xs={4}>
+                                <div className="grid-item">
+                                    <Typography variant="body2">Item {value + 1}</Typography>
+                                </div>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
+            );
+        };
+        
+        // Test 3: Grid Direction and Alignment
+        const GridDirectionTest = ({ completeTest }) => {
+            const [direction, setDirection] = React.useState('row');
+            const [justifyContent, setJustifyContent] = React.useState('flex-start');
+            const [completed, setCompleted] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (direction === 'column' && justifyContent === 'center') {
+                    setCompleted(true);
+                    completeTest(true, 'Grid direction and alignment set correctly! Column direction with center justification.');
+                }
+            }, [direction, justifyContent]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Set direction to "column" and justifyContent to "center":
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Direction</InputLabel>
+                            <Select
+                                value={direction}
+                                onChange={(e) => setDirection(e.target.value)}
+                                label="Direction"
+                            >
+                                <MenuItem value="row">row</MenuItem>
+                                <MenuItem value="column">column</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Justify</InputLabel>
+                            <Select
+                                value={justifyContent}
+                                onChange={(e) => setJustifyContent(e.target.value)}
+                                label="Justify"
+                            >
+                                <MenuItem value="flex-start">flex-start</MenuItem>
+                                <MenuItem value="center">center</MenuItem>
+                                <MenuItem value="flex-end">flex-end</MenuItem>
+                                <MenuItem value="space-between">space-between</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    <Box sx={{ 
+                        border: '2px dashed rgba(0,0,0,0.2)', 
+                        borderRadius: 1, 
+                        p: 2,
+                        minHeight: direction === 'column' ? 300 : 'auto'
+                    }}>
+                        <Grid 
+                            container 
+                            spacing={2}
+                            direction={direction}
+                            justifyContent={justifyContent}
+                            alignItems="center"
+                        >
+                            <Grid item>
+                                <div className="grid-item">
+                                    <Typography variant="body2">Item 1</Typography>
+                                </div>
+                            </Grid>
+                            <Grid item>
+                                <div className="grid-item">
+                                    <Typography variant="body2">Item 2</Typography>
+                                </div>
+                            </Grid>
+                            <Grid item>
+                                <div className="grid-item">
+                                    <Typography variant="body2">Item 3</Typography>
+                                </div>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 4: Auto Layout
+        const AutoLayoutTest = ({ completeTest }) => {
+            const [autoItems, setAutoItems] = React.useState([1, 2]);
+            const [completed, setCompleted] = React.useState(false);
+            
+            const addItem = () => {
+                const newItems = [...autoItems, autoItems.length + 1];
+                setAutoItems(newItems);
+                
+                if (newItems.length === 5) {
+                    setCompleted(true);
+                    completeTest(true, 'Auto layout works perfectly! Grid items automatically sized.');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Add items until you have 5 to test auto-sizing grid items:
+                    </Typography>
+                    <Button 
+                        variant="contained" 
+                        onClick={addItem}
+                        disabled={completed}
+                        sx={{ mb: 2 }}
+                    >
+                        Add Item ({autoItems.length}/5)
+                    </Button>
+                    <Grid container spacing={2}>
+                        {autoItems.map((item) => (
+                            <Grid key={item} item xs>
+                                <div className="grid-item">
+                                    <Typography variant="body2">
+                                        Auto Item {item}
+                                    </Typography>
+                                    <Typography variant="caption">
+                                        xs="auto"
+                                    </Typography>
+                                </div>
+                            </Grid>
+                        ))}
+                    </Grid>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        Grid items with xs prop automatically share available space equally
+                    </Typography>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'grid',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-layout"
+                        testName="Test 1: Basic Grid Layout"
+                        description="Test the Grid's 12-column responsive layout system"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicGridTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="grid-spacing"
+                        testName="Test 2: Grid Spacing"
+                        description="Test the Grid's spacing prop for gap between items"
+                        onComplete={handleTestComplete}
+                    >
+                        <GridSpacingTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="direction-alignment"
+                        testName="Test 3: Direction and Alignment"
+                        description="Test Grid container's direction and justifyContent props"
+                        onComplete={handleTestComplete}
+                    >
+                        <GridDirectionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="auto-layout"
+                        testName="Test 4: Auto Layout"
+                        description="Test Grid's auto-sizing feature with xs prop"
+                        onComplete={handleTestComplete}
+                    >
+                        <AutoLayoutTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

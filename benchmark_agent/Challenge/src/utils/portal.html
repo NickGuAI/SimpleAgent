@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Portal Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 150px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        #portal-root {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1300;
+        }
+        
+        #custom-portal-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border: 2px solid #1976d2;
+            border-radius: 8px;
+            min-width: 200px;
+            min-height: 100px;
+        }
+        
+        .portal-content {
+            padding: 16px;
+            background-color: #1976d2;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .nested-container {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            background-color: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 16px;
+        }
+        
+        .overflow-box {
+            position: absolute;
+            bottom: -50px;
+            right: 20px;
+            padding: 12px;
+            background-color: #ff5722;
+            color: white;
+            border-radius: 4px;
+        }
+        
+        .notification-portal {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 16px;
+            background-color: #4caf50;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #1976d2;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Portal</h1>
+            <p>Test the functionality and behavior of the Material UI Portal component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <!-- Portal root for basic test -->
+    <div id="portal-root"></div>
+    
+    <!-- Custom portal container -->
+    <div id="custom-portal-container">
+        <Typography variant="caption" style="color: #1976d2;">
+            Custom Portal Container
+        </Typography>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Portal,
+            Box,
+            Button,
+            Typography,
+            Stack,
+            Paper,
+            Alert
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Portal
+        const BasicPortalTest = ({ completeTest }) => {
+            const [showPortal, setShowPortal] = React.useState(false);
+            const [portalRendered, setPortalRendered] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (portalRendered) {
+                    // Check if portal content exists in the portal root
+                    const portalRoot = document.getElementById('portal-root');
+                    if (portalRoot && portalRoot.children.length > 0) {
+                        completeTest(true, 'Portal content rendered outside component tree in portal-root!');
+                    }
+                }
+            }, [portalRendered]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click to render content in a portal (check top-right corner):
+                    </Typography>
+                    
+                    <Button 
+                        id="basic-portal-button"
+                        variant="contained" 
+                        onClick={() => setShowPortal(!showPortal)}
+                    >
+                        {showPortal ? 'Hide' : 'Show'} Portal Content
+                    </Button>
+                    
+                    {showPortal && (
+                        <Portal container={document.getElementById('portal-root')}>
+                            <div 
+                                className="portal-content"
+                                ref={() => setPortalRendered(true)}
+                            >
+                                <Typography variant="h6">Portal Content!</Typography>
+                                <Typography variant="body2">
+                                    I'm rendered outside the component tree
+                                </Typography>
+                            </div>
+                        </Portal>
+                    )}
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Portal is {showPortal ? 'active' : 'inactive'}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 2: Custom Container
+        const CustomContainerTest = ({ completeTest }) => {
+            const [showInCustom, setShowInCustom] = React.useState(false);
+            const [customRendered, setCustomRendered] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (customRendered) {
+                    const customContainer = document.getElementById('custom-portal-container');
+                    const hasPortalContent = customContainer.querySelector('.custom-portal-content');
+                    if (hasPortalContent) {
+                        completeTest(true, 'Portal rendered in custom container successfully!');
+                    }
+                }
+            }, [customRendered]);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Render portal content in custom container (bottom-left):
+                    </Typography>
+                    
+                    <Button 
+                        id="custom-container-button"
+                        variant="contained" 
+                        onClick={() => setShowInCustom(!showInCustom)}
+                        color="secondary"
+                    >
+                        {showInCustom ? 'Remove from' : 'Add to'} Custom Container
+                    </Button>
+                    
+                    {showInCustom && (
+                        <Portal container={document.getElementById('custom-portal-container')}>
+                            <Box 
+                                className="custom-portal-content"
+                                mt={2}
+                                p={2}
+                                bgcolor="white"
+                                borderRadius={1}
+                                ref={() => setCustomRendered(true)}
+                            >
+                                <Typography variant="subtitle1" color="primary">
+                                    Custom Container Content
+                                </Typography>
+                                <Typography variant="body2">
+                                    This is rendered inside the blue container
+                                </Typography>
+                            </Box>
+                        </Portal>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 3: Escape Overflow
+        const EscapeOverflowTest = ({ completeTest }) => {
+            const [showOverflow, setShowOverflow] = React.useState(false);
+            const [escapeSuccess, setEscapeSuccess] = React.useState(false);
+            
+            const handleShowOverflow = () => {
+                setShowOverflow(true);
+                setTimeout(() => {
+                    // Check if element is visible despite parent overflow
+                    const portalContent = document.querySelector('.escaped-content');
+                    if (portalContent) {
+                        const rect = portalContent.getBoundingClientRect();
+                        if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                            setEscapeSuccess(true);
+                            completeTest(true, 'Portal successfully escaped parent overflow constraints!');
+                        }
+                    }
+                }, 100);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Portal can escape parent overflow hidden:
+                    </Typography>
+                    
+                    <div className="nested-container">
+                        <Typography variant="h6">Overflow: Hidden Container</Typography>
+                        <Typography variant="body2" gutterBottom>
+                            Normal content would be clipped below
+                        </Typography>
+                        
+                        <Button 
+                            id="escape-overflow-button"
+                            variant="contained" 
+                            onClick={handleShowOverflow}
+                            sx={{ mt: 2 }}
+                        >
+                            Show Escaping Content
+                        </Button>
+                        
+                        {showOverflow && (
+                            <>
+                                {/* This would be clipped */}
+                                <div className="overflow-box">
+                                    Clipped Content
+                                </div>
+                                
+                                {/* This escapes via Portal */}
+                                <Portal>
+                                    <Box
+                                        className="escaped-content"
+                                        position="fixed"
+                                        bottom={100}
+                                        right={100}
+                                        p={2}
+                                        bgcolor="success.main"
+                                        color="white"
+                                        borderRadius={1}
+                                        boxShadow={3}
+                                    >
+                                        <Typography variant="h6">Escaped!</Typography>
+                                        <Typography variant="body2">
+                                            I'm not clipped by overflow
+                                        </Typography>
+                                    </Box>
+                                </Portal>
+                            </>
+                        )}
+                    </div>
+                    
+                    {escapeSuccess && (
+                        <Box mt={2}>
+                            <Typography variant="body2" color="success.main">
+                                ✓ Content successfully escaped overflow constraints
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+        
+        // Test 4: Multiple Portals
+        const MultiplePortalsTest = ({ completeTest }) => {
+            const [notifications, setNotifications] = React.useState([]);
+            const [portalCount, setPortalCount] = React.useState(0);
+            
+            const addNotification = () => {
+                const id = Date.now();
+                const newNotification = {
+                    id,
+                    message: `Notification #${portalCount + 1}`,
+                    top: 80 + (portalCount * 70)
+                };
+                
+                setNotifications(prev => [...prev, newNotification]);
+                setPortalCount(prev => prev + 1);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== id));
+                }, 3000);
+                
+                if (portalCount >= 2) {
+                    completeTest(true, 'Multiple portals working independently!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Create multiple portal notifications:
+                    </Typography>
+                    
+                    <Button 
+                        id="multiple-portals-button"
+                        variant="contained" 
+                        onClick={addNotification}
+                        color="success"
+                    >
+                        Add Notification ({portalCount}/3)
+                    </Button>
+                    
+                    {notifications.map((notif) => (
+                        <Portal key={notif.id}>
+                            <div 
+                                className="notification-portal"
+                                style={{ top: notif.top }}
+                            >
+                                <Typography variant="h6">{notif.message}</Typography>
+                                <Typography variant="caption">
+                                    Auto-closing in 3s...
+                                </Typography>
+                            </div>
+                        </Portal>
+                    ))}
+                    
+                    <Box mt={2}>
+                        <Typography variant="caption" color="textSecondary">
+                            Active portals: {notifications.length}
+                        </Typography>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Test 5: Disable Portal
+        const DisablePortalTest = ({ completeTest }) => {
+            const [disablePortal, setDisablePortal] = React.useState(false);
+            const [showContent, setShowContent] = React.useState(false);
+            const containerRef = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (showContent && containerRef.current) {
+                    const hasInlineContent = containerRef.current.querySelector('.portal-test-content');
+                    const hasPortalContent = document.querySelector('#portal-root .portal-test-content');
+                    
+                    if (disablePortal && hasInlineContent && !hasPortalContent) {
+                        completeTest(true, 'Portal disabled - content rendered inline as expected!');
+                    }
+                }
+            }, [showContent, disablePortal]);
+            
+            return (
+                <Box ref={containerRef}>
+                    <Typography variant="body2" gutterBottom>
+                        Test disabling portal behavior:
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={2} mb={2}>
+                        <Button 
+                            id="enable-portal-button"
+                            variant={disablePortal ? "outlined" : "contained"}
+                            onClick={() => {
+                                setDisablePortal(false);
+                                setShowContent(true);
+                            }}
+                        >
+                            With Portal
+                        </Button>
+                        
+                        <Button 
+                            id="disable-portal-button"
+                            variant={disablePortal ? "contained" : "outlined"}
+                            onClick={() => {
+                                setDisablePortal(true);
+                                setShowContent(true);
+                            }}
+                            color="secondary"
+                        >
+                            Without Portal (Inline)
+                        </Button>
+                    </Stack>
+                    
+                    {showContent && (
+                        <Portal 
+                            container={document.getElementById('portal-root')}
+                            disablePortal={disablePortal}
+                        >
+                            <Paper 
+                                className="portal-test-content"
+                                elevation={3}
+                                sx={{ p: 2, mt: 2 }}
+                            >
+                                <Typography variant="h6">
+                                    {disablePortal ? 'Inline Content' : 'Portal Content'}
+                                </Typography>
+                                <Typography variant="body2">
+                                    {disablePortal 
+                                        ? 'This is rendered inline within the component'
+                                        : 'This is rendered in the portal root'}
+                                </Typography>
+                            </Paper>
+                        </Portal>
+                    )}
+                    
+                    <Box mt={2}>
+                        <Alert severity="info">
+                            Portal is {disablePortal ? 'disabled' : 'enabled'} - 
+                            content renders {disablePortal ? 'inline' : 'in portal-root'}
+                        </Alert>
+                    </Box>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'portal',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-portal"
+                        testName="Test 1: Basic Portal"
+                        description="Verify content renders outside component tree"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicPortalTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-container"
+                        testName="Test 2: Custom Container"
+                        description="Test rendering in a custom container element"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomContainerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="escape-overflow"
+                        testName="Test 3: Escape Overflow"
+                        description="Test portal escaping parent overflow constraints"
+                        onComplete={handleTestComplete}
+                    >
+                        <EscapeOverflowTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="multiple-portals"
+                        testName="Test 4: Multiple Portals"
+                        description="Test multiple independent portal instances"
+                        onComplete={handleTestComplete}
+                    >
+                        <MultiplePortalsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disable-portal"
+                        testName="Test 5: Disable Portal"
+                        description="Test disabling portal behavior for inline rendering"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisablePortalTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

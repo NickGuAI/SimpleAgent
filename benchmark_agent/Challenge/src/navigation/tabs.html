@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Tabs Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .tab-panel {
+            padding: 24px;
+            min-height: 150px;
+        }
+        
+        .navigation-log {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Tabs</h1>
+            <p>Test the functionality and behavior of the Material UI Tabs component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Tabs,
+            Tab,
+            Box,
+            Typography,
+            Paper,
+            Icon,
+            Badge,
+            AppBar
+        } = window['MaterialUI'];
+        
+        // Custom TabPanel component
+        function TabPanel(props) {
+            const { children, value, index, ...other } = props;
+            
+            return (
+                <div
+                    role="tabpanel"
+                    hidden={value !== index}
+                    id={`tabpanel-${index}`}
+                    aria-labelledby={`tab-${index}`}
+                    {...other}
+                >
+                    {value === index && (
+                        <Box sx={{ p: 3 }}>
+                            {children}
+                        </Box>
+                    )}
+                </div>
+            );
+        }
+        
+        function a11yProps(index) {
+            return {
+                id: `tab-${index}`,
+                'aria-controls': `tabpanel-${index}`,
+            };
+        }
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Tabs
+        const BasicTabsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [visitedTabs, setVisitedTabs] = React.useState(new Set([0]));
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newVisited = new Set(visitedTabs);
+                newVisited.add(newValue);
+                setVisitedTabs(newVisited);
+                
+                if (newVisited.size >= 3) {
+                    completeTest(true, 'Basic tabs navigation working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Click on all three tabs to complete the test:
+                    </Typography>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs id="basic-tabs" value={value} onChange={handleChange} aria-label="basic tabs example">
+                            <Tab label="Item One" {...a11yProps(0)} id="tab-one" />
+                            <Tab label="Item Two" {...a11yProps(1)} id="tab-two" />
+                            <Tab label="Item Three" {...a11yProps(2)} id="tab-three" />
+                        </Tabs>
+                    </Box>
+                    <TabPanel value={value} index={0}>
+                        <Typography>Content for Tab One</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            This is the first tab panel content.
+                        </Typography>
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        <Typography>Content for Tab Two</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            This is the second tab panel content.
+                        </Typography>
+                    </TabPanel>
+                    <TabPanel value={value} index={2}>
+                        <Typography>Content for Tab Three</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            This is the third tab panel content.
+                        </Typography>
+                    </TabPanel>
+                    <div className="navigation-log">
+                        Visited Tabs: {Array.from(visitedTabs).map(i => i + 1).join(', ')}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Icon Tabs
+        const IconTabsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount >= 5) {
+                    completeTest(true, 'Icon tabs working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Click on tabs at least 5 times (icons with labels):
+                    </Typography>
+                    <Paper sx={{ width: '100%' }}>
+                        <Tabs
+                            id="icon-tabs"
+                            value={value}
+                            onChange={handleChange}
+                            aria-label="icon tabs example"
+                            centered
+                        >
+                            <Tab 
+                                icon={<Icon>phone</Icon>} 
+                                label="PHONE" 
+                                id="icon-tab-phone"
+                            />
+                            <Tab 
+                                icon={<Icon>favorite</Icon>} 
+                                label="FAVORITES" 
+                                id="icon-tab-favorites"
+                            />
+                            <Tab 
+                                icon={<Icon>person_pin</Icon>} 
+                                label="NEARBY" 
+                                id="icon-tab-nearby"
+                            />
+                        </Tabs>
+                        <div className="tab-content">
+                            {value === 0 && <Typography>Phone content</Typography>}
+                            {value === 1 && <Typography>Favorites content</Typography>}
+                            {value === 2 && <Typography>Nearby content</Typography>}
+                        </div>
+                    </Paper>
+                    <div className="navigation-log">
+                        Click Count: {clickCount}/5
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Scrollable Tabs
+        const ScrollableTabsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [visitedTabs, setVisitedTabs] = React.useState(new Set([0]));
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newVisited = new Set(visitedTabs);
+                newVisited.add(newValue);
+                setVisitedTabs(newVisited);
+                
+                if (newVisited.size >= 6) {
+                    completeTest(true, 'Scrollable tabs navigation working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate to at least 6 different tabs (use scroll buttons if needed):
+                    </Typography>
+                    <Box sx={{ bgcolor: 'background.paper' }}>
+                        <Tabs
+                            id="scrollable-tabs"
+                            value={value}
+                            onChange={handleChange}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                            aria-label="scrollable auto tabs example"
+                        >
+                            <Tab label="Tab One" id="scroll-tab-1" />
+                            <Tab label="Tab Two" id="scroll-tab-2" />
+                            <Tab label="Tab Three" id="scroll-tab-3" />
+                            <Tab label="Tab Four" id="scroll-tab-4" />
+                            <Tab label="Tab Five" id="scroll-tab-5" />
+                            <Tab label="Tab Six" id="scroll-tab-6" />
+                            <Tab label="Tab Seven" id="scroll-tab-7" />
+                            <Tab label="Tab Eight" id="scroll-tab-8" />
+                        </Tabs>
+                        <div className="tab-content">
+                            <Typography>Content for Tab {value + 1}</Typography>
+                        </div>
+                    </Box>
+                    <div className="navigation-log">
+                        Visited Tabs: {visitedTabs.size}/6 required
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Vertical Tabs
+        const VerticalTabsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [interactions, setInteractions] = React.useState([]);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                const newInteractions = [...interactions, newValue];
+                setInteractions(newInteractions);
+                
+                // Check if user has navigated up and down
+                const hasNavigatedDown = newInteractions.some((v, i) => 
+                    i > 0 && v > newInteractions[i - 1]
+                );
+                const hasNavigatedUp = newInteractions.some((v, i) => 
+                    i > 0 && v < newInteractions[i - 1]
+                );
+                
+                if (hasNavigatedDown && hasNavigatedUp && newInteractions.length >= 5) {
+                    completeTest(true, 'Vertical tabs navigation working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Navigate up and down through vertical tabs (at least 5 clicks):
+                    </Typography>
+                    <Box
+                        sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 224 }}
+                    >
+                        <Tabs
+                            id="vertical-tabs"
+                            orientation="vertical"
+                            variant="scrollable"
+                            value={value}
+                            onChange={handleChange}
+                            aria-label="Vertical tabs example"
+                            sx={{ borderRight: 1, borderColor: 'divider' }}
+                        >
+                            <Tab label="Dashboard" id="v-tab-1" />
+                            <Tab label="Profile" id="v-tab-2" />
+                            <Tab label="Settings" id="v-tab-3" />
+                            <Tab label="Messages" id="v-tab-4" />
+                            <Tab label="Reports" id="v-tab-5" />
+                        </Tabs>
+                        <TabPanel value={value} index={0} style={{ flex: 1 }}>
+                            <Typography>Dashboard Content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={1} style={{ flex: 1 }}>
+                            <Typography>Profile Content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={2} style={{ flex: 1 }}>
+                            <Typography>Settings Content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={3} style={{ flex: 1 }}>
+                            <Typography>Messages Content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={4} style={{ flex: 1 }}>
+                            <Typography>Reports Content</Typography>
+                        </TabPanel>
+                    </Box>
+                    <div className="navigation-log">
+                        Navigation Count: {interactions.length}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Colored Tabs
+        const ColoredTabsTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [colorChanges, setColorChanges] = React.useState(0);
+            const [lastValue, setLastValue] = React.useState(0);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                if (newValue !== lastValue) {
+                    setColorChanges(colorChanges + 1);
+                    setLastValue(newValue);
+                }
+                
+                if (colorChanges >= 4) {
+                    completeTest(true, 'Colored tabs with different variants working correctly!');
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Switch between colored tabs at least 5 times:
+                    </Typography>
+                    <Box sx={{ bgcolor: 'background.paper' }}>
+                        <AppBar position="static">
+                            <Tabs
+                                id="colored-tabs"
+                                value={value}
+                                onChange={handleChange}
+                                indicatorColor="secondary"
+                                textColor="inherit"
+                                variant="fullWidth"
+                                aria-label="full width tabs example"
+                            >
+                                <Tab label="Primary" id="color-tab-1" />
+                                <Tab label="Secondary" id="color-tab-2" />
+                                <Tab label="Success" id="color-tab-3" />
+                            </Tabs>
+                        </AppBar>
+                        <TabPanel value={value} index={0}>
+                            <Typography>Primary themed content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={1}>
+                            <Typography>Secondary themed content</Typography>
+                        </TabPanel>
+                        <TabPanel value={value} index={2}>
+                            <Typography>Success themed content</Typography>
+                        </TabPanel>
+                    </Box>
+                    <div className="navigation-log">
+                        Color Changes: {colorChanges}/4 required
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Disabled Tab
+        const DisabledTabTest = ({ completeTest }) => {
+            const [value, setValue] = React.useState(0);
+            const [enabledClicks, setEnabledClicks] = React.useState(0);
+            const [attemptedDisabled, setAttemptedDisabled] = React.useState(false);
+            
+            const handleChange = (event, newValue) => {
+                setValue(newValue);
+                setEnabledClicks(enabledClicks + 1);
+                
+                if (enabledClicks >= 2 && attemptedDisabled) {
+                    completeTest(true, 'Disabled tab behavior working correctly!');
+                }
+            };
+            
+            const handleTabClick = (tabIndex) => {
+                if (tabIndex === 1) {
+                    setAttemptedDisabled(true);
+                }
+            };
+            
+            return (
+                <Box sx={{ width: '100%' }}>
+                    <Typography variant="body2" gutterBottom>
+                        Try clicking the disabled tab, then click other tabs:
+                    </Typography>
+                    <Paper square>
+                        <Tabs
+                            id="disabled-tabs"
+                            value={value}
+                            onChange={handleChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            variant="fullWidth"
+                            aria-label="disabled tabs example"
+                        >
+                            <Tab 
+                                label="Active Tab One" 
+                                id="enabled-tab-1"
+                                onClick={() => handleTabClick(0)}
+                            />
+                            <Tab 
+                                label="Disabled Tab" 
+                                disabled 
+                                id="disabled-tab"
+                                onClick={() => handleTabClick(1)}
+                            />
+                            <Tab 
+                                label="Active Tab Three" 
+                                id="enabled-tab-3"
+                                onClick={() => handleTabClick(2)}
+                            />
+                        </Tabs>
+                        <div className="tab-content">
+                            <Typography>
+                                {value === 0 && "First tab content"}
+                                {value === 2 && "Third tab content"}
+                            </Typography>
+                        </div>
+                    </Paper>
+                    <div className="navigation-log">
+                        Enabled Clicks: {enabledClicks} | Attempted Disabled: {attemptedDisabled ? 'Yes' : 'No'}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'tabs',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-tabs"
+                        testName="Test 1: Basic Tabs"
+                        description="Test basic tab navigation functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicTabsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-tabs"
+                        testName="Test 2: Icon Tabs"
+                        description="Test tabs with icons and labels"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconTabsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="scrollable-tabs"
+                        testName="Test 3: Scrollable Tabs"
+                        description="Test scrollable tabs with many items"
+                        onComplete={handleTestComplete}
+                    >
+                        <ScrollableTabsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="vertical-tabs"
+                        testName="Test 4: Vertical Tabs"
+                        description="Test vertical tab orientation"
+                        onComplete={handleTestComplete}
+                    >
+                        <VerticalTabsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="colored-tabs"
+                        testName="Test 5: Colored Tabs"
+                        description="Test tabs with custom colors"
+                        onComplete={handleTestComplete}
+                    >
+                        <ColoredTabsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="disabled-tab"
+                        testName="Test 6: Disabled Tab"
+                        description="Test disabled tab behavior"
+                        onComplete={handleTestComplete}
+                    >
+                        <DisabledTabTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

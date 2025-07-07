@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Menu Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 120px;
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .menu-display {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .selection-log {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Menu</h1>
+            <p>Test the functionality and behavior of the Material UI Menu component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Menu,
+            MenuItem,
+            Button,
+            IconButton,
+            ListItemIcon,
+            ListItemText,
+            Divider,
+            Typography,
+            Box,
+            Stack,
+            Icon,
+            Avatar,
+            Tooltip
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Menu
+        const BasicMenuTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [selectedItems, setSelectedItems] = React.useState([]);
+            const open = Boolean(anchorEl);
+            
+            const handleClick = (event) => {
+                setAnchorEl(event.currentTarget);
+            };
+            
+            const handleClose = () => {
+                setAnchorEl(null);
+            };
+            
+            const handleMenuItemClick = (item) => {
+                const newSelected = [...selectedItems, item];
+                setSelectedItems(newSelected);
+                handleClose();
+                
+                if (newSelected.length >= 3) {
+                    completeTest(true, 'Basic menu selection working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open the menu and select at least 3 different items:
+                    </Typography>
+                    <Button
+                        id="basic-menu-button"
+                        variant="contained"
+                        onClick={handleClick}
+                        aria-controls={open ? 'basic-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
+                    >
+                        Open Menu
+                    </Button>
+                    <Menu
+                        id="basic-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                        MenuListProps={{
+                            'aria-labelledby': 'basic-menu-button',
+                        }}
+                    >
+                        <MenuItem id="menu-item-profile" onClick={() => handleMenuItemClick('Profile')}>
+                            Profile
+                        </MenuItem>
+                        <MenuItem id="menu-item-account" onClick={() => handleMenuItemClick('My account')}>
+                            My account
+                        </MenuItem>
+                        <MenuItem id="menu-item-logout" onClick={() => handleMenuItemClick('Logout')}>
+                            Logout
+                        </MenuItem>
+                        <MenuItem id="menu-item-settings" onClick={() => handleMenuItemClick('Settings')}>
+                            Settings
+                        </MenuItem>
+                    </Menu>
+                    <div className="menu-display">
+                        Selected Items: {selectedItems.length}
+                        <div className="selection-log">
+                            {selectedItems.join(' → ') || 'No selections yet'}
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Icon Menu
+        const IconMenuTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [actions, setActions] = React.useState([]);
+            const open = Boolean(anchorEl);
+            
+            const handleClick = (event) => {
+                setAnchorEl(event.currentTarget);
+                setActions([...actions, 'opened']);
+            };
+            
+            const handleClose = () => {
+                setAnchorEl(null);
+                const newActions = [...actions, 'closed'];
+                setActions(newActions);
+                
+                // Check if user has opened and selected items
+                if (newActions.filter(a => a === 'opened').length >= 2 && 
+                    newActions.filter(a => a.startsWith('selected')).length >= 2) {
+                    completeTest(true, 'Icon menu interactions completed successfully!');
+                }
+            };
+            
+            const handleMenuItemClick = (action) => {
+                const newActions = [...actions, `selected-${action}`];
+                setActions(newActions);
+                handleClose();
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the icon button to open menu, select items (open at least 2 times):
+                    </Typography>
+                    <IconButton
+                        id="icon-menu-button"
+                        aria-label="more"
+                        aria-controls={open ? 'icon-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
+                        onClick={handleClick}
+                    >
+                        <Icon>more_vert</Icon>
+                    </IconButton>
+                    <Menu
+                        id="icon-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <MenuItem id="menu-icon-cut" onClick={() => handleMenuItemClick('cut')}>
+                            <ListItemIcon>
+                                <Icon fontSize="small">content_cut</Icon>
+                            </ListItemIcon>
+                            <ListItemText>Cut</ListItemText>
+                        </MenuItem>
+                        <MenuItem id="menu-icon-copy" onClick={() => handleMenuItemClick('copy')}>
+                            <ListItemIcon>
+                                <Icon fontSize="small">content_copy</Icon>
+                            </ListItemIcon>
+                            <ListItemText>Copy</ListItemText>
+                        </MenuItem>
+                        <MenuItem id="menu-icon-paste" onClick={() => handleMenuItemClick('paste')}>
+                            <ListItemIcon>
+                                <Icon fontSize="small">content_paste</Icon>
+                            </ListItemIcon>
+                            <ListItemText>Paste</ListItemText>
+                        </MenuItem>
+                    </Menu>
+                    <div className="menu-display">
+                        Actions: {actions.filter(a => a === 'opened').length} opens, 
+                        {actions.filter(a => a.startsWith('selected')).length} selections
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Menu with Dividers
+        const DividerMenuTest = ({ completeTest }) => {
+            const [anchorEl, setAnchorEl] = React.useState(null);
+            const [selectedSections, setSelectedSections] = React.useState(new Set());
+            const open = Boolean(anchorEl);
+            
+            const handleClick = (event) => {
+                setAnchorEl(event.currentTarget);
+            };
+            
+            const handleClose = () => {
+                setAnchorEl(null);
+            };
+            
+            const handleMenuItemClick = (section) => {
+                const newSections = new Set(selectedSections);
+                newSections.add(section);
+                setSelectedSections(newSections);
+                handleClose();
+                
+                if (newSections.size >= 3) {
+                    completeTest(true, 'Menu sections with dividers working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Select items from at least 3 different sections:
+                    </Typography>
+                    <Button
+                        id="divider-menu-button"
+                        variant="outlined"
+                        onClick={handleClick}
+                    >
+                        File Menu
+                    </Button>
+                    <Menu
+                        id="divider-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <MenuItem id="menu-new" onClick={() => handleMenuItemClick('file-ops')}>
+                            New File
+                        </MenuItem>
+                        <MenuItem id="menu-open" onClick={() => handleMenuItemClick('file-ops')}>
+                            Open File
+                        </MenuItem>
+                        <Divider />
+                        <MenuItem id="menu-save" onClick={() => handleMenuItemClick('save-ops')}>
+                            Save
+                        </MenuItem>
+                        <MenuItem id="menu-save-as" onClick={() => handleMenuItemClick('save-ops')}>
+                            Save As...
+                        </MenuItem>
+                        <Divider />
+                        <MenuItem id="menu-print" onClick={() => handleMenuItemClick('print-ops')}>
+                            Print
+                        </MenuItem>
+                        <MenuItem id="menu-export" onClick={() => handleMenuItemClick('export-ops')}>
+                            Export PDF
+                        </MenuItem>
+                    </Menu>
+                    <div className="menu-display">
+                        Sections Selected: {selectedSections.size}/3
+                        <div className="selection-log">
+                            {Array.from(selectedSections).join(', ') || 'No selections yet'}
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Context Menu
+        const ContextMenuTest = ({ completeTest }) => {
+            const [contextMenu, setContextMenu] = React.useState(null);
+            const [rightClicks, setRightClicks] = React.useState(0);
+            const [selections, setSelections] = React.useState([]);
+            
+            const handleContextMenu = (event) => {
+                event.preventDefault();
+                setRightClicks(rightClicks + 1);
+                setContextMenu(
+                    contextMenu === null
+                        ? {
+                              mouseX: event.clientX + 2,
+                              mouseY: event.clientY - 6,
+                          }
+                        : null,
+                );
+            };
+            
+            const handleClose = () => {
+                setContextMenu(null);
+            };
+            
+            const handleMenuItemClick = (action) => {
+                const newSelections = [...selections, action];
+                setSelections(newSelections);
+                handleClose();
+                
+                if (rightClicks >= 2 && newSelections.length >= 2) {
+                    completeTest(true, 'Context menu working correctly!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Right-click in the area below at least 2 times and select 2 items:
+                    </Typography>
+                    <Box
+                        id="context-menu-area"
+                        onContextMenu={handleContextMenu}
+                        sx={{
+                            backgroundColor: '#f5f5f5',
+                            border: '2px dashed #ccc',
+                            borderRadius: 1,
+                            p: 4,
+                            textAlign: 'center',
+                            cursor: 'context-menu',
+                            minHeight: 100,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <Typography color="text.secondary">
+                            Right-click anywhere in this area
+                        </Typography>
+                    </Box>
+                    <Menu
+                        id="context-menu"
+                        open={contextMenu !== null}
+                        onClose={handleClose}
+                        anchorReference="anchorPosition"
+                        anchorPosition={
+                            contextMenu !== null
+                                ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+                                : undefined
+                        }
+                    >
+                        <MenuItem id="context-copy" onClick={() => handleMenuItemClick('Copy')}>
+                            Copy
+                        </MenuItem>
+                        <MenuItem id="context-paste" onClick={() => handleMenuItemClick('Paste')}>
+                            Paste
+                        </MenuItem>
+                        <MenuItem id="context-delete" onClick={() => handleMenuItemClick('Delete')}>
+                            Delete
+                        </MenuItem>
+                    </Menu>
+                    <div className="menu-display">
+                        Right-clicks: {rightClicks} | Selections: {selections.length}
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 5: Menu Positioning
+        const MenuPositioningTest = ({ completeTest }) => {
+            const [anchorEls, setAnchorEls] = React.useState({});
+            const [clickedPositions, setClickedPositions] = React.useState(new Set());
+            
+            const positions = [
+                { key: 'top-start', vertical: 'top', horizontal: 'left' },
+                { key: 'top-end', vertical: 'top', horizontal: 'right' },
+                { key: 'bottom-start', vertical: 'bottom', horizontal: 'left' },
+                { key: 'bottom-end', vertical: 'bottom', horizontal: 'right' },
+            ];
+            
+            const handleClick = (event, position) => {
+                setAnchorEls({ ...anchorEls, [position.key]: event.currentTarget });
+            };
+            
+            const handleClose = (position) => {
+                setAnchorEls({ ...anchorEls, [position.key]: null });
+            };
+            
+            const handleMenuItemClick = (position) => {
+                const newClicked = new Set(clickedPositions);
+                newClicked.add(position.key);
+                setClickedPositions(newClicked);
+                handleClose(position);
+                
+                if (newClicked.size >= 3) {
+                    completeTest(true, 'Menu positioning tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open menus from at least 3 different positions:
+                    </Typography>
+                    <div className="button-row">
+                        {positions.map((position) => (
+                            <React.Fragment key={position.key}>
+                                <Button
+                                    id={`position-${position.key}`}
+                                    variant={clickedPositions.has(position.key) ? "contained" : "outlined"}
+                                    color={clickedPositions.has(position.key) ? "success" : "primary"}
+                                    onClick={(e) => handleClick(e, position)}
+                                    size="small"
+                                >
+                                    {position.key} {clickedPositions.has(position.key) && '✓'}
+                                </Button>
+                                <Menu
+                                    id={`menu-${position.key}`}
+                                    anchorEl={anchorEls[position.key]}
+                                    open={Boolean(anchorEls[position.key])}
+                                    onClose={() => handleClose(position)}
+                                    anchorOrigin={{
+                                        vertical: position.vertical,
+                                        horizontal: position.horizontal,
+                                    }}
+                                    transformOrigin={{
+                                        vertical: position.vertical === 'top' ? 'bottom' : 'top',
+                                        horizontal: position.horizontal,
+                                    }}
+                                >
+                                    <MenuItem onClick={() => handleMenuItemClick(position)}>
+                                        Option 1
+                                    </MenuItem>
+                                    <MenuItem onClick={() => handleMenuItemClick(position)}>
+                                        Option 2
+                                    </MenuItem>
+                                </Menu>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                    <div className="menu-display">
+                        Positions Tested: {clickedPositions.size}/3 required
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'menu',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-menu"
+                        testName="Test 1: Basic Menu"
+                        description="Test basic menu opening and item selection"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicMenuTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="icon-menu"
+                        testName="Test 2: Icon Menu"
+                        description="Test menu with icons and icon button trigger"
+                        onComplete={handleTestComplete}
+                    >
+                        <IconMenuTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="divider-menu"
+                        testName="Test 3: Menu with Dividers"
+                        description="Test menu sections separated by dividers"
+                        onComplete={handleTestComplete}
+                    >
+                        <DividerMenuTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="context-menu"
+                        testName="Test 4: Context Menu"
+                        description="Test right-click context menu"
+                        onComplete={handleTestComplete}
+                    >
+                        <ContextMenuTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="menu-positioning"
+                        testName="Test 5: Menu Positioning"
+                        description="Test different menu anchor positions"
+                        onComplete={handleTestComplete}
+                    >
+                        <MenuPositioningTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

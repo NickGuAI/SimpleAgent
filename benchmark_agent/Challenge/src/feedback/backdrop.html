@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Backdrop Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .status-info {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Backdrop</h1>
+            <p>Test the functionality and behavior of the Material UI Backdrop component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Backdrop,
+            Box,
+            Button,
+            Typography,
+            CircularProgress,
+            Stack,
+            Fade,
+            Paper,
+            IconButton
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Backdrop
+        const BasicBackdropTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [clickCount, setClickCount] = React.useState(0);
+            
+            const handleClose = () => {
+                setOpen(false);
+                const newCount = clickCount + 1;
+                setClickCount(newCount);
+                
+                if (newCount >= 3) {
+                    completeTest(true, 'Basic backdrop open/close tested successfully!');
+                }
+            };
+            
+            const handleToggle = () => {
+                setOpen(!open);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open and close the backdrop 3 times by clicking on it:
+                    </Typography>
+                    <Button 
+                        id="basic-backdrop-button"
+                        variant="contained" 
+                        onClick={handleToggle}
+                    >
+                        Show Backdrop ({clickCount}/3)
+                    </Button>
+                    <Backdrop
+                        id="basic-backdrop"
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={open}
+                        onClick={handleClose}
+                    >
+                        <Typography variant="h6">Click anywhere to close</Typography>
+                    </Backdrop>
+                </Box>
+            );
+        };
+        
+        // Test 2: Backdrop with Spinner
+        const SpinnerBackdropTest = ({ completeTest }) => {
+            const [loading, setLoading] = React.useState(false);
+            const [loadingCycles, setLoadingCycles] = React.useState(0);
+            
+            const handleButtonClick = () => {
+                setLoading(true);
+                
+                // Simulate loading
+                setTimeout(() => {
+                    setLoading(false);
+                    const newCycles = loadingCycles + 1;
+                    setLoadingCycles(newCycles);
+                    
+                    if (newCycles >= 2) {
+                        completeTest(true, 'Backdrop with spinner tested successfully!');
+                    }
+                }, 2000);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the button to show loading backdrop (2 times):
+                    </Typography>
+                    <Button 
+                        id="spinner-backdrop-button"
+                        variant="contained" 
+                        onClick={handleButtonClick}
+                        disabled={loading}
+                    >
+                        {loading ? 'Loading...' : `Start Loading (${loadingCycles}/2)`}
+                    </Button>
+                    <Backdrop
+                        id="spinner-backdrop"
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={loading}
+                    >
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
+                </Box>
+            );
+        };
+        
+        // Test 3: Backdrop Transition
+        const TransitionBackdropTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [transitionCount, setTransitionCount] = React.useState(0);
+            
+            const handleToggle = () => {
+                setOpen(!open);
+                
+                if (!open) {
+                    // Count when opening
+                    const newCount = transitionCount + 1;
+                    setTransitionCount(newCount);
+                    
+                    if (newCount >= 3) {
+                        completeTest(true, 'Backdrop transitions tested successfully!');
+                    }
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Toggle the backdrop 3 times to test the fade transition:
+                    </Typography>
+                    <Button 
+                        id="transition-backdrop-button"
+                        variant="contained" 
+                        onClick={handleToggle}
+                    >
+                        {open ? 'Hide' : 'Show'} Backdrop ({transitionCount}/3)
+                    </Button>
+                    <Backdrop
+                        id="transition-backdrop"
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={open}
+                        onClick={handleToggle}
+                        TransitionComponent={Fade}
+                        transitionDuration={600}
+                    >
+                        <Paper sx={{ p: 3, bgcolor: 'primary.main', color: 'white' }}>
+                            <Typography>Backdrop with fade transition</Typography>
+                        </Paper>
+                    </Backdrop>
+                </Box>
+            );
+        };
+        
+        // Test 4: Invisible Backdrop
+        const InvisibleBackdropTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [clickedBackdrop, setClickedBackdrop] = React.useState(false);
+            const [clickedButton, setClickedButton] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (clickedBackdrop && clickedButton) {
+                    completeTest(true, 'Invisible backdrop tested successfully!');
+                }
+            }, [clickedBackdrop, clickedButton]);
+            
+            const handleBackdropClick = () => {
+                setClickedBackdrop(true);
+                setOpen(false);
+            };
+            
+            const handleButtonClick = () => {
+                if (open) {
+                    setClickedButton(true);
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Open invisible backdrop and try clicking both buttons:
+                    </Typography>
+                    <div className="button-group">
+                        <Button 
+                            id="show-invisible-backdrop"
+                            variant="contained" 
+                            onClick={() => setOpen(true)}
+                        >
+                            Show Invisible Backdrop
+                        </Button>
+                        <Button 
+                            id="test-click-button"
+                            variant="outlined"
+                            onClick={handleButtonClick}
+                            disabled={!open}
+                        >
+                            {open ? 'Try to Click Me' : 'Backdrop Not Open'}
+                        </Button>
+                    </div>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Backdrop clicked: {clickedBackdrop ? '✓' : '✗'}<br/>
+                            Button clicked while backdrop open: {clickedButton ? '✓' : '✗'}
+                        </Typography>
+                    </div>
+                    <Backdrop
+                        id="invisible-backdrop"
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={open}
+                        invisible
+                        onClick={handleBackdropClick}
+                    />
+                </Box>
+            );
+        };
+        
+        // Test 5: Backdrop with Content
+        const ContentBackdropTest = ({ completeTest }) => {
+            const [open, setOpen] = React.useState(false);
+            const [contentClicked, setContentClicked] = React.useState(false);
+            const [backdropClicked, setBackdropClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                if (contentClicked && backdropClicked) {
+                    completeTest(true, 'Backdrop with content interaction tested successfully!');
+                }
+            }, [contentClicked, backdropClicked]);
+            
+            const handleBackdropClick = (event) => {
+                // Check if click was on backdrop itself, not content
+                if (event.target === event.currentTarget) {
+                    setBackdropClicked(true);
+                    setOpen(false);
+                }
+            };
+            
+            const handleContentClick = (event) => {
+                event.stopPropagation();
+                setContentClicked(true);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both the content box and the backdrop area:
+                    </Typography>
+                    <Button 
+                        id="content-backdrop-button"
+                        variant="contained" 
+                        onClick={() => setOpen(true)}
+                    >
+                        Show Backdrop with Content
+                    </Button>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Content clicked: {contentClicked ? '✓' : '✗'}<br/>
+                            Backdrop area clicked: {backdropClicked ? '✓' : '✗'}
+                        </Typography>
+                    </div>
+                    <Backdrop
+                        id="content-backdrop"
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={open}
+                        onClick={handleBackdropClick}
+                    >
+                        <Paper 
+                            id="backdrop-content"
+                            sx={{ 
+                                p: 4, 
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 2
+                            }}
+                            onClick={handleContentClick}
+                        >
+                            <Typography variant="h6">Click this content box</Typography>
+                            <Typography variant="body2">Then click outside to close</Typography>
+                            <CircularProgress />
+                        </Paper>
+                    </Backdrop>
+                </Box>
+            );
+        };
+        
+        // Test 6: Backdrop Z-Index
+        const ZIndexBackdropTest = ({ completeTest }) => {
+            const [backdrop1Open, setBackdrop1Open] = React.useState(false);
+            const [backdrop2Open, setBackdrop2Open] = React.useState(false);
+            const [sequence, setSequence] = React.useState([]);
+            
+            const handleBackdrop1Click = () => {
+                setSequence(prev => [...prev, 'backdrop1']);
+                setBackdrop1Open(false);
+                
+                if (sequence.length >= 3) {
+                    completeTest(true, 'Backdrop z-index layering tested successfully!');
+                }
+            };
+            
+            const handleBackdrop2Click = () => {
+                setSequence(prev => [...prev, 'backdrop2']);
+                setBackdrop2Open(false);
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test backdrop layering by opening both and clicking them:
+                    </Typography>
+                    <div className="button-group">
+                        <Button 
+                            id="zindex-backdrop1-button"
+                            variant="contained" 
+                            onClick={() => setBackdrop1Open(true)}
+                        >
+                            Open Backdrop 1
+                        </Button>
+                        <Button 
+                            id="zindex-backdrop2-button"
+                            variant="contained" 
+                            color="secondary"
+                            onClick={() => setBackdrop2Open(true)}
+                        >
+                            Open Backdrop 2
+                        </Button>
+                    </div>
+                    <div className="status-info">
+                        <Typography variant="body2">
+                            Click sequence: {sequence.join(' → ') || 'None yet'}
+                        </Typography>
+                    </div>
+                    <Backdrop
+                        id="zindex-backdrop1"
+                        sx={{ 
+                            color: '#fff', 
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                            backgroundColor: 'rgba(33, 150, 243, 0.5)'
+                        }}
+                        open={backdrop1Open}
+                        onClick={handleBackdrop1Click}
+                    >
+                        <Typography variant="h5">Backdrop 1 (Lower Z-Index)</Typography>
+                    </Backdrop>
+                    <Backdrop
+                        id="zindex-backdrop2"
+                        sx={{ 
+                            color: '#fff', 
+                            zIndex: (theme) => theme.zIndex.drawer + 2,
+                            backgroundColor: 'rgba(156, 39, 176, 0.5)'
+                        }}
+                        open={backdrop2Open}
+                        onClick={handleBackdrop2Click}
+                    >
+                        <Typography variant="h5">Backdrop 2 (Higher Z-Index)</Typography>
+                    </Backdrop>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'backdrop',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic"
+                        testName="Test 1: Basic Backdrop"
+                        description="Test opening and closing a basic backdrop"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicBackdropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="spinner"
+                        testName="Test 2: Backdrop with Spinner"
+                        description="Test backdrop with loading spinner"
+                        onComplete={handleTestComplete}
+                    >
+                        <SpinnerBackdropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="transition"
+                        testName="Test 3: Backdrop Transition"
+                        description="Test backdrop with custom transition"
+                        onComplete={handleTestComplete}
+                    >
+                        <TransitionBackdropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="invisible"
+                        testName="Test 4: Invisible Backdrop"
+                        description="Test invisible backdrop that blocks interactions"
+                        onComplete={handleTestComplete}
+                    >
+                        <InvisibleBackdropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="content"
+                        testName="Test 5: Backdrop with Content"
+                        description="Test backdrop with interactive content"
+                        onComplete={handleTestComplete}
+                    >
+                        <ContentBackdropTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="zindex"
+                        testName="Test 6: Backdrop Z-Index"
+                        description="Test multiple backdrops with different z-index values"
+                        onComplete={handleTestComplete}
+                    >
+                        <ZIndexBackdropTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Paper Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .paper-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .elevation-info {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .variant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Paper</h1>
+            <p>Test the functionality and behavior of the Material UI Paper component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Paper,
+            Typography,
+            Box,
+            Button,
+            IconButton,
+            Stack
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Paper Click
+        const BasicPaperTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Paper component clicked successfully!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the Paper component below:
+                    </Typography>
+                    <Paper 
+                        id="basic-paper"
+                        sx={{ 
+                            p: 3, 
+                            cursor: 'pointer',
+                            backgroundColor: clicked ? 'success.light' : 'background.paper',
+                            transition: 'background-color 0.3s'
+                        }}
+                        onClick={handleClick}
+                    >
+                        <Typography variant="h6">
+                            Basic Paper Component
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Click anywhere on this paper surface to complete the test.
+                            {clicked && ' ✓ Clicked!'}
+                        </Typography>
+                    </Paper>
+                </Box>
+            );
+        };
+        
+        // Test 2: Paper Elevations
+        const PaperElevationsTest = ({ completeTest }) => {
+            const [clickedElevations, setClickedElevations] = React.useState(new Set());
+            const elevations = [0, 1, 2, 3, 4, 8, 12, 16, 24];
+            
+            const handleElevationClick = (elevation) => {
+                const newClicked = new Set(clickedElevations);
+                newClicked.add(elevation);
+                setClickedElevations(newClicked);
+                
+                if (newClicked.size === elevations.length) {
+                    completeTest(true, 'All elevation levels tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all Paper components with different elevations:
+                    </Typography>
+                    <div className="paper-grid">
+                        {elevations.map((elevation) => (
+                            <Paper
+                                key={elevation}
+                                id={`paper-elevation-${elevation}`}
+                                elevation={elevation}
+                                sx={{ 
+                                    p: 2, 
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedElevations.has(elevation) ? 'success.light' : 'background.paper',
+                                    textAlign: 'center'
+                                }}
+                                onClick={() => handleElevationClick(elevation)}
+                            >
+                                <Typography variant="body2">
+                                    Elevation {elevation}
+                                </Typography>
+                                {clickedElevations.has(elevation) && <Typography>✓</Typography>}
+                            </Paper>
+                        ))}
+                    </div>
+                    <div className="elevation-info">
+                        <div>Elevations clicked: {clickedElevations.size} / {elevations.length}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 3: Paper Variants
+        const PaperVariantsTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['elevation', 'outlined'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All Paper variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click both Paper variants:
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {variants.map((variant) => (
+                            <Paper
+                                key={variant}
+                                id={`paper-variant-${variant}`}
+                                variant={variant}
+                                sx={{ 
+                                    p: 3, 
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedVariants.has(variant) ? 'success.light' : 'background.paper',
+                                    flex: 1
+                                }}
+                                onClick={() => handleVariantClick(variant)}
+                            >
+                                <Typography variant="h6">
+                                    {variant.charAt(0).toUpperCase() + variant.slice(1)} Variant
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    This is a {variant} paper
+                                    {clickedVariants.has(variant) && ' ✓'}
+                                </Typography>
+                            </Paper>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 4: Paper with Content
+        const PaperContentTest = ({ completeTest }) => {
+            const [interactions, setInteractions] = React.useState({
+                paper: false,
+                button: false,
+                icon: false
+            });
+            
+            const handleInteraction = (element) => {
+                const newInteractions = { ...interactions, [element]: true };
+                setInteractions(newInteractions);
+                
+                if (Object.values(newInteractions).every(v => v === true)) {
+                    completeTest(true, 'All elements within Paper interacted with!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Interact with all elements inside the Paper:
+                    </Typography>
+                    <Paper 
+                        id="content-paper"
+                        sx={{ p: 3 }}
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget || e.target.tagName === 'DIV') {
+                                handleInteraction('paper');
+                            }
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box>
+                                <Typography variant="h6">
+                                    Paper with Interactive Content
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Click the paper background, button, and icon
+                                </Typography>
+                            </Box>
+                            <IconButton
+                                id="paper-icon-button"
+                                color={interactions.icon ? "success" : "default"}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleInteraction('icon');
+                                }}
+                            >
+                                <span className="material-icons">
+                                    {interactions.icon ? 'check_circle' : 'info'}
+                                </span>
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ mt: 2 }}>
+                            <Button
+                                id="paper-button"
+                                variant="contained"
+                                color={interactions.button ? "success" : "primary"}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleInteraction('button');
+                                }}
+                            >
+                                {interactions.button ? 'Button Clicked ✓' : 'Click Button'}
+                            </Button>
+                        </Box>
+                        <div className="elevation-info" style={{ marginTop: '16px' }}>
+                            <div>Paper background: {interactions.paper ? '✓' : '✗'}</div>
+                            <div>Button: {interactions.button ? '✓' : '✗'}</div>
+                            <div>Icon: {interactions.icon ? '✓' : '✗'}</div>
+                        </div>
+                    </Paper>
+                </Box>
+            );
+        };
+        
+        // Test 5: Nested Papers
+        const NestedPapersTest = ({ completeTest }) => {
+            const [clickedPapers, setClickedPapers] = React.useState(new Set());
+            const papers = ['outer', 'middle', 'inner'];
+            
+            const handlePaperClick = (paper, e) => {
+                e.stopPropagation();
+                const newClicked = new Set(clickedPapers);
+                newClicked.add(paper);
+                setClickedPapers(newClicked);
+                
+                if (newClicked.size === papers.length) {
+                    completeTest(true, 'All nested papers clicked!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each nested Paper component (outer, middle, and inner):
+                    </Typography>
+                    <Paper 
+                        id="outer-paper"
+                        sx={{ 
+                            p: 3,
+                            cursor: 'pointer',
+                            backgroundColor: clickedPapers.has('outer') ? 'success.light' : 'grey.100'
+                        }}
+                        onClick={(e) => handlePaperClick('outer', e)}
+                    >
+                        <Typography variant="h6">
+                            Outer Paper {clickedPapers.has('outer') && '✓'}
+                        </Typography>
+                        <Paper 
+                            id="middle-paper"
+                            elevation={3}
+                            sx={{ 
+                                p: 3, 
+                                mt: 2,
+                                cursor: 'pointer',
+                                backgroundColor: clickedPapers.has('middle') ? 'success.light' : 'background.paper'
+                            }}
+                            onClick={(e) => handlePaperClick('middle', e)}
+                        >
+                            <Typography variant="h6">
+                                Middle Paper {clickedPapers.has('middle') && '✓'}
+                            </Typography>
+                            <Paper 
+                                id="inner-paper"
+                                elevation={6}
+                                sx={{ 
+                                    p: 3, 
+                                    mt: 2,
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedPapers.has('inner') ? 'success.light' : 'background.paper'
+                                }}
+                                onClick={(e) => handlePaperClick('inner', e)}
+                            >
+                                <Typography variant="h6">
+                                    Inner Paper {clickedPapers.has('inner') && '✓'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Click each paper layer
+                                </Typography>
+                            </Paper>
+                        </Paper>
+                    </Paper>
+                    <div className="elevation-info">
+                        <div>Papers clicked: {clickedPapers.size} / {papers.length}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 6: Paper Shapes
+        const PaperShapesTest = ({ completeTest }) => {
+            const [clickedShapes, setClickedShapes] = React.useState(new Set());
+            const shapes = [
+                { name: 'square', sx: { borderRadius: 0 } },
+                { name: 'rounded', sx: { borderRadius: 1 } },
+                { name: 'circular', sx: { borderRadius: '50%', width: 150, height: 150 } }
+            ];
+            
+            const handleShapeClick = (shape) => {
+                const newClicked = new Set(clickedShapes);
+                newClicked.add(shape);
+                setClickedShapes(newClicked);
+                
+                if (newClicked.size === shapes.length) {
+                    completeTest(true, 'All Paper shapes tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click all three Paper shapes:
+                    </Typography>
+                    <div className="variant-grid">
+                        {shapes.map(({ name, sx }) => (
+                            <Paper
+                                key={name}
+                                id={`paper-shape-${name}`}
+                                elevation={3}
+                                sx={{ 
+                                    p: 3,
+                                    cursor: 'pointer',
+                                    backgroundColor: clickedShapes.has(name) ? 'success.light' : 'background.paper',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minHeight: 100,
+                                    ...sx
+                                }}
+                                onClick={() => handleShapeClick(name)}
+                            >
+                                <Box textAlign="center">
+                                    <Typography variant="h6">
+                                        {name.charAt(0).toUpperCase() + name.slice(1)}
+                                    </Typography>
+                                    {clickedShapes.has(name) && <Typography>✓</Typography>}
+                                </Box>
+                            </Paper>
+                        ))}
+                    </div>
+                    <div className="elevation-info">
+                        <div>Shapes clicked: {clickedShapes.size} / {shapes.length}</div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'paper',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-paper"
+                        testName="Test 1: Basic Paper Click"
+                        description="Test basic Paper component click functionality"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicPaperTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="paper-elevations"
+                        testName="Test 2: Paper Elevations"
+                        description="Test different elevation levels of Paper component"
+                        onComplete={handleTestComplete}
+                    >
+                        <PaperElevationsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="paper-variants"
+                        testName="Test 3: Paper Variants"
+                        description="Test different Paper variants (elevation vs outlined)"
+                        onComplete={handleTestComplete}
+                    >
+                        <PaperVariantsTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="paper-content"
+                        testName="Test 4: Paper with Content"
+                        description="Test interaction with content inside Paper component"
+                        onComplete={handleTestComplete}
+                    >
+                        <PaperContentTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="nested-papers"
+                        testName="Test 5: Nested Papers"
+                        description="Test nested Paper components with different elevations"
+                        onComplete={handleTestComplete}
+                    >
+                        <NestedPapersTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="paper-shapes"
+                        testName="Test 6: Paper Shapes"
+                        description="Test Paper components with different border radius styles"
+                        onComplete={handleTestComplete}
+                    >
+                        <PaperShapesTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

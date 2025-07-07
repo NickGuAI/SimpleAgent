@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Timeline Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Lab (for Timeline components) -->
+    <script src="https://unpkg.com/@mui/lab@5.0.0-alpha.134/umd/material-ui-lab.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .timeline-item-clickable {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .timeline-item-clickable:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+        
+        .click-counter {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .counter-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Lab Challenge: Timeline</h1>
+            <p>Test the functionality and behavior of the Material UI Timeline component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Box,
+            Typography,
+            Stack,
+            Button,
+            Paper
+        } = window['MaterialUI'];
+        
+        const {
+            Timeline,
+            TimelineItem,
+            TimelineSeparator,
+            TimelineConnector,
+            TimelineContent,
+            TimelineDot,
+            TimelineOppositeContent
+        } = window['MaterialUILab'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Timeline Display
+        const BasicTimelineTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            React.useEffect(() => {
+                // Auto-complete after timeline renders
+                const timer = setTimeout(() => {
+                    if (!clicked) {
+                        setClicked(true);
+                        completeTest(true, 'Timeline rendered successfully with all items!');
+                    }
+                }, 1000);
+                return () => clearTimeout(timer);
+            }, []);
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Basic timeline with multiple items:
+                    </Typography>
+                    <Timeline>
+                        <TimelineItem>
+                            <TimelineSeparator>
+                                <TimelineDot id="timeline-dot-1" />
+                                <TimelineConnector />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography variant="h6">Step 1</Typography>
+                                <Typography>Initial setup</Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                        <TimelineItem>
+                            <TimelineSeparator>
+                                <TimelineDot id="timeline-dot-2" color="primary" />
+                                <TimelineConnector />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography variant="h6">Step 2</Typography>
+                                <Typography>Development phase</Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                        <TimelineItem>
+                            <TimelineSeparator>
+                                <TimelineDot id="timeline-dot-3" color="secondary" />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography variant="h6">Step 3</Typography>
+                                <Typography>Final deployment</Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                    </Timeline>
+                </Box>
+            );
+        };
+        
+        // Test 2: Timeline Positions
+        const TimelinePositionTest = ({ completeTest }) => {
+            const [position, setPosition] = React.useState('alternate');
+            const positions = ['alternate', 'left', 'right'];
+            const [testedPositions, setTestedPositions] = React.useState(new Set(['alternate']));
+            
+            const handlePositionChange = (newPosition) => {
+                setPosition(newPosition);
+                const newTested = new Set(testedPositions);
+                newTested.add(newPosition);
+                setTestedPositions(newTested);
+                
+                if (newTested.size === positions.length) {
+                    completeTest(true, 'All timeline positions tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Test different timeline positions:
+                    </Typography>
+                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                        {positions.map((pos) => (
+                            <Button
+                                key={pos}
+                                id={`position-${pos}-button`}
+                                variant={position === pos ? "contained" : "outlined"}
+                                onClick={() => handlePositionChange(pos)}
+                                size="small"
+                                color={testedPositions.has(pos) ? "success" : "primary"}
+                            >
+                                {pos.charAt(0).toUpperCase() + pos.slice(1)}
+                                {testedPositions.has(pos) && ' ✓'}
+                            </Button>
+                        ))}
+                    </Stack>
+                    <Timeline position={position}>
+                        <TimelineItem>
+                            <TimelineOppositeContent>
+                                09:30 am
+                            </TimelineOppositeContent>
+                            <TimelineSeparator>
+                                <TimelineDot />
+                                <TimelineConnector />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography>Breakfast</Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                        <TimelineItem>
+                            <TimelineOppositeContent>
+                                10:00 am
+                            </TimelineOppositeContent>
+                            <TimelineSeparator>
+                                <TimelineDot color="primary" />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography>Coding</Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                    </Timeline>
+                </Box>
+            );
+        };
+        
+        // Test 3: Timeline Dot Variants
+        const TimelineDotVariantTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['filled', 'outlined'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All timeline dot variants tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click on timeline dots with different variants:
+                    </Typography>
+                    <Timeline>
+                        <TimelineItem>
+                            <TimelineSeparator>
+                                <TimelineDot 
+                                    id="filled-dot"
+                                    variant="filled"
+                                    color="primary"
+                                    onClick={() => handleVariantClick('filled')}
+                                    sx={{ cursor: 'pointer' }}
+                                />
+                                <TimelineConnector />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography>
+                                    Filled Dot {clickedVariants.has('filled') && '✓'}
+                                </Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                        <TimelineItem>
+                            <TimelineSeparator>
+                                <TimelineDot 
+                                    id="outlined-dot"
+                                    variant="outlined"
+                                    color="secondary"
+                                    onClick={() => handleVariantClick('outlined')}
+                                    sx={{ cursor: 'pointer' }}
+                                />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Typography>
+                                    Outlined Dot {clickedVariants.has('outlined') && '✓'}
+                                </Typography>
+                            </TimelineContent>
+                        </TimelineItem>
+                    </Timeline>
+                </Box>
+            );
+        };
+        
+        // Test 4: Interactive Timeline Items
+        const InteractiveTimelineTest = ({ completeTest }) => {
+            const [completedSteps, setCompletedSteps] = React.useState(new Set());
+            const steps = ['plan', 'design', 'develop', 'test', 'deploy'];
+            
+            const handleStepClick = (step) => {
+                const newCompleted = new Set(completedSteps);
+                newCompleted.add(step);
+                setCompletedSteps(newCompleted);
+                
+                if (newCompleted.size === steps.length) {
+                    completeTest(true, 'All timeline steps completed!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each timeline item to mark it as complete:
+                    </Typography>
+                    <Timeline>
+                        {steps.map((step, index) => (
+                            <TimelineItem 
+                                key={step}
+                                className="timeline-item-clickable"
+                                onClick={() => handleStepClick(step)}
+                            >
+                                <TimelineSeparator>
+                                    <TimelineDot 
+                                        id={`step-${step}-dot`}
+                                        color={completedSteps.has(step) ? "success" : "grey"}
+                                    >
+                                        {completedSteps.has(step) ? '✓' : index + 1}
+                                    </TimelineDot>
+                                    {index < steps.length - 1 && <TimelineConnector />}
+                                </TimelineSeparator>
+                                <TimelineContent>
+                                    <Paper elevation={3} sx={{ p: 1, cursor: 'pointer' }}>
+                                        <Typography variant="h6" component="h1">
+                                            {step.charAt(0).toUpperCase() + step.slice(1)}
+                                        </Typography>
+                                        <Typography>
+                                            {completedSteps.has(step) ? 'Completed' : 'Click to complete'}
+                                        </Typography>
+                                    </Paper>
+                                </TimelineContent>
+                            </TimelineItem>
+                        ))}
+                    </Timeline>
+                </Box>
+            );
+        };
+        
+        // Test 5: Timeline with Custom Content
+        const CustomContentTimelineTest = ({ completeTest }) => {
+            const [expandedItems, setExpandedItems] = React.useState(new Set());
+            const [buttonClicked, setButtonClicked] = React.useState(false);
+            
+            const handleExpand = (item) => {
+                const newExpanded = new Set(expandedItems);
+                if (newExpanded.has(item)) {
+                    newExpanded.delete(item);
+                } else {
+                    newExpanded.add(item);
+                }
+                setExpandedItems(newExpanded);
+            };
+            
+            const handleButtonClick = () => {
+                setButtonClicked(true);
+                completeTest(true, 'Custom timeline content interaction successful!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Timeline with custom interactive content:
+                    </Typography>
+                    <Timeline>
+                        <TimelineItem>
+                            <TimelineOppositeContent color="text.secondary">
+                                Today
+                            </TimelineOppositeContent>
+                            <TimelineSeparator>
+                                <TimelineDot color="primary" />
+                                <TimelineConnector />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Paper elevation={3} sx={{ p: 2 }}>
+                                    <Typography variant="h6">Current Task</Typography>
+                                    <Typography 
+                                        id="expand-details"
+                                        sx={{ cursor: 'pointer', color: 'primary.main' }}
+                                        onClick={() => handleExpand('current')}
+                                    >
+                                        {expandedItems.has('current') ? 'Hide' : 'Show'} Details
+                                    </Typography>
+                                    {expandedItems.has('current') && (
+                                        <Typography sx={{ mt: 1 }}>
+                                            This is the expanded content for the current task.
+                                        </Typography>
+                                    )}
+                                </Paper>
+                            </TimelineContent>
+                        </TimelineItem>
+                        <TimelineItem>
+                            <TimelineOppositeContent color="text.secondary">
+                                Tomorrow
+                            </TimelineOppositeContent>
+                            <TimelineSeparator>
+                                <TimelineDot color="secondary" />
+                            </TimelineSeparator>
+                            <TimelineContent>
+                                <Paper elevation={3} sx={{ p: 2 }}>
+                                    <Typography variant="h6">Next Task</Typography>
+                                    <Button
+                                        id="timeline-action-button"
+                                        variant="contained"
+                                        size="small"
+                                        onClick={handleButtonClick}
+                                        sx={{ mt: 1 }}
+                                        color={buttonClicked ? "success" : "primary"}
+                                    >
+                                        {buttonClicked ? 'Completed!' : 'Take Action'}
+                                    </Button>
+                                </Paper>
+                            </TimelineContent>
+                        </TimelineItem>
+                    </Timeline>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'timeline',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="basic-timeline"
+                        testName="Test 1: Basic Timeline Display"
+                        description="Verify that timeline renders correctly with multiple items"
+                        onComplete={handleTestComplete}
+                    >
+                        <BasicTimelineTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="timeline-positions"
+                        testName="Test 2: Timeline Positions"
+                        description="Test different timeline position options: alternate, left, and right"
+                        onComplete={handleTestComplete}
+                    >
+                        <TimelinePositionTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="dot-variants"
+                        testName="Test 3: Timeline Dot Variants"
+                        description="Test different timeline dot variants: filled and outlined"
+                        onComplete={handleTestComplete}
+                    >
+                        <TimelineDotVariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="interactive-timeline"
+                        testName="Test 4: Interactive Timeline"
+                        description="Test clicking on timeline items to mark them as complete"
+                        onComplete={handleTestComplete}
+                    >
+                        <InteractiveTimelineTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="custom-content"
+                        testName="Test 5: Custom Timeline Content"
+                        description="Test timeline with custom interactive content including buttons and expandable sections"
+                        onComplete={handleTestComplete}
+                    >
+                        <CustomContentTimelineTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

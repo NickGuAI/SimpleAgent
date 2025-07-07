@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI Divider Challenge</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Material UI -->
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.production.min.js"></script>
+    
+    <!-- Material UI Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.87);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .header h1 {
+            color: #1976d2;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        
+        .test-description {
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+        }
+        
+        .test-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-area {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-area.success {
+            background-color: #e8f5e9;
+            display: block;
+        }
+        
+        .result-area.error {
+            background-color: #ffebee;
+            display: block;
+        }
+        
+        .result-message {
+            font-weight: 500;
+        }
+        
+        .success .result-message {
+            color: #2e7d32;
+        }
+        
+        .error .result-message {
+            color: #c62828;
+        }
+        
+        .test-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #e0e0e0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .test-status.pass {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .test-status.fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .content-block {
+            padding: 16px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        
+        .vertical-container {
+            display: flex;
+            height: 200px;
+            gap: 16px;
+        }
+        
+        .vertical-content {
+            flex: 1;
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .clickable-divider {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .clickable-divider:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MUI Component Challenge: Divider</h1>
+            <p>Test the functionality and behavior of the Material UI Divider component</p>
+        </div>
+        
+        <div id="app"></div>
+    </div>
+    
+    <script type="text/babel">
+        const { 
+            Divider,
+            Box,
+            Typography,
+            List,
+            ListItem,
+            ListItemText,
+            Chip,
+            Button,
+            Stack,
+            Icon
+        } = window['MaterialUI'];
+        
+        // Test harness for component challenges
+        const TestHarness = ({ children, testId, testName, description, onComplete }) => {
+            const [status, setStatus] = React.useState('pending');
+            const [message, setMessage] = React.useState('');
+            
+            const completeTest = (success, msg) => {
+                setStatus(success ? 'pass' : 'fail');
+                setMessage(msg);
+                if (onComplete) {
+                    onComplete(testId, success);
+                }
+            };
+            
+            return (
+                <div className="test-section">
+                    <h2 className="test-title">{testName}</h2>
+                    <p className="test-description">{description}</p>
+                    <div className="test-area">
+                        {React.cloneElement(children, { completeTest })}
+                    </div>
+                    <div className={`result-area ${status === 'pass' ? 'success' : status === 'fail' ? 'error' : ''}`}>
+                        <p className="result-message">{message}</p>
+                    </div>
+                    <div className="test-controls">
+                        <span className={`test-status ${status}`}>
+                            {status === 'pending' ? 'Pending' : status === 'pass' ? 'Passed' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Test 1: Basic Horizontal Divider
+        const HorizontalDividerTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Horizontal divider interaction confirmed!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click anywhere on the divider below:
+                    </Typography>
+                    <div className="content-block">
+                        <Typography>Content above divider</Typography>
+                    </div>
+                    <Divider 
+                        id="horizontal-divider"
+                        className="clickable-divider"
+                        onClick={handleClick}
+                        sx={{ 
+                            bgcolor: clicked ? 'success.main' : 'divider',
+                            height: clicked ? 2 : 1
+                        }}
+                    />
+                    <div className="content-block">
+                        <Typography>Content below divider</Typography>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 2: Divider Variants
+        const VariantTest = ({ completeTest }) => {
+            const [clickedVariants, setClickedVariants] = React.useState(new Set());
+            const variants = ['fullWidth', 'inset', 'middle'];
+            
+            const handleVariantClick = (variant) => {
+                const newClicked = new Set(clickedVariants);
+                newClicked.add(variant);
+                setClickedVariants(newClicked);
+                
+                if (newClicked.size === variants.length) {
+                    completeTest(true, 'All divider variants tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each divider variant in the list:
+                    </Typography>
+                    <List>
+                        <ListItem>
+                            <ListItemText primary="Full Width Divider" />
+                        </ListItem>
+                        <Divider 
+                            id="fullwidth-divider"
+                            variant="fullWidth" 
+                            component="li"
+                            className="clickable-divider"
+                            onClick={() => handleVariantClick('fullWidth')}
+                            sx={{ 
+                                bgcolor: clickedVariants.has('fullWidth') ? 'success.main' : 'divider' 
+                            }}
+                        />
+                        <ListItem>
+                            <ListItemText primary="Inset Divider" secondary="With left padding" />
+                        </ListItem>
+                        <Divider 
+                            id="inset-divider"
+                            variant="inset" 
+                            component="li"
+                            className="clickable-divider"
+                            onClick={() => handleVariantClick('inset')}
+                            sx={{ 
+                                bgcolor: clickedVariants.has('inset') ? 'success.main' : 'divider' 
+                            }}
+                        />
+                        <ListItem>
+                            <ListItemText primary="Middle Divider" secondary="With padding on both sides" />
+                        </ListItem>
+                        <Divider 
+                            id="middle-divider"
+                            variant="middle" 
+                            component="li"
+                            className="clickable-divider"
+                            onClick={() => handleVariantClick('middle')}
+                            sx={{ 
+                                bgcolor: clickedVariants.has('middle') ? 'success.main' : 'divider' 
+                            }}
+                        />
+                        <ListItem>
+                            <ListItemText primary="End of list" />
+                        </ListItem>
+                    </List>
+                </Box>
+            );
+        };
+        
+        // Test 3: Vertical Divider
+        const VerticalDividerTest = ({ completeTest }) => {
+            const [clicked, setClicked] = React.useState(false);
+            
+            const handleClick = () => {
+                setClicked(true);
+                completeTest(true, 'Vertical divider clicked successfully!');
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click the vertical divider between the two sections:
+                    </Typography>
+                    <div className="vertical-container">
+                        <div className="vertical-content">
+                            <Typography variant="h6">Left Section</Typography>
+                            <Typography variant="body2">
+                                This content is on the left side of the vertical divider.
+                            </Typography>
+                        </div>
+                        <Divider 
+                            id="vertical-divider"
+                            orientation="vertical" 
+                            flexItem
+                            className="clickable-divider"
+                            onClick={handleClick}
+                            sx={{ 
+                                bgcolor: clicked ? 'success.main' : 'divider',
+                                width: clicked ? 2 : 1
+                            }}
+                        />
+                        <div className="vertical-content">
+                            <Typography variant="h6">Right Section</Typography>
+                            <Typography variant="body2">
+                                This content is on the right side of the vertical divider.
+                            </Typography>
+                        </div>
+                    </div>
+                </Box>
+            );
+        };
+        
+        // Test 4: Divider with Text
+        const TextDividerTest = ({ completeTest }) => {
+            const [clickedDividers, setClickedDividers] = React.useState(new Set());
+            const textAlignments = ['center', 'left', 'right'];
+            
+            const handleDividerClick = (alignment) => {
+                const newClicked = new Set(clickedDividers);
+                newClicked.add(alignment);
+                setClickedDividers(newClicked);
+                
+                if (newClicked.size === textAlignments.length) {
+                    completeTest(true, 'All text divider alignments tested!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each divider with different text alignments:
+                    </Typography>
+                    <Stack spacing={3}>
+                        {textAlignments.map((alignment) => (
+                            <Box key={alignment}>
+                                <Divider 
+                                    id={`${alignment}-text-divider`}
+                                    textAlign={alignment}
+                                    className="clickable-divider"
+                                    onClick={() => handleDividerClick(alignment)}
+                                    sx={{ 
+                                        '& .MuiDivider-wrapper': {
+                                            color: clickedDividers.has(alignment) ? 'success.main' : 'text.secondary'
+                                        }
+                                    }}
+                                >
+                                    {alignment.toUpperCase()} ALIGNED
+                                </Divider>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 5: Divider with Chip
+        const ChipDividerTest = ({ completeTest }) => {
+            const [chipsClicked, setChipsClicked] = React.useState(new Set());
+            const chips = ['OR', 'AND', 'DIVIDER'];
+            
+            const handleChipClick = (chip) => {
+                const newClicked = new Set(chipsClicked);
+                newClicked.add(chip);
+                setChipsClicked(newClicked);
+                
+                if (newClicked.size === chips.length) {
+                    completeTest(true, 'All chip dividers clicked successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each chip within the dividers:
+                    </Typography>
+                    <Stack spacing={3}>
+                        {chips.map((chip) => (
+                            <Box key={chip}>
+                                <div className="content-block">
+                                    <Typography variant="body2">Content section</Typography>
+                                </div>
+                                <Divider id={`${chip.toLowerCase()}-chip-divider`}>
+                                    <Chip 
+                                        label={chip} 
+                                        onClick={() => handleChipClick(chip)}
+                                        color={chipsClicked.has(chip) ? "success" : "default"}
+                                        size="small"
+                                    />
+                                </Divider>
+                            </Box>
+                        ))}
+                        <div className="content-block">
+                            <Typography variant="body2">Final content section</Typography>
+                        </div>
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Test 6: Styled Dividers
+        const StyledDividerTest = ({ completeTest }) => {
+            const [clickedStyles, setClickedStyles] = React.useState(new Set());
+            const styles = [
+                { id: 'dashed', style: { borderStyle: 'dashed' }, label: 'Dashed' },
+                { id: 'dotted', style: { borderStyle: 'dotted' }, label: 'Dotted' },
+                { id: 'thick', style: { borderWidth: 3 }, label: 'Thick' },
+                { id: 'colored', style: { borderColor: '#1976d2' }, label: 'Colored' }
+            ];
+            
+            const handleStyleClick = (styleId) => {
+                const newClicked = new Set(clickedStyles);
+                newClicked.add(styleId);
+                setClickedStyles(newClicked);
+                
+                if (newClicked.size === styles.length) {
+                    completeTest(true, 'All styled dividers tested successfully!');
+                }
+            };
+            
+            return (
+                <Box>
+                    <Typography variant="body2" gutterBottom>
+                        Click each styled divider:
+                    </Typography>
+                    <Stack spacing={2}>
+                        {styles.map(({ id, style, label }) => (
+                            <Box key={id}>
+                                <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
+                                    {label} divider {clickedStyles.has(id) && '✓'}
+                                </Typography>
+                                <Divider 
+                                    id={`${id}-styled-divider`}
+                                    className="clickable-divider"
+                                    onClick={() => handleStyleClick(id)}
+                                    sx={{ 
+                                        ...style,
+                                        bgcolor: clickedStyles.has(id) ? 'success.main' : undefined,
+                                        '&:hover': { opacity: 0.8 }
+                                    }}
+                                />
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            );
+        };
+        
+        // Main App component
+        const App = () => {
+            const [testResults, setTestResults] = React.useState({});
+            
+            const handleTestComplete = (testId, success) => {
+                setTestResults(prev => ({
+                    ...prev,
+                    [testId]: success
+                }));
+                
+                // Check if this was triggered by browser automation
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'challengeComplete',
+                        challenge: 'divider',
+                        testId: testId,
+                        success: success
+                    }, '*');
+                }
+            };
+            
+            return (
+                <>
+                    <TestHarness
+                        testId="horizontal"
+                        testName="Test 1: Basic Horizontal Divider"
+                        description="Test basic horizontal divider interaction"
+                        onComplete={handleTestComplete}
+                    >
+                        <HorizontalDividerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="variants"
+                        testName="Test 2: Divider Variants"
+                        description="Test different divider variants in lists"
+                        onComplete={handleTestComplete}
+                    >
+                        <VariantTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="vertical"
+                        testName="Test 3: Vertical Divider"
+                        description="Test vertical divider orientation"
+                        onComplete={handleTestComplete}
+                    >
+                        <VerticalDividerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="text-divider"
+                        testName="Test 4: Divider with Text"
+                        description="Test dividers with text content and alignments"
+                        onComplete={handleTestComplete}
+                    >
+                        <TextDividerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="chip-divider"
+                        testName="Test 5: Divider with Chips"
+                        description="Test dividers containing chip components"
+                        onComplete={handleTestComplete}
+                    >
+                        <ChipDividerTest />
+                    </TestHarness>
+                    
+                    <TestHarness
+                        testId="styled"
+                        testName="Test 6: Styled Dividers"
+                        description="Test dividers with custom styles"
+                        onComplete={handleTestComplete}
+                    >
+                        <StyledDividerTest />
+                    </TestHarness>
+                </>
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
