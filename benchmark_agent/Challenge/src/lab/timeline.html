@@ -620,6 +620,18 @@
         // Render the app
         const root = ReactDOM.createRoot(document.getElementById('app'));
         root.render(<App />);
+        
+        // Handle loading check from parent
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'checkLoaded') {
+                window.parent.postMessage({
+                    type: 'componentLoaded',
+                    category: 'lab',
+                    component: 'timeline',
+                    loaded: window['MaterialUILab'] !== undefined
+                }, '*');
+            }
+        });
     </script>
 </body>
 </html>

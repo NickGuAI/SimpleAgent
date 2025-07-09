@@ -405,6 +405,27 @@
             background-color: #1565c0;
         }
 
+        .reset-button {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .reset-button:hover {
+            background-color: #d32f2f;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
         /* Responsive Design */
         @media (max-width: 960px) {
             .main-container {
@@ -489,7 +510,7 @@
             <div class="stats-container">
                 <div class="stat-box">
                     <div class="stat-label">Total Components</div>
-                    <div class="stat-value" id="totalComponents">57</div>
+                    <div class="stat-value" id="totalComponents">54</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Completed</div>
@@ -503,6 +524,9 @@
                     <div class="stat-label">Progress</div>
                     <div class="stat-value" id="progressPercentage">0%</div>
                 </div>
+                <button class="reset-button" onclick="resetProgress()" title="Reset all progress">
+                    🔄 Reset
+                </button>
             </div>
         </div>
     </header>
@@ -553,12 +577,6 @@
                         <a href="#utils" class="category-link" data-category="utils">
                             <span>Utilities</span>
                             <span class="category-count">8</span>
-                        </a>
-                    </li>
-                    <li class="category-item">
-                        <a href="#lab" class="category-link" data-category="lab">
-                            <span>Lab (Experimental)</span>
-                            <span class="category-count">3</span>
                         </a>
                     </li>
                 </ul>
@@ -644,16 +662,6 @@
                 </div>
             </section>
 
-            <!-- Lab Components -->
-            <section class="category-section" id="lab-section">
-                <div class="category-header">
-                    <h2 class="category-title">Lab Components (Experimental)</h2>
-                    <p class="category-description">Experimental components that may change in future releases</p>
-                </div>
-                <div class="component-grid" id="lab-grid">
-                    <!-- Component cards will be dynamically inserted here -->
-                </div>
-            </section>
         </main>
     </div>
 
@@ -752,11 +760,6 @@
                 { name: 'Portal', file: 'portal.html', description: 'Render children outside DOM hierarchy', tests: 6 },
                 { name: 'Textarea Autosize', file: 'textarea-autosize.html', description: 'Auto-resizing text area', tests: 6 },
                 { name: 'Transitions', file: 'transitions.html', description: 'Animation transition components', tests: 6 }
-            ],
-            'lab': [
-                { name: 'Timeline', file: 'timeline.html', description: 'Vertical timeline display', tests: 5 },
-                { name: 'Tree View', file: 'tree-view.html', description: 'Hierarchical list with expansion', tests: 5 },
-                { name: 'Date/Time Pickers', file: 'date-time-pickers.html', description: 'Date and time selection', tests: 6 }
             ]
         };
 
@@ -887,12 +890,28 @@
             const title = document.getElementById('challengeTitle');
             
             title.textContent = `${component.name} Challenge`;
+            
+            // Add error handling for iframe
+            iframe.onerror = function() {
+                console.error(`Error loading component: ${category}/${component.file}`);
+                showNotification(`Error loading ${component.name} component`, 'error');
+            };
+            
+            iframe.onload = function() {
+                console.log(`Successfully loaded: ${category}/${component.file}`);
+            };
+            
             iframe.src = `src/${category}/${component.file}`;
             frame.style.display = 'block';
             
             // Listen for completion messages
             window.addEventListener('message', function handleMessage(event) {
                 const componentId = `${category}/${component.file}`;
+                
+                // Handle lab component loading check
+                if (event.data.type === 'componentLoaded' && event.data.category === category) {
+                    console.log(`Lab component loaded successfully: ${component.name}`);
+                }
                 
                 if (event.data.type === 'challengeComplete' && event.data.challenge === component.file.replace('.html', '')) {
                     completedComponents.add(componentId);
@@ -946,15 +965,16 @@
         }
 
         // Show notification
-        function showNotification(message) {
+        function showNotification(message, type = 'success') {
             // Simple notification implementation
             const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'var(--success-color)' : 'var(--error-color)';
             notification.style.cssText = `
                 position: fixed;
                 bottom: 24px;
                 left: 50%;
                 transform: translateX(-50%);
-                background-color: var(--success-color);
+                background-color: ${bgColor};
                 color: white;
                 padding: 16px 24px;
                 border-radius: 4px;
@@ -968,6 +988,26 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+
+        // Reset progress
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress? This action cannot be undone.')) {
+                // Clear saved data
+                localStorage.removeItem('mui-challenge-progress');
+                localStorage.removeItem('mui-challenge-test-results');
+                
+                // Reset state
+                completedComponents.clear();
+                componentTestResults = {};
+                
+                // Update UI
+                updateStats();
+                renderAllCategories();
+                
+                // Show notification
+                showNotification('Progress has been reset', 'error');
+            }
         }
 
         // Initialize
