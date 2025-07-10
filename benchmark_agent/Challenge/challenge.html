@@ -834,7 +834,9 @@
                 card.onclick = () => openChallenge(category, component);
                 
                 const testResult = componentTestResults[componentId] || { passed: 0, total: component.tests };
-                const testProgress = testResult.total > 0 ? Math.round((testResult.passed / testResult.total) * 100) : 0;
+                const passedTests = testResult.passed || 0;
+                const totalTests = testResult.total || component.tests;
+                const testProgress = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
                 
                 card.innerHTML = `
                     <div class="component-name">${component.name}</div>
@@ -842,7 +844,7 @@
                     <div class="component-stats">
                         <div class="test-count">
                             <span>🧪</span>
-                            <span>${testResult.passed}/${testResult.total} tests</span>
+                            <span>${passedTests}/${totalTests} tests</span>
                         </div>
                         ${isCompleted ? 
                             `<span style="color: var(--success-color);">✓ ${testProgress}% Complete</span>` : 
@@ -918,8 +920,39 @@
                 }
                 
                 if (event.data.type === 'challengeComplete' && event.data.challenge === component.file.replace('.html', '')) {
-                    // Update test results if provided
-                    if (event.data.testsPassed !== undefined && event.data.totalTests !== undefined) {
+                    // This is a message for an individual test completion
+                    if (event.data.testId && event.data.success !== undefined) {
+                        // Initialize test tracking for this component if needed
+                        if (!componentTestResults[componentId]) {
+                            componentTestResults[componentId] = {
+                                passed: 0,
+                                total: component.tests,
+                                individualTests: {}
+                            };
+                        }
+                        
+                        // Track this individual test
+                        const wasAlreadyPassed = componentTestResults[componentId].individualTests[event.data.testId];
+                        componentTestResults[componentId].individualTests[event.data.testId] = event.data.success;
+                        
+                        // Count passed tests
+                        const passedCount = Object.values(componentTestResults[componentId].individualTests)
+                            .filter(passed => passed === true).length;
+                        componentTestResults[componentId].passed = passedCount;
+                        
+                        // Check if all tests are completed
+                        const totalCompleted = Object.keys(componentTestResults[componentId].individualTests).length;
+                        
+                        if (passedCount === component.tests && totalCompleted === component.tests) {
+                            // All tests passed!
+                            completedComponents.add(componentId);
+                            showNotification(`${component.name} completed! All ${component.tests} tests passed!`);
+                        } else if (!wasAlreadyPassed && event.data.success) {
+                            // Show progress for newly passed test
+                            showNotification(`${component.name}: Test "${event.data.testId}" passed (${passedCount}/${component.tests})`);
+                        }
+                    } else if (event.data.testsPassed !== undefined && event.data.totalTests !== undefined) {
+                        // This is a summary message with total counts
                         componentTestResults[componentId] = {
                             passed: event.data.testsPassed,
                             total: event.data.totalTests
@@ -932,14 +965,6 @@
                         } else {
                             showNotification(`${component.name} progress: ${event.data.testsPassed}/${event.data.totalTests} tests passed`);
                         }
-                    } else {
-                        // If no test data provided, assume all tests passed
-                        componentTestResults[componentId] = {
-                            passed: component.tests,
-                            total: component.tests
-                        };
-                        completedComponents.add(componentId);
-                        showNotification(`${component.name} challenge completed!`);
                     }
                     
                     saveProgress();
