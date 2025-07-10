@@ -769,24 +769,20 @@
         let componentTestResults = {}; // Format: { 'category/file.html': { passed: 5, total: 8 } }
         let searchTerm = '';
 
-        // Load saved progress
+        // Load saved progress (disabled for sandbox compatibility)
         function loadProgress() {
-            const saved = localStorage.getItem('mui-challenge-progress');
-            const savedTestResults = localStorage.getItem('mui-challenge-test-results');
-            if (saved) {
-                completedComponents = new Set(JSON.parse(saved));
-            }
-            if (savedTestResults) {
-                componentTestResults = JSON.parse(savedTestResults);
-            }
+            // localStorage is not available in sandboxed iframes
+            // Initialize with empty state
+            completedComponents = new Set();
+            componentTestResults = {};
             updateStats();
             renderAllCategories();
         }
 
-        // Save progress
+        // Save progress (disabled for sandbox compatibility)
         function saveProgress() {
-            localStorage.setItem('mui-challenge-progress', JSON.stringify([...completedComponents]));
-            localStorage.setItem('mui-challenge-test-results', JSON.stringify(componentTestResults));
+            // localStorage is not available in sandboxed iframes
+            // Progress will be maintained in memory only during the session
         }
 
         // Update statistics
@@ -993,11 +989,7 @@
         // Reset progress
         function resetProgress() {
             if (confirm('Are you sure you want to reset all progress? This action cannot be undone.')) {
-                // Clear saved data
-                localStorage.removeItem('mui-challenge-progress');
-                localStorage.removeItem('mui-challenge-test-results');
-                
-                // Reset state
+                // Reset state (no localStorage in sandbox mode)
                 completedComponents.clear();
                 componentTestResults = {};
                 
