@@ -879,6 +879,9 @@
             });
         }
 
+        // Store current challenge message handler to remove it later
+        let currentMessageHandler = null;
+        
         // Open challenge
         function openChallenge(category, component) {
             const frame = document.getElementById('challengeFrame');
@@ -886,6 +889,11 @@
             const title = document.getElementById('challengeTitle');
             
             title.textContent = `${component.name} Challenge`;
+            
+            // Remove previous message handler if exists
+            if (currentMessageHandler) {
+                window.removeEventListener('message', currentMessageHandler);
+            }
             
             // Add error handling for iframe
             iframe.onerror = function() {
@@ -900,8 +908,8 @@
             iframe.src = `src/${category}/${component.file}`;
             frame.style.display = 'block';
             
-            // Listen for completion messages
-            window.addEventListener('message', function handleMessage(event) {
+            // Create new message handler for this challenge
+            currentMessageHandler = function handleMessage(event) {
                 const componentId = `${category}/${component.file}`;
                 
                 // Handle lab component loading check
@@ -910,28 +918,33 @@
                 }
                 
                 if (event.data.type === 'challengeComplete' && event.data.challenge === component.file.replace('.html', '')) {
-                    completedComponents.add(componentId);
-                    
                     // Update test results if provided
                     if (event.data.testsPassed !== undefined && event.data.totalTests !== undefined) {
                         componentTestResults[componentId] = {
                             passed: event.data.testsPassed,
                             total: event.data.totalTests
                         };
+                        
+                        // Only mark as completed if ALL tests passed
+                        if (event.data.testsPassed === event.data.totalTests) {
+                            completedComponents.add(componentId);
+                            showNotification(`${component.name} challenge completed! All ${event.data.totalTests} tests passed!`);
+                        } else {
+                            showNotification(`${component.name} progress: ${event.data.testsPassed}/${event.data.totalTests} tests passed`);
+                        }
                     } else {
                         // If no test data provided, assume all tests passed
                         componentTestResults[componentId] = {
                             passed: component.tests,
                             total: component.tests
                         };
+                        completedComponents.add(componentId);
+                        showNotification(`${component.name} challenge completed!`);
                     }
                     
                     saveProgress();
                     updateStats();
                     renderComponentCards(category);
-                    
-                    // Show success notification
-                    showNotification(`${component.name} challenge completed! (${componentTestResults[componentId].passed}/${componentTestResults[componentId].total} tests passed)`);
                 } else if (event.data.type === 'testUpdate' && event.data.challenge === component.file.replace('.html', '')) {
                     // Handle incremental test updates
                     componentTestResults[componentId] = {
@@ -942,13 +955,22 @@
                     updateStats();
                     renderComponentCards(category);
                 }
-            });
+            };
+            
+            // Add the new message handler
+            window.addEventListener('message', currentMessageHandler);
         }
 
         // Close challenge frame
         function closeChallengeFrame() {
             const frame = document.getElementById('challengeFrame');
             const iframe = document.getElementById('challengeIframe');
+            
+            // Remove message handler when closing
+            if (currentMessageHandler) {
+                window.removeEventListener('message', currentMessageHandler);
+                currentMessageHandler = null;
+            }
             
             frame.style.display = 'none';
             iframe.src = '';
